@@ -890,6 +890,7 @@ body.study-active .answer-area {
 
 .input-row .primary-button.is-next.is-waiting {
   opacity: 0.72;
+  cursor: wait;
 }
 
 .result-summary {

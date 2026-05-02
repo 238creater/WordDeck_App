@@ -562,8 +562,10 @@ function renderInputAnswer() {
 
   if (!isTouchDevice()) input.focus({ preventScroll: true });
   submitButton.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    handleInputButtonPress();
+    if (!session.locked) {
+      event.preventDefault();
+      queueSubmit();
+    }
   });
   submitButton.addEventListener("click", handleInputButtonPress);
   form.addEventListener("submit", (event) => {
@@ -607,10 +609,10 @@ function submitInputAnswer(value) {
   replaceInputWithAnswer(input, shownAnswer, isCorrect);
   submitButton.classList.add("is-next", "is-waiting");
   submitButton.textContent = isLastQuestion() && session.count !== "endless" ? "結果を見る" : "次へ";
-  submitButton.disabled = true;
+  submitButton.setAttribute("aria-disabled", "true");
   window.setTimeout(() => {
-    submitButton.disabled = false;
     submitButton.classList.remove("is-waiting");
+    submitButton.removeAttribute("aria-disabled");
     nextReady = true;
   }, 450);
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer, { inlineNext: true });
