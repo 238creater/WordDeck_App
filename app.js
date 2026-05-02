@@ -534,7 +534,7 @@ function getChoiceTextClass(label) {
 function renderInputAnswer() {
   answerArea.innerHTML = `
     <form class="input-row" id="answer-form">
-      <input class="answer-input" id="answer-input" type="text" autocomplete="off" placeholder="英語を入力" />
+      <input class="answer-input" id="answer-input" type="text" inputmode="latin" lang="en" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="英語を入力" />
       <button id="answer-submit-button" class="primary-button" type="submit">回答</button>
     </form>
   `;
@@ -574,10 +574,28 @@ function submitInputAnswer(value) {
   const input = document.querySelector("#answer-input");
   const submitButton = document.querySelector("#answer-submit-button");
   form.classList.add("is-answered");
+  moveCaretToEnd(input);
+  input.blur();
+  clearTextSelection();
+  window.setTimeout(clearTextSelection, 0);
   input.disabled = true;
   submitButton.disabled = true;
   submitButton.textContent = "確認済み";
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, value || "未入力");
+}
+
+function clearTextSelection() {
+  const selection = window.getSelection?.();
+  if (selection?.removeAllRanges) selection.removeAllRanges();
+}
+
+function moveCaretToEnd(input) {
+  try {
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+  } catch {
+    // Some mobile browsers reject selection changes during IME confirmation.
+  }
 }
 
 function submitChoiceAnswer(choice) {
@@ -1056,6 +1074,11 @@ function parseCsv(text) {
 }
 
 function addSampleDeck() {
+  if (state.decks.some((deck) => deck.name === sampleDeck.name)) {
+    showToast("サンプル単語帳はすでに追加されています。");
+    return;
+  }
+
   const sample = {
     ...sampleDeck,
     id: createId(),
