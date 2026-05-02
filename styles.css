@@ -690,6 +690,14 @@ body.study-active .study-status {
   word-break: normal;
 }
 
+.question-text.is-japanese {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  font-size: 3.35rem;
+  line-height: 1.22;
+}
+
 .question-text.is-long {
   font-size: 3.7rem;
 }
@@ -700,6 +708,18 @@ body.study-active .study-status {
 
 .question-text.is-extra-long {
   font-size: 2.45rem;
+}
+
+.question-text.is-japanese.is-long {
+  font-size: 2.72rem;
+}
+
+.question-text.is-japanese.is-very-long {
+  font-size: 2.18rem;
+}
+
+.question-text.is-japanese.is-extra-long {
+  font-size: 1.78rem;
 }
 
 .feedback {
@@ -764,6 +784,20 @@ body.study-active .answer-area {
   line-height: 1.45;
   box-shadow: var(--shadow-soft);
   overflow-wrap: anywhere;
+}
+
+.choice-button.is-long {
+  font-size: 0.96rem;
+}
+
+.choice-button.is-very-long {
+  font-size: 0.9rem;
+  line-height: 1.38;
+}
+
+.choice-button.is-extra-long {
+  font-size: 0.84rem;
+  line-height: 1.32;
 }
 
 .choice-button.correct {
@@ -1164,6 +1198,23 @@ body.study-active .answer-area {
     font-size: 1.32rem;
   }
 
+  body.study-active .question-text.is-japanese {
+    font-size: 2rem;
+    line-height: 1.24;
+  }
+
+  body.study-active .question-text.is-japanese.is-long {
+    font-size: 1.68rem;
+  }
+
+  body.study-active .question-text.is-japanese.is-very-long {
+    font-size: 1.42rem;
+  }
+
+  body.study-active .question-text.is-japanese.is-extra-long {
+    font-size: 1.18rem;
+  }
+
   body.study-active .feedback {
     height: 46px;
     font-size: 2.25rem;
@@ -1187,6 +1238,18 @@ body.study-active .answer-area {
   body.study-active .choice-button {
     min-height: 56px;
     padding: 10px 12px;
+  }
+
+  body.study-active .choice-button.is-long {
+    font-size: 0.92rem;
+  }
+
+  body.study-active .choice-button.is-very-long {
+    font-size: 0.84rem;
+  }
+
+  body.study-active .choice-button.is-extra-long {
+    font-size: 0.78rem;
   }
 
   body.study-active .input-row {

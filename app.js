@@ -392,7 +392,8 @@ function startStudy() {
   const deck = getSelectedDeck();
   const pool = getWordPool(deck.words);
   const count = countOptions.find((option) => option.id === setup.count).value;
-  if (!canStartStudy(pool, count)) {
+  const mode = getSelectedMode();
+  if (!canStartStudy(pool, count, mode)) {
     updateStartState(deck);
     return;
   }
@@ -420,13 +421,21 @@ function startStudy() {
 function updateStartState(deck) {
   const pool = getWordPool(deck.words);
   const count = countOptions.find((option) => option.id === setup.count).value;
-  const canStart = canStartStudy(pool, count);
+  const mode = getSelectedMode();
+  const canStart = canStartStudy(pool, count, mode);
   const selectedCount = pool.length;
+  const choiceReady = mode.type !== "choice" || canBuildChoicesForPool(pool, mode);
 
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
 
-  if (count === "endless") {
+  if (mode.type === "choice" && selectedCount < 4) {
+    startNote.textContent = `4択モードは選択範囲に4語以上必要です。現在は${selectedCount}語です。`;
+    startNote.className = "start-note is-warning";
+  } else if (!choiceReady) {
+    startNote.textContent = "4択を作れる候補が足りません。範囲を広げるか、別のモードを選んでください。";
+    startNote.className = "start-note is-warning";
+  } else if (count === "endless") {
     startNote.textContent = `${selectedCount}語を一周ずつランダムに出題します。`;
     startNote.className = "start-note";
   } else if (count === "all") {
@@ -441,9 +450,20 @@ function updateStartState(deck) {
   }
 }
 
-function canStartStudy(pool, count) {
+function canStartStudy(pool, count, mode = getSelectedMode()) {
+  if (mode.type === "choice" && pool.length < 4) return false;
+  if (mode.type === "choice" && !canBuildChoicesForPool(pool, mode)) return false;
   if (count === "endless" || count === "all") return pool.length > 0;
   return pool.length >= count;
+}
+
+function canBuildChoicesForPool(pool, mode) {
+  const labels = new Set(pool.map((word) => getChoiceLabel(word, mode)));
+  return labels.size >= 4;
+}
+
+function getChoiceLabel(word, mode) {
+  return mode.id === "choice-en-ja" ? formatJapanese(word) : word.english;
 }
 
 function renderQuestion() {
@@ -469,14 +489,46 @@ function renderQuestion() {
 function setQuestionText(text) {
   const value = String(text);
   questionText.textContent = value;
-  questionText.classList.remove("is-single-token", "is-long", "is-very-long", "is-extra-long");
+  questionText.classList.remove(
+    "is-single-token",
+    "is-japanese",
+    "is-long",
+    "is-very-long",
+    "is-extra-long",
+  );
 
   const compactLength = value.replace(/\s+/g, "").length;
   const isSingleToken = !/\s/.test(value);
+  const isJapanese = hasJapaneseText(value);
+
+  if (isJapanese) {
+    questionText.classList.add("is-japanese");
+    if (compactLength >= 16) questionText.classList.add("is-long");
+    if (compactLength >= 24) questionText.classList.add("is-very-long");
+    if (compactLength >= 34) questionText.classList.add("is-extra-long");
+    return;
+  }
+
   if (isSingleToken) questionText.classList.add("is-single-token");
   if (compactLength >= 11) questionText.classList.add("is-long");
   if (compactLength >= 14) questionText.classList.add("is-very-long");
   if (compactLength >= 18) questionText.classList.add("is-extra-long");
+}
+
+function getCompactLength(text) {
+  return String(text).replace(/\s+/g, "").length;
+}
+
+function hasJapaneseText(text) {
+  return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text));
+}
+
+function getChoiceTextClass(label) {
+  const length = getCompactLength(label);
+  if (length >= 34) return " is-extra-long";
+  if (length >= 24) return " is-very-long";
+  if (length >= 16) return " is-long";
+  return "";
 }
 
 function renderInputAnswer() {
@@ -504,7 +556,7 @@ function renderChoiceAnswer() {
   const grid = answerArea.querySelector(".choice-grid");
   session.current.choices.forEach((choice) => {
     const button = document.createElement("button");
-    button.className = "choice-button";
+    button.className = `choice-button${getChoiceTextClass(choice.label)}`;
     button.type = "button";
     button.dataset.choiceId = choice.id;
     button.textContent = choice.label;
@@ -631,6 +683,10 @@ function updateStudyStatus() {
   const total = session.count === "endless" ? "∞" : session.questions.length;
   questionCount.textContent = `${currentNumber} / ${total}`;
   accuracy.textContent = `正答率 ${getAccuracy()}%`;
+}
+
+function getSelectedMode() {
+  return modes.find((item) => item.id === setup.mode) || modes[0];
 }
 
 function buildQuestion(word, mode) {
