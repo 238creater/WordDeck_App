@@ -541,37 +541,17 @@ code {
 }
 
 .count-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 10px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2px 2px 12px;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(45, 113, 136, 0.45) transparent;
-}
-
-.count-grid::-webkit-scrollbar {
-  height: 8px;
-}
-
-.count-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.count-grid::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(45, 113, 136, 0.38);
 }
 
 .count-grid .mode-button {
-  flex: 0 0 auto;
-  min-width: 112px;
+  width: 100%;
   min-height: 56px;
-  scroll-snap-align: start;
 }
 
 .mode-button {
@@ -981,8 +961,8 @@ code {
   }
 
   .range-group {
-    flex-basis: calc(100% - 8px);
-    max-width: calc(100% - 8px);
+    flex-basis: min(82%, 286px);
+    max-width: min(82%, 286px);
   }
 
   .range-toolbar {
@@ -1035,13 +1015,12 @@ code {
   }
 
   .count-grid {
-    margin-inline: -4px;
-    padding: 2px 4px 14px;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .count-grid .mode-button {
-    min-width: 104px;
+    min-height: 52px;
   }
 
   .mode-button {
