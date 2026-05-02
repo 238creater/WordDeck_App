@@ -111,6 +111,13 @@ function saveState() {
 function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
+  if (name === "study") scrollToTop();
+}
+
+function scrollToTop() {
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  });
 }
 
 function handleGlobalClick(event) {
@@ -456,11 +463,15 @@ function renderInputAnswer() {
   `;
   const form = document.querySelector("#answer-form");
   const input = document.querySelector("#answer-input");
-  input.focus();
+  if (!isTouchDevice()) input.focus({ preventScroll: true });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!session.locked) submitInputAnswer(input.value);
   });
+}
+
+function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches;
 }
 
 function renderChoiceAnswer() {

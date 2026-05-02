@@ -176,6 +176,14 @@ h2 {
   box-shadow: 0 10px 24px rgba(200, 62, 67, 0.2);
 }
 
+.dialog-actions .danger-button {
+  order: 1;
+}
+
+.dialog-actions .secondary-button {
+  order: 2;
+}
+
 .small {
   min-height: 38px;
   padding: 8px 12px;
