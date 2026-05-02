@@ -1017,9 +1017,10 @@ body.study-active .study-status {
 }
 
 .question-text.is-japanese {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: keep-all;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  line-break: strict;
   font-size: 3.35rem;
   line-height: 1.22;
 }
@@ -1041,11 +1042,18 @@ body.study-active .study-status {
 }
 
 .question-text.is-japanese.is-very-long {
-  font-size: 2.18rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  font-size: 2.38rem;
 }
 
 .question-text.is-japanese.is-extra-long {
-  font-size: 1.78rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  font-size: 2rem;
+  line-height: 1.28;
 }
 
 .feedback {
@@ -1765,11 +1773,18 @@ body.challenge-active .result-summary div {
   }
 
   body.study-active .question-text.is-japanese.is-very-long {
-    font-size: 1.42rem;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    font-size: 1.5rem;
   }
 
   body.study-active .question-text.is-japanese.is-extra-long {
-    font-size: 1.18rem;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    font-size: 1.32rem;
+    line-height: 1.28;
   }
 
   body.study-active .feedback {
@@ -1895,6 +1910,11 @@ body.challenge-active .result-summary div {
     font-size: 0.78rem;
     line-height: 1.25;
     white-space: normal;
+  }
+
+  .result-actions [data-result-action="repeat-same"] {
+    font-size: 0.7rem;
+    white-space: nowrap;
   }
 
   .dialog-actions {

@@ -660,6 +660,7 @@ function renderQuestion() {
 function setQuestionText(text) {
   const value = String(text);
   questionText.textContent = value;
+  questionText.title = value;
   questionText.classList.remove(
     "is-single-token",
     "is-japanese",
@@ -674,9 +675,9 @@ function setQuestionText(text) {
 
   if (isJapanese) {
     questionText.classList.add("is-japanese");
-    if (compactLength >= 16) questionText.classList.add("is-long");
-    if (compactLength >= 24) questionText.classList.add("is-very-long");
-    if (compactLength >= 34) questionText.classList.add("is-extra-long");
+    if (compactLength >= 12) questionText.classList.add("is-long");
+    if (compactLength >= 18) questionText.classList.add("is-very-long");
+    if (compactLength >= 26) questionText.classList.add("is-extra-long");
     return;
   }
 
