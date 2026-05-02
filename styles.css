@@ -30,6 +30,12 @@ body {
   font-family: "Segoe UI", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
 }
 
+html.study-active,
+body.study-active {
+  overflow: hidden;
+  height: 100%;
+}
+
 button,
 input {
   font: inherit;
@@ -76,6 +82,21 @@ button:disabled {
 
 .screen.is-active {
   display: block;
+}
+
+body.study-active .app-shell {
+  height: 100dvh;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  overflow: hidden;
+}
+
+body.study-active #study-screen.is-active {
+  height: calc(100dvh - 20px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  overflow: hidden;
 }
 
 .topbar,
@@ -618,6 +639,11 @@ code {
   backdrop-filter: blur(10px);
 }
 
+body.study-active .study-status {
+  position: static;
+  margin-bottom: 0;
+}
+
 .study-metrics {
   display: flex;
   gap: 12px;
@@ -706,6 +732,11 @@ code {
   margin-top: 18px;
   min-height: 188px;
   align-content: start;
+}
+
+body.study-active .answer-area {
+  margin-top: 0;
+  min-height: 0;
 }
 
 .choice-grid {
@@ -1092,9 +1123,67 @@ code {
     margin-top: 12px;
   }
 
+  body.study-active .app-shell {
+    width: min(100% - 18px, 980px);
+    height: 100dvh;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  body.study-active #study-screen.is-active {
+    height: calc(100dvh - 16px);
+    grid-template-rows: auto minmax(190px, 0.95fr) minmax(0, auto) auto;
+    gap: 8px;
+  }
+
+  body.study-active .question-card {
+    height: auto;
+    min-height: 0;
+    padding: 16px 14px;
+    grid-template-rows: 16px minmax(70px, 1fr) 46px 28px;
+  }
+
+  body.study-active .question-text {
+    font-size: 2.35rem;
+  }
+
+  body.study-active .feedback {
+    height: 46px;
+    font-size: 2.25rem;
+  }
+
+  body.study-active .answer-note {
+    height: 28px;
+    font-size: 0.86rem;
+  }
+
+  body.study-active .answer-area {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body.study-active .choice-grid {
+    min-height: 0;
+    gap: 8px;
+  }
+
+  body.study-active .choice-button {
+    min-height: 56px;
+    padding: 10px 12px;
+  }
+
+  body.study-active .input-row {
+    min-height: 112px;
+  }
+
   .choice-grid {
     gap: 10px;
     min-height: 300px;
+  }
+
+  body.study-active .choice-grid {
+    min-height: 0;
+    gap: 8px;
   }
 
   .choice-button {
@@ -1120,8 +1209,8 @@ code {
   }
 
   #next-button {
-    position: sticky;
-    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    position: static;
+    bottom: auto;
     z-index: 3;
     min-height: 54px;
     box-shadow: 0 12px 30px rgba(23, 32, 27, 0.24);
