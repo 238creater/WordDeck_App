@@ -542,6 +542,7 @@ function renderInputAnswer() {
   const input = document.querySelector("#answer-input");
   const submitButton = document.querySelector("#answer-submit-button");
   let submitPending = false;
+  let nextReady = false;
   const queueSubmit = () => {
     if (submitPending || session.locked) return;
     submitPending = true;
@@ -552,6 +553,7 @@ function renderInputAnswer() {
   };
   const handleInputButtonPress = () => {
     if (session.locked) {
+      if (!nextReady) return;
       nextQuestion();
       return;
     }
@@ -603,8 +605,14 @@ function submitInputAnswer(value) {
   clearTextSelection();
   window.setTimeout(clearTextSelection, 0);
   replaceInputWithAnswer(input, shownAnswer, isCorrect);
-  submitButton.classList.add("is-next");
+  submitButton.classList.add("is-next", "is-waiting");
   submitButton.textContent = isLastQuestion() && session.count !== "endless" ? "結果を見る" : "次へ";
+  submitButton.disabled = true;
+  window.setTimeout(() => {
+    submitButton.disabled = false;
+    submitButton.classList.remove("is-waiting");
+    nextReady = true;
+  }, 450);
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer, { inlineNext: true });
   settleStudyPosition();
 }

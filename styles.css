@@ -824,7 +824,7 @@ body.study-active .answer-area {
 
 .input-row {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   min-height: 92px;
   align-items: stretch;
   transition:
@@ -886,6 +886,10 @@ body.study-active .answer-area {
 .input-row .primary-button.is-next {
   background: linear-gradient(180deg, #2b7188, var(--blue));
   box-shadow: none;
+}
+
+.input-row .primary-button.is-next.is-waiting {
+  opacity: 0.72;
 }
 
 .result-summary {
@@ -1324,7 +1328,7 @@ body.study-active .answer-area {
   .input-row {
     flex-direction: column;
     min-height: 134px;
-    gap: 10px;
+    gap: 12px;
   }
 
   .answer-input,
