@@ -1510,6 +1510,18 @@ body.challenge-active .result-summary div {
     flex-direction: column;
   }
 
+  .deck-actions {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 10px;
+  }
+
+  .deck-actions .small {
+    min-height: 48px;
+    padding: 10px 12px;
+    font-size: 0.98rem;
+  }
+
   .topbar {
     margin-bottom: 18px;
   }
@@ -1871,13 +1883,25 @@ body.challenge-active .result-summary div {
     font-size: 0.88rem;
   }
 
-  .result-actions,
+  .result-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    padding: 8px 0 10px;
+  }
+
+  .result-actions button {
+    min-height: 48px;
+    padding: 8px 6px;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
   .dialog-actions {
     display: flex;
     flex-direction: column;
   }
 
-  .result-actions button,
   .dialog-actions button {
     width: 100%;
   }
@@ -1910,5 +1934,25 @@ body.challenge-active .result-summary div {
     left: 50%;
     bottom: calc(11px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 22px);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:hover:not(:disabled),
+  .deck-card:hover {
+    transform: none;
+  }
+
+  .secondary-button:hover:not(:disabled),
+  .bookmark-panel-actions .secondary-button:hover:not(:disabled),
+  .result-actions .secondary-button:hover:not(:disabled) {
+    border-color: rgba(188, 199, 194, 0.95);
+    background: linear-gradient(180deg, #f7faf8, #dfe8e4);
+  }
+
+  body.challenge-active .result-actions .secondary-button:hover:not(:disabled),
+  body.challenge-active .bookmark-panel-actions .secondary-button:hover:not(:disabled) {
+    border-color: rgba(146, 104, 42, 0.42);
+    background: #fffaf0;
   }
 }
