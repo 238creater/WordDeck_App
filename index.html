@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Deck</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="deck-screen" class="screen is-active" aria-labelledby="deck-title">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Word Deck</p>
+            <h1 id="deck-title">単語帳</h1>
+          </div>
+          <label class="icon-button file-button" title="CSVを取り込む">
+            <span>＋</span>
+            <input id="csv-input" type="file" accept=".csv,text/csv" />
+          </label>
+        </header>
+
+        <div class="import-panel">
+          <div>
+            <h2>CSVインポート</h2>
+            <p>列名は <code>lesson, english, japanese</code>。日本語訳が複数ある場合は <code>/</code> で区切ります。</p>
+          </div>
+          <button id="load-sample-button" class="secondary-button">サンプルを追加</button>
+        </div>
+
+        <div id="deck-list" class="deck-list"></div>
+      </section>
+
+      <section id="setup-screen" class="screen" aria-labelledby="setup-title">
+        <header class="topbar compact">
+          <button class="icon-button" data-action="back-to-decks" title="単語帳へ戻る">←</button>
+          <div>
+            <p id="active-deck-name" class="eyebrow"></p>
+            <h1 id="setup-title">学習設定</h1>
+          </div>
+        </header>
+
+        <div class="settings-grid">
+          <section class="settings-block">
+            <h2>モード</h2>
+            <div id="mode-options" class="option-grid"></div>
+          </section>
+
+          <section class="settings-block">
+            <h2>出題範囲</h2>
+            <div id="range-toolbar" class="range-toolbar"></div>
+            <div id="lesson-options" class="option-grid"></div>
+          </section>
+
+          <section class="settings-block">
+            <h2>出題数</h2>
+            <div id="count-options" class="option-grid count-grid"></div>
+          </section>
+
+          <section class="settings-block start-panel">
+            <p id="start-note" class="start-note"></p>
+            <button id="start-button" class="primary-button">開始</button>
+          </section>
+        </div>
+      </section>
+
+      <section id="study-screen" class="screen study-screen" aria-labelledby="study-title">
+        <header class="study-status">
+          <button class="quit-button" data-action="quit-study" title="学習を終了">× 終了</button>
+          <div class="study-metrics">
+            <span id="question-count">1 / 10</span>
+            <strong id="accuracy">正答率 0%</strong>
+          </div>
+        </header>
+
+        <div class="question-card">
+          <p id="study-title" class="eyebrow">問題</p>
+          <div id="question-text" class="question-text"></div>
+          <div id="feedback" class="feedback" aria-live="polite"></div>
+          <div id="answer-note" class="answer-note"></div>
+        </div>
+
+        <div id="answer-area" class="answer-area"></div>
+        <button id="next-button" class="primary-button wide is-hidden">次へ</button>
+      </section>
+
+      <section id="result-screen" class="screen" aria-labelledby="result-title">
+        <header class="topbar compact">
+          <div>
+            <p class="eyebrow">Result</p>
+            <h1 id="result-title">結果</h1>
+          </div>
+        </header>
+
+        <div class="result-summary">
+          <div>
+            <span id="result-correct">0</span>
+            <p>正解</p>
+          </div>
+          <div>
+            <span id="result-wrong">0</span>
+            <p>不正解</p>
+          </div>
+          <div>
+            <span id="result-accuracy">0%</span>
+            <p>正答率</p>
+          </div>
+        </div>
+
+        <section class="wrong-section">
+          <h2>間違えた単語</h2>
+          <div id="wrong-list" class="wrong-list"></div>
+        </section>
+
+        <div class="result-actions">
+          <button id="retry-button" class="primary-button">間違えた単語だけやり直す</button>
+          <button class="secondary-button" data-action="back-to-setup">モード選択に戻る</button>
+        </div>
+      </section>
+
+      <div id="quit-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="quit-dialog-title">
+        <div class="dialog-panel">
+          <h2 id="quit-dialog-title">学習を終了しますか？</h2>
+          <p id="quit-dialog-message">現在の学習結果は保存されず、モード選択に戻ります。</p>
+          <div class="dialog-actions">
+            <button id="cancel-quit-button" class="secondary-button">続ける</button>
+            <button id="confirm-quit-button" class="danger-button">終了する</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast is-hidden" role="status" aria-live="polite"></div>
+    </main>
+
+    <template id="deck-card-template">
+      <article class="deck-card">
+        <div>
+          <h2></h2>
+          <p></p>
+        </div>
+        <div class="deck-actions">
+          <button class="secondary-button small" data-role="delete">削除</button>
+          <button class="primary-button small" data-role="study">学習</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
