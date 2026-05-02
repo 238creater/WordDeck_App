@@ -598,7 +598,7 @@ code {
 }
 
 .study-screen {
-  min-height: calc(100vh - 76px);
+  min-height: auto;
 }
 
 .study-status {
@@ -895,7 +895,7 @@ code {
 
 .dialog-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
   margin-top: 18px;
 }
@@ -1044,7 +1044,7 @@ code {
   }
 
   .study-screen {
-    min-height: calc(100dvh - 42px);
+    min-height: auto;
   }
 
   .study-status {
@@ -1113,7 +1113,7 @@ code {
 
   #next-button {
     position: sticky;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     z-index: 3;
     min-height: 54px;
     box-shadow: 0 12px 30px rgba(23, 32, 27, 0.24);
