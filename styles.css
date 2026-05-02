@@ -853,6 +853,14 @@ body.study-active .answer-area {
   background: #f5f7f6;
 }
 
+.answer-display {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  background: #f5f7f6;
+  user-select: none;
+}
+
 .input-row .primary-button {
   height: 56px;
   flex: 0 0 112px;

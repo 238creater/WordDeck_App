@@ -573,15 +573,16 @@ function submitInputAnswer(value) {
   const form = document.querySelector("#answer-form");
   const input = document.querySelector("#answer-input");
   const submitButton = document.querySelector("#answer-submit-button");
+  const shownAnswer = value || "未入力";
   form.classList.add("is-answered");
   moveCaretToEnd(input);
   input.blur();
   clearTextSelection();
   window.setTimeout(clearTextSelection, 0);
-  input.disabled = true;
+  replaceInputWithAnswer(input, shownAnswer);
   submitButton.disabled = true;
   submitButton.textContent = "確認済み";
-  finishAnswer(isCorrect, `正解: ${session.current.answer}`, value || "未入力");
+  finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer);
 }
 
 function clearTextSelection() {
@@ -596,6 +597,14 @@ function moveCaretToEnd(input) {
   } catch {
     // Some mobile browsers reject selection changes during IME confirmation.
   }
+}
+
+function replaceInputWithAnswer(input, value) {
+  const display = document.createElement("div");
+  display.className = "answer-input answer-display";
+  display.textContent = value;
+  display.setAttribute("aria-label", "入力した回答");
+  input.replaceWith(display);
 }
 
 function submitChoiceAnswer(choice) {
