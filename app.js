@@ -550,13 +550,20 @@ function renderInputAnswer() {
     clearTextSelection();
     window.setTimeout(() => submitInputAnswer(input.value), 120);
   };
+  const handleInputButtonPress = () => {
+    if (session.locked) {
+      nextQuestion();
+      return;
+    }
+    queueSubmit();
+  };
 
   if (!isTouchDevice()) input.focus({ preventScroll: true });
   submitButton.addEventListener("pointerdown", (event) => {
     event.preventDefault();
-    queueSubmit();
+    handleInputButtonPress();
   });
-  submitButton.addEventListener("click", queueSubmit);
+  submitButton.addEventListener("click", handleInputButtonPress);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     queueSubmit();
@@ -596,9 +603,9 @@ function submitInputAnswer(value) {
   clearTextSelection();
   window.setTimeout(clearTextSelection, 0);
   replaceInputWithAnswer(input, shownAnswer, isCorrect);
-  submitButton.disabled = true;
-  submitButton.textContent = "確認済み";
-  finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer);
+  submitButton.classList.add("is-next");
+  submitButton.textContent = isLastQuestion() && session.count !== "endless" ? "結果を見る" : "次へ";
+  finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer, { inlineNext: true });
   settleStudyPosition();
 }
 
@@ -654,7 +661,7 @@ function submitChoiceAnswer(choice) {
   finishAnswer(isCorrect, isCorrect ? "" : `正解: ${session.current.answerLabel}`, choice.label);
 }
 
-function finishAnswer(isCorrect, note, userAnswer = "") {
+function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
   session.locked = true;
   session.answered += 1;
   if (isCorrect) {
@@ -670,7 +677,7 @@ function finishAnswer(isCorrect, note, userAnswer = "") {
   answerNote.textContent = note;
   nextButton.textContent = isLastQuestion() ? "結果を見る" : "次へ";
   if (session.count === "endless") nextButton.textContent = "次へ";
-  nextButton.classList.remove("is-hidden");
+  if (!options.inlineNext) nextButton.classList.remove("is-hidden");
   updateStudyStatus();
 }
 
