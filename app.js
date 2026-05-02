@@ -542,7 +542,7 @@ function renderInputAnswer() {
   const input = document.querySelector("#answer-input");
   const submitButton = document.querySelector("#answer-submit-button");
   let submitPending = false;
-  let nextReady = false;
+  let nextReadyAt = 0;
   const queueSubmit = () => {
     if (submitPending || session.locked) return;
     submitPending = true;
@@ -553,7 +553,7 @@ function renderInputAnswer() {
   };
   const handleInputButtonPress = () => {
     if (session.locked) {
-      if (!nextReady) return;
+      if (Date.now() < nextReadyAt) return;
       nextQuestion();
       return;
     }
@@ -562,10 +562,8 @@ function renderInputAnswer() {
 
   if (!isTouchDevice()) input.focus({ preventScroll: true });
   submitButton.addEventListener("pointerdown", (event) => {
-    if (!session.locked) {
-      event.preventDefault();
-      queueSubmit();
-    }
+    event.preventDefault();
+    handleInputButtonPress();
   });
   submitButton.addEventListener("click", handleInputButtonPress);
   form.addEventListener("submit", (event) => {
@@ -610,10 +608,10 @@ function submitInputAnswer(value) {
   submitButton.classList.add("is-next", "is-waiting");
   submitButton.textContent = isLastQuestion() && session.count !== "endless" ? "結果を見る" : "次へ";
   submitButton.setAttribute("aria-disabled", "true");
+  nextReadyAt = Date.now() + 450;
   window.setTimeout(() => {
     submitButton.classList.remove("is-waiting");
     submitButton.removeAttribute("aria-disabled");
-    nextReady = true;
   }, 450);
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer, { inlineNext: true });
   settleStudyPosition();
