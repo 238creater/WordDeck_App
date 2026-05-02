@@ -542,30 +542,35 @@ function renderInputAnswer() {
   const input = document.querySelector("#answer-input");
   const submitButton = document.querySelector("#answer-submit-button");
   let submitPending = false;
-  let nextReadyAt = 0;
   const queueSubmit = () => {
     if (submitPending || session.locked) return;
+    if (!input.value.trim()) {
+      answerNote.textContent = "英語を入力してください。";
+      input.focus({ preventScroll: true });
+      return;
+    }
     submitPending = true;
     holdStudyPosition();
     input.blur();
     clearTextSelection();
     window.setTimeout(() => submitInputAnswer(input.value), 120);
   };
-  const handleInputButtonPress = () => {
-    if (session.locked) {
-      if (Date.now() < nextReadyAt) return;
-      nextQuestion();
-      return;
-    }
-    queueSubmit();
-  };
 
   if (!isTouchDevice()) input.focus({ preventScroll: true });
+  input.addEventListener("input", () => {
+    if (answerNote.textContent === "英語を入力してください。") {
+      answerNote.textContent = session.current.hint || "";
+    }
+  });
   submitButton.addEventListener("pointerdown", (event) => {
     event.preventDefault();
-    handleInputButtonPress();
+    queueSubmit();
   });
-  submitButton.addEventListener("click", handleInputButtonPress);
+  submitButton.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    queueSubmit();
+  });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     queueSubmit();
@@ -605,15 +610,9 @@ function submitInputAnswer(value) {
   clearTextSelection();
   window.setTimeout(clearTextSelection, 0);
   replaceInputWithAnswer(input, shownAnswer, isCorrect);
-  submitButton.classList.add("is-next", "is-waiting");
-  submitButton.textContent = isLastQuestion() && session.count !== "endless" ? "結果を見る" : "次へ";
-  submitButton.setAttribute("aria-disabled", "true");
-  nextReadyAt = Date.now() + 450;
-  window.setTimeout(() => {
-    submitButton.classList.remove("is-waiting");
-    submitButton.removeAttribute("aria-disabled");
-  }, 450);
-  finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer, { inlineNext: true });
+  submitButton.disabled = true;
+  submitButton.textContent = "確認済み";
+  finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer);
   settleStudyPosition();
 }
 
@@ -1143,6 +1142,7 @@ function addSampleDeck() {
   state.decks.unshift(sample);
   saveState();
   renderDecks();
+  showToast("サンプル単語帳を追加しました。");
 }
 
 function deleteDeck(id) {

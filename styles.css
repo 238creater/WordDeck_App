@@ -883,16 +883,6 @@ body.study-active .answer-area {
   padding-block: 0;
 }
 
-.input-row .primary-button.is-next {
-  background: linear-gradient(180deg, #2b7188, var(--blue));
-  box-shadow: none;
-}
-
-.input-row .primary-button.is-next.is-waiting {
-  opacity: 0.72;
-  cursor: wait;
-}
-
 .result-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
