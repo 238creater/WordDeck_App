@@ -535,15 +535,30 @@ function renderInputAnswer() {
   answerArea.innerHTML = `
     <form class="input-row" id="answer-form">
       <input class="answer-input" id="answer-input" type="text" inputmode="latin" lang="en" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="英語を入力" />
-      <button id="answer-submit-button" class="primary-button" type="submit">回答</button>
+      <button id="answer-submit-button" class="primary-button" type="button">回答</button>
     </form>
   `;
   const form = document.querySelector("#answer-form");
   const input = document.querySelector("#answer-input");
+  const submitButton = document.querySelector("#answer-submit-button");
+  let submitPending = false;
+  const queueSubmit = () => {
+    if (submitPending || session.locked) return;
+    submitPending = true;
+    input.blur();
+    clearTextSelection();
+    window.setTimeout(() => submitInputAnswer(input.value), 120);
+  };
+
   if (!isTouchDevice()) input.focus({ preventScroll: true });
+  submitButton.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    queueSubmit();
+  });
+  submitButton.addEventListener("click", queueSubmit);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!session.locked) submitInputAnswer(input.value);
+    queueSubmit();
   });
 }
 
