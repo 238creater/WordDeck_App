@@ -545,6 +545,7 @@ function renderInputAnswer() {
   const queueSubmit = () => {
     if (submitPending || session.locked) return;
     submitPending = true;
+    holdStudyPosition();
     input.blur();
     clearTextSelection();
     window.setTimeout(() => submitInputAnswer(input.value), 120);
@@ -594,10 +595,26 @@ function submitInputAnswer(value) {
   input.blur();
   clearTextSelection();
   window.setTimeout(clearTextSelection, 0);
-  replaceInputWithAnswer(input, shownAnswer);
+  replaceInputWithAnswer(input, shownAnswer, isCorrect);
   submitButton.disabled = true;
   submitButton.textContent = "確認済み";
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, shownAnswer);
+  settleStudyPosition();
+}
+
+function holdStudyPosition() {
+  if (!screens.study.classList.contains("is-active")) return;
+  screens.study.style.minHeight = `${screens.study.offsetHeight}px`;
+}
+
+function settleStudyPosition() {
+  requestAnimationFrame(() => {
+    forceScrollToTop();
+    window.setTimeout(() => {
+      screens.study.style.minHeight = "";
+      forceScrollToTop();
+    }, 220);
+  });
 }
 
 function clearTextSelection() {
@@ -614,9 +631,9 @@ function moveCaretToEnd(input) {
   }
 }
 
-function replaceInputWithAnswer(input, value) {
+function replaceInputWithAnswer(input, value, isCorrect) {
   const display = document.createElement("div");
-  display.className = "answer-input answer-display";
+  display.className = `answer-input answer-display ${isCorrect ? "is-correct" : "is-wrong"}`;
   display.textContent = value;
   display.setAttribute("aria-label", "入力した回答");
   input.replaceWith(display);

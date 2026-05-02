@@ -859,6 +859,25 @@ body.study-active .answer-area {
   color: var(--muted);
   background: #f5f7f6;
   user-select: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.answer-display.is-correct {
+  border-color: var(--green);
+  color: #0d5f42;
+  background: var(--green-soft);
+  box-shadow: 0 12px 26px rgba(23, 130, 91, 0.14);
+}
+
+.answer-display.is-wrong {
+  border-color: var(--red);
+  color: #9f2f34;
+  background: var(--red-soft);
+  box-shadow: 0 12px 26px rgba(200, 62, 67, 0.12);
 }
 
 .input-row .primary-button {
