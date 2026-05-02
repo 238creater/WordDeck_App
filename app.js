@@ -109,6 +109,7 @@ function saveState() {
 }
 
 function showScreen(name) {
+  if (name === "study") forceScrollToTop();
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
@@ -116,9 +117,16 @@ function showScreen(name) {
   if (name === "study") scrollToTop();
 }
 
+function forceScrollToTop() {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 function scrollToTop() {
   requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    forceScrollToTop();
+    window.setTimeout(forceScrollToTop, 80);
   });
 }
 

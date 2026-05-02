@@ -85,18 +85,28 @@ button:disabled {
 }
 
 body.study-active .app-shell {
-  height: 100dvh;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  min-height: 100dvh;
+  padding-top: 0;
+  padding-bottom: 0;
   overflow: hidden;
 }
 
 body.study-active #study-screen.is-active {
-  height: calc(100dvh - 20px);
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  width: min(980px, calc(100% - 32px));
+  height: 100dvh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 12px;
+  margin: 0 auto;
+  padding: 10px 0;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(45, 113, 136, 0.12), transparent 34%),
+    radial-gradient(circle at 86% 8%, rgba(244, 201, 93, 0.16), transparent 28%),
+    var(--bg);
 }
 
 .topbar,
@@ -1125,15 +1135,17 @@ body.study-active .answer-area {
 
   body.study-active .app-shell {
     width: min(100% - 18px, 980px);
-    height: 100dvh;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    min-height: 100dvh;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   body.study-active #study-screen.is-active {
-    height: calc(100dvh - 16px);
+    width: min(100% - 18px, 980px);
+    height: 100dvh;
     grid-template-rows: auto minmax(190px, 0.95fr) minmax(0, auto) auto;
     gap: 8px;
+    padding: 8px 0;
   }
 
   body.study-active .question-card {
