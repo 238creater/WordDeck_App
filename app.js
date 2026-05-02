@@ -535,7 +535,7 @@ function renderInputAnswer() {
   answerArea.innerHTML = `
     <form class="input-row" id="answer-form">
       <input class="answer-input" id="answer-input" type="text" autocomplete="off" placeholder="英語を入力" />
-      <button class="primary-button" type="submit">回答</button>
+      <button id="answer-submit-button" class="primary-button" type="submit">回答</button>
     </form>
   `;
   const form = document.querySelector("#answer-form");
@@ -570,8 +570,13 @@ function renderChoiceAnswer() {
 
 function submitInputAnswer(value) {
   const isCorrect = normalizeEnglish(value) === normalizeEnglish(session.current.answer);
+  const form = document.querySelector("#answer-form");
   const input = document.querySelector("#answer-input");
+  const submitButton = document.querySelector("#answer-submit-button");
+  form.classList.add("is-answered");
   input.disabled = true;
+  submitButton.disabled = true;
+  submitButton.textContent = "確認済み";
   finishAnswer(isCorrect, `正解: ${session.current.answer}`, value || "未入力");
 }
 

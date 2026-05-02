@@ -763,8 +763,9 @@ body.study-active .study-status {
 }
 
 body.study-active .answer-area {
-  margin-top: 0;
+  margin-top: 16px;
   min-height: 0;
+  gap: 14px;
 }
 
 .choice-grid {
@@ -824,8 +825,15 @@ body.study-active .answer-area {
 .input-row {
   display: flex;
   gap: 10px;
-  min-height: 82px;
+  min-height: 92px;
   align-items: stretch;
+  transition:
+    padding-bottom 160ms ease,
+    opacity 160ms ease;
+}
+
+.input-row.is-answered {
+  padding-bottom: 10px;
 }
 
 .answer-input {
@@ -1226,8 +1234,10 @@ body.study-active .answer-area {
   }
 
   body.study-active .answer-area {
+    margin-top: 12px;
     min-height: 0;
     overflow: hidden;
+    gap: 14px;
   }
 
   body.study-active .choice-grid {
@@ -1253,7 +1263,11 @@ body.study-active .answer-area {
   }
 
   body.study-active .input-row {
-    min-height: 112px;
+    min-height: 124px;
+  }
+
+  body.study-active .input-row.is-answered {
+    padding-bottom: 14px;
   }
 
   .choice-grid {
@@ -1274,7 +1288,7 @@ body.study-active .answer-area {
 
   .input-row {
     flex-direction: column;
-    min-height: 124px;
+    min-height: 134px;
     gap: 10px;
   }
 
