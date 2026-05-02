@@ -743,9 +743,11 @@ body.study-active .study-status {
 }
 
 .answer-note {
-  height: 34px;
+  height: 38px;
   color: var(--muted);
+  font-size: 0.92rem;
   font-weight: 800;
+  line-height: 1.35;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1194,7 +1196,7 @@ body.study-active .answer-area {
   }
 
   .answer-note {
-    height: 32px;
+    height: 34px;
     font-size: 0.92rem;
   }
 
@@ -1217,7 +1219,7 @@ body.study-active .answer-area {
     height: auto;
     min-height: 0;
     padding: 16px 14px;
-    grid-template-rows: 16px minmax(70px, 1fr) 46px 28px;
+    grid-template-rows: 16px minmax(70px, 1fr) 46px 34px;
   }
 
   body.study-active .question-text {
@@ -1259,8 +1261,8 @@ body.study-active .answer-area {
   }
 
   body.study-active .answer-note {
-    height: 28px;
-    font-size: 0.86rem;
+    height: 34px;
+    font-size: 0.82rem;
   }
 
   body.study-active .answer-area {
