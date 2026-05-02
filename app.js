@@ -41,6 +41,8 @@ let setup = {
   mode: modes[0].id,
   groups: [],
   count: "10",
+  challenge: false,
+  bookmarkedOnly: false,
 };
 let session = null;
 
@@ -57,18 +59,26 @@ const activeDeckName = document.querySelector("#active-deck-name");
 const modeOptions = document.querySelector("#mode-options");
 const rangeToolbar = document.querySelector("#range-toolbar");
 const lessonOptions = document.querySelector("#lesson-options");
+const bookmarkCount = document.querySelector("#bookmark-count");
+const bookmarkFilterButton = document.querySelector("#bookmark-filter-button");
+const bookmarkListToggle = document.querySelector("#bookmark-list-toggle");
+const bookmarkList = document.querySelector("#bookmark-list");
 const countOptionsEl = document.querySelector("#count-options");
+const challengeToggle = document.querySelector("#challenge-toggle");
 const startButton = document.querySelector("#start-button");
 const startNote = document.querySelector("#start-note");
 const questionCount = document.querySelector("#question-count");
 const accuracy = document.querySelector("#accuracy");
 const questionText = document.querySelector("#question-text");
+const bookmarkCurrentButton = document.querySelector("#bookmark-current-button");
 const feedback = document.querySelector("#feedback");
 const answerNote = document.querySelector("#answer-note");
 const answerArea = document.querySelector("#answer-area");
 const nextButton = document.querySelector("#next-button");
-const retryButton = document.querySelector("#retry-button");
+const resultStatus = document.querySelector("#result-status");
 const quitDialog = document.querySelector("#quit-dialog");
+const bookmarkDialog = document.querySelector("#bookmark-dialog");
+const closeBookmarkDialogButton = document.querySelector("#close-bookmark-dialog-button");
 const quitDialogTitle = document.querySelector("#quit-dialog-title");
 const quitDialogMessage = document.querySelector("#quit-dialog-message");
 const cancelQuitButton = document.querySelector("#cancel-quit-button");
@@ -76,31 +86,53 @@ const confirmQuitButton = document.querySelector("#confirm-quit-button");
 const toast = document.querySelector("#toast");
 let confirmDialogAction = null;
 let toastTimer = null;
+let scrollLockCount = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
 csvInput.addEventListener("change", handleCsvImport);
 document.querySelector("#load-sample-button").addEventListener("click", addSampleDeck);
+bookmarkFilterButton.addEventListener("click", () => {
+  setup.bookmarkedOnly = !setup.bookmarkedOnly;
+  renderSetup();
+});
+bookmarkListToggle.addEventListener("click", () => {
+  openBookmarkDialog();
+});
+challengeToggle.addEventListener("change", () => {
+  setup.challenge = challengeToggle.checked;
+  if (setup.challenge && setup.count === "endless") setup.count = "10";
+  syncChallengeTheme();
+  renderSetup();
+});
 startButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
-retryButton.addEventListener("click", retryWrongWords);
+bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
+closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
 cancelQuitButton.addEventListener("click", closeConfirmDialog);
 confirmQuitButton.addEventListener("click", runConfirmDialogAction);
 quitDialog.addEventListener("click", (event) => {
   if (event.target === quitDialog) closeConfirmDialog();
+});
+bookmarkDialog.addEventListener("click", (event) => {
+  if (event.target === bookmarkDialog) closeBookmarkDialog();
 });
 
 renderDecks();
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return { decks: [] };
+  if (!raw) return { decks: [], bookmarks: {} };
 
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed.decks) ? parsed : { decks: [] };
+    if (!Array.isArray(parsed.decks)) return { decks: [], bookmarks: {} };
+    return {
+      ...parsed,
+      bookmarks: parsed.bookmarks && typeof parsed.bookmarks === "object" ? parsed.bookmarks : {},
+    };
   } catch {
-    return { decks: [] };
+    return { decks: [], bookmarks: {} };
   }
 }
 
@@ -112,10 +144,27 @@ function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
+  syncChallengeTheme(name);
   if (name === "study") {
     forceScrollToTop();
     scrollToTop();
+  } else {
+    scrollToTop();
   }
+}
+
+function syncChallengeTheme(screenName = getActiveScreenName()) {
+  document.body.classList.toggle("challenge-active", getChallengeThemeState(screenName));
+}
+
+function getActiveScreenName() {
+  return Object.entries(screens).find(([, screen]) => screen.classList.contains("is-active"))?.[0] || "decks";
+}
+
+function getChallengeThemeState(screenName) {
+  if (screenName === "setup") return setup.challenge;
+  if (screenName === "study" || screenName === "result") return Boolean(session?.challenge);
+  return false;
 }
 
 function forceScrollToTop() {
@@ -150,11 +199,27 @@ function handleGlobalClick(event) {
       onConfirm: quitStudy,
     });
   }
+  if (action === "remove-bookmark") {
+    const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
+    if (key) removeBookmarkByKey(decodeURIComponent(key));
+  }
+  if (action === "add-result-bookmark") {
+    const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
+    if (key) addResultBookmarkByKey(decodeURIComponent(key));
+  }
+
+  const resultAction = event.target.closest("[data-result-action]")?.dataset.resultAction;
+  if (resultAction === "retry-wrong") retryWrongWords();
+  if (resultAction === "repeat-same") repeatSameStudy();
 }
 
 function handleKeyboard(event) {
   if (!quitDialog.classList.contains("is-hidden")) {
     if (event.key === "Escape") closeConfirmDialog();
+    return;
+  }
+  if (!bookmarkDialog.classList.contains("is-hidden")) {
+    if (event.key === "Escape") closeBookmarkDialog();
     return;
   }
 
@@ -184,18 +249,47 @@ function openConfirmDialog({ title, message, confirmLabel, cancelLabel, onConfir
   cancelQuitButton.textContent = cancelLabel;
   confirmDialogAction = onConfirm;
   quitDialog.classList.remove("is-hidden");
+  lockPageScroll();
   cancelQuitButton.focus();
 }
 
 function closeConfirmDialog() {
   confirmDialogAction = null;
-  quitDialog.classList.add("is-hidden");
+  if (!quitDialog.classList.contains("is-hidden")) {
+    quitDialog.classList.add("is-hidden");
+    unlockPageScroll();
+  }
 }
 
 function runConfirmDialogAction() {
   const action = confirmDialogAction;
   closeConfirmDialog();
   if (action) action();
+}
+
+function openBookmarkDialog() {
+  const deck = getSelectedDeck();
+  if (deck) renderBookmarkPanel(deck);
+  bookmarkDialog.classList.remove("is-hidden");
+  lockPageScroll();
+  closeBookmarkDialogButton.focus();
+}
+
+function closeBookmarkDialog() {
+  if (!bookmarkDialog.classList.contains("is-hidden")) {
+    bookmarkDialog.classList.add("is-hidden");
+    unlockPageScroll();
+  }
+}
+
+function lockPageScroll() {
+  scrollLockCount += 1;
+  document.body.classList.add("dialog-open");
+}
+
+function unlockPageScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) document.body.classList.remove("dialog-open");
 }
 
 function showToast(message, variant = "success") {
@@ -229,7 +323,10 @@ function renderDecks() {
     node.querySelector("p").textContent = getDeckSummary(deck.words, groups);
     node.querySelector('[data-role="study"]').addEventListener("click", () => {
       selectedDeckId = deck.id;
+      session = null;
       setup.groups = getStudyGroups(deck.words).map((group) => group.id);
+      setup.challenge = false;
+      setup.bookmarkedOnly = false;
       renderSetup();
       showScreen("setup");
     });
@@ -249,12 +346,17 @@ function renderSetup() {
   });
 
   renderGroupButtons(deck);
+  renderBookmarkPanel(deck);
 
-  renderOptionButtons(countOptionsEl, countOptions, setup.count, (id) => {
+  const availableCountOptions = setup.challenge
+    ? countOptions.filter((option) => option.id !== "endless")
+    : countOptions;
+  renderOptionButtons(countOptionsEl, availableCountOptions, setup.count, (id) => {
     setup.count = id;
     renderSetup();
   });
 
+  challengeToggle.checked = setup.challenge;
   updateStartState(deck);
 }
 
@@ -358,6 +460,59 @@ function renderGroupButtons(deck) {
   });
 }
 
+function renderBookmarkPanel(deck) {
+  const markedWords = getBookmarkedWords(deck);
+  bookmarkCount.textContent = markedWords.length;
+  bookmarkFilterButton.classList.toggle("is-selected", setup.bookmarkedOnly);
+  bookmarkFilterButton.textContent = setup.bookmarkedOnly ? "しおりのみ出題中" : "しおりのみで出題";
+  bookmarkFilterButton.disabled = markedWords.length === 0 && !setup.bookmarkedOnly;
+  document.querySelector(".bookmark-panel")?.classList.toggle("is-filtered", setup.bookmarkedOnly);
+
+  bookmarkList.innerHTML = "";
+  if (markedWords.length === 0) {
+    bookmarkList.innerHTML = '<div class="empty-state">学習中にしおりを付けると、ここに単語が残ります。</div>';
+    return;
+  }
+
+  groupWordsByLesson(markedWords).forEach(({ lesson, words }) => {
+    const group = document.createElement("section");
+    group.className = "bookmark-group";
+    group.innerHTML = `
+      <h3>${escapeHtml(lesson)}</h3>
+      <div class="bookmark-group-grid"></div>
+    `;
+    const grid = group.querySelector(".bookmark-group-grid");
+    words.forEach((word) => {
+      const item = document.createElement("div");
+      item.className = "bookmark-item";
+      item.innerHTML = `
+        <div>
+          <strong>${escapeHtml(word.english)}</strong>
+          <span>${escapeHtml(formatJapanese(word))}</span>
+        </div>
+        <button class="secondary-button small" type="button" data-action="remove-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">解除</button>
+      `;
+      grid.appendChild(item);
+    });
+    bookmarkList.appendChild(group);
+  });
+}
+
+function groupWordsByLesson(words) {
+  const groups = new Map();
+  words.forEach((word) => {
+    if (!groups.has(word.lesson)) groups.set(word.lesson, []);
+    groups.get(word.lesson).push(word);
+  });
+
+  return [...groups.entries()]
+    .sort(([lessonA], [lessonB]) => lessonA.localeCompare(lessonB, "ja", { numeric: true }))
+    .map(([lesson, groupWords]) => ({
+      lesson,
+      words: [...groupWords].sort((a, b) => a.english.localeCompare(b.english, "en", { numeric: true })),
+    }));
+}
+
 function toggleRangeGroup(details) {
   const isOpen = details.open;
   details.classList.add("is-animating");
@@ -410,6 +565,7 @@ function startStudy() {
     answered: 0,
     wrongWords: [],
     wrongItems: [],
+    challenge: setup.challenge,
     current: null,
     locked: false,
   };
@@ -429,23 +585,36 @@ function updateStartState(deck) {
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
 
-  if (mode.type === "choice" && selectedCount < 4) {
-    startNote.textContent = `4択モードは選択範囲に4語以上必要です。現在は${selectedCount}語です。`;
+  if (setup.bookmarkedOnly && selectedCount === 0) {
+    startNote.textContent = "しおり単語がありません。学習中にしおりを付けてください。";
+    startNote.className = "start-note is-warning";
+  } else if (mode.type === "choice" && selectedCount < 4) {
+    startNote.textContent = setup.bookmarkedOnly
+      ? `しおり単語のみの4択は4語以上必要です。現在は${selectedCount}語です。`
+      : `4択モードは選択範囲に4語以上必要です。現在は${selectedCount}語です。`;
     startNote.className = "start-note is-warning";
   } else if (!choiceReady) {
     startNote.textContent = "4択を作れる候補が足りません。範囲を広げるか、別のモードを選んでください。";
     startNote.className = "start-note is-warning";
   } else if (count === "endless") {
-    startNote.textContent = `${selectedCount}語を一周ずつランダムに出題します。`;
+    startNote.textContent = setup.challenge
+      ? `${selectedCount}語を一周ずつランダムに出題します。一発勝負は間違えたら終了です。`
+      : `${selectedCount}語を一周ずつランダムに出題します。`;
     startNote.className = "start-note";
   } else if (count === "all") {
-    startNote.textContent = `${selectedCount}語をすべてランダムに出題します。`;
+    startNote.textContent = setup.challenge
+      ? `${selectedCount}語をすべてランダムに出題します。一発勝負は間違えたら終了です。`
+      : `${selectedCount}語をすべてランダムに出題します。`;
     startNote.className = "start-note";
   } else if (!canStart) {
-    startNote.textContent = `選択範囲は${selectedCount}語です。${count}問にするにはあと${count - selectedCount}語必要です。`;
+    startNote.textContent = setup.bookmarkedOnly
+      ? `しおり単語は${selectedCount}語です。${count}問にするにはあと${count - selectedCount}語必要です。`
+      : `選択範囲は${selectedCount}語です。${count}問にするにはあと${count - selectedCount}語必要です。`;
     startNote.className = "start-note is-warning";
   } else {
-    startNote.textContent = `${selectedCount}語から重複なしで${count}問出題します。`;
+    startNote.textContent = setup.challenge
+      ? `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。一発勝負は間違えたら終了です。`
+      : `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。`;
     startNote.className = "start-note";
   }
 }
@@ -453,6 +622,7 @@ function updateStartState(deck) {
 function canStartStudy(pool, count, mode = getSelectedMode()) {
   if (mode.type === "choice" && pool.length < 4) return false;
   if (mode.type === "choice" && !canBuildChoicesForPool(pool, mode)) return false;
+  if (setup.challenge && count === "endless") return false;
   if (count === "endless" || count === "all") return pool.length > 0;
   return pool.length >= count;
 }
@@ -477,6 +647,7 @@ function renderQuestion() {
   answerNote.textContent = session.current.hint || "";
   nextButton.classList.add("is-hidden");
   setQuestionText(session.current.prompt);
+  renderBookmarkButton();
   updateStudyStatus();
 
   if (mode.type === "input") {
@@ -682,6 +853,11 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
     feedback.classList.add("wrong");
   }
   answerNote.textContent = note;
+  if (session.challenge && !isCorrect) {
+    renderResult();
+    showScreen("result");
+    return;
+  }
   nextButton.textContent = isLastQuestion() ? "結果を見る" : "次へ";
   if (session.count === "endless") nextButton.textContent = "次へ";
   if (!options.inlineNext) nextButton.classList.remove("is-hidden");
@@ -702,16 +878,16 @@ function renderResult() {
   document.querySelector("#result-correct").textContent = session.correct;
   document.querySelector("#result-wrong").textContent = session.answered - session.correct;
   document.querySelector("#result-accuracy").textContent = `${getAccuracy()}%`;
+  renderResultStatus();
 
   const wrongList = document.querySelector("#wrong-list");
+  setRetryButtonsHidden(session.wrongWords.length === 0);
   wrongList.innerHTML = "";
   if (session.wrongWords.length === 0) {
     wrongList.innerHTML = '<p>全問正解です。</p>';
-    retryButton.classList.add("is-hidden");
     return;
   }
 
-  retryButton.classList.remove("is-hidden");
   const wrongItems = session.wrongItems?.length ? session.wrongItems : session.wrongWords.map((word) => ({
     word,
     prompt: formatJapanese(word),
@@ -721,19 +897,41 @@ function renderResult() {
 
   wrongItems.forEach((wrongItem) => {
     const element = document.createElement("div");
+    const wordKey = getWordKey(wrongItem.word);
+    const bookmarked = isBookmarked(wrongItem.word, session.deck.id);
     element.className = "wrong-item";
     element.innerHTML = `
       <div>
-        <strong>${escapeHtml(wrongItem.word.english)}</strong>
-        <span>${escapeHtml(formatJapanese(wrongItem.word))}</span>
+        <strong>${escapeHtml(wrongItem.prompt)}</strong>
       </div>
-      <dl>
-        <div><dt>問題</dt><dd>${escapeHtml(wrongItem.prompt)}</dd></div>
-        ${wrongItem.userAnswer ? `<div><dt>回答</dt><dd>${escapeHtml(wrongItem.userAnswer)}</dd></div>` : ""}
-        <div><dt>正解</dt><dd>${escapeHtml(wrongItem.answer)}</dd></div>
-      </dl>
+      <div class="wrong-detail">
+        <dl>
+          ${wrongItem.userAnswer ? `<div><dt>回答</dt><dd>${escapeHtml(wrongItem.userAnswer)}</dd></div>` : ""}
+          <div><dt>正解</dt><dd>${escapeHtml(wrongItem.answer)}</dd></div>
+        </dl>
+        <button class="secondary-button small wrong-bookmark-button" type="button" data-action="add-result-bookmark" data-bookmark-key="${encodeURIComponent(wordKey)}" ${bookmarked ? "disabled" : ""}>${bookmarked ? "追加済み" : "しおりに追加"}</button>
+      </div>
     `;
     wrongList.appendChild(element);
+  });
+}
+
+function renderResultStatus() {
+  resultStatus.className = "result-status is-hidden";
+  resultStatus.textContent = "";
+  if (!session.challenge) return;
+
+  const failed = session.answered > session.correct;
+  const endlessLabel = session.count === "endless" ? `${session.correct}問連続正解` : "";
+  resultStatus.textContent = failed
+    ? `一発勝負: 失敗 (${session.correct}問連続正解)`
+    : `一発勝負: ${endlessLabel || "クリア"}`;
+  resultStatus.className = `result-status ${failed ? "is-failed" : "is-cleared"}`;
+}
+
+function setRetryButtonsHidden(isHidden) {
+  document.querySelectorAll('[data-result-action="retry-wrong"]').forEach((button) => {
+    button.classList.toggle("is-hidden", isHidden);
   });
 }
 
@@ -754,6 +952,19 @@ function retryWrongWords() {
   };
   renderQuestion();
   showScreen("study");
+}
+
+function repeatSameStudy() {
+  startStudy();
+}
+
+function addResultBookmarkByKey(key) {
+  if (!session?.deck) return;
+  const word = session.deck.words.find((item) => getWordKey(item) === key);
+  if (!word) return;
+  const added = addBookmark(word, session.deck.id);
+  renderResult();
+  showToast(added ? "しおりを付けました。" : "すでにしおりが付いています。");
 }
 
 function updateStudyStatus() {
@@ -854,10 +1065,89 @@ function normalizeJapaneseMeaning(value) {
     .replace(/[。、，,.]/g, "");
 }
 
+function getBookmarkSet(deckId = selectedDeckId) {
+  if (!deckId) return new Set();
+  return new Set(state.bookmarks?.[deckId] || []);
+}
+
+function setBookmarkSet(deckId, bookmarkSet) {
+  state.bookmarks = {
+    ...(state.bookmarks || {}),
+    [deckId]: [...bookmarkSet],
+  };
+  saveState();
+}
+
+function getWordKey(word) {
+  return [word.lesson, word.english, formatJapanese(word)]
+    .map((value) => String(value).trim().toLowerCase())
+    .join("::");
+}
+
+function isBookmarked(word, deckId = selectedDeckId) {
+  return getBookmarkSet(deckId).has(getWordKey(word));
+}
+
+function addBookmark(word, deckId = selectedDeckId) {
+  if (!deckId || !word) return false;
+  const bookmarks = getBookmarkSet(deckId);
+  const before = bookmarks.size;
+  bookmarks.add(getWordKey(word));
+  setBookmarkSet(deckId, bookmarks);
+  return bookmarks.size > before;
+}
+
+function removeBookmarkByKey(key, deckId = selectedDeckId) {
+  if (!deckId) return;
+  const bookmarks = getBookmarkSet(deckId);
+  bookmarks.delete(key);
+  setBookmarkSet(deckId, bookmarks);
+  const deck = getSelectedDeck();
+  if (deck) {
+    renderBookmarkPanel(deck);
+    updateStartState(deck);
+  }
+  if (session?.current) renderBookmarkButton();
+}
+
+function toggleCurrentBookmark() {
+  if (!session?.current?.word) return;
+  const deckId = session.deck.id;
+  const word = session.current.word;
+  const bookmarks = getBookmarkSet(deckId);
+  const key = getWordKey(word);
+  const willMark = !bookmarks.has(key);
+  if (willMark) {
+    bookmarks.add(key);
+  } else {
+    bookmarks.delete(key);
+  }
+  setBookmarkSet(deckId, bookmarks);
+  renderBookmarkButton();
+  showToast(willMark ? "しおりを付けました。" : "しおりを外しました。");
+}
+
+function renderBookmarkButton() {
+  if (!session?.current?.word) return;
+  const marked = isBookmarked(session.current.word, session.deck.id);
+  bookmarkCurrentButton.classList.toggle("is-bookmarked", marked);
+  bookmarkCurrentButton.innerHTML = "<span></span>しおり";
+  bookmarkCurrentButton.title = marked ? "しおりを外す" : "しおりを付ける";
+  bookmarkCurrentButton.setAttribute("aria-label", bookmarkCurrentButton.title);
+}
+
+function getBookmarkedWords(deck = getSelectedDeck()) {
+  if (!deck) return [];
+  const bookmarks = getBookmarkSet(deck.id);
+  return deck.words.filter((word) => bookmarks.has(getWordKey(word)));
+}
+
 function getWordPool(words) {
   const selectedGroups = setup.groups.length ? new Set(setup.groups) : new Set(getStudyGroups(words).map((group) => group.id));
   const pool = words.filter((word) => selectedGroups.has(word.lesson));
-  return pool.length ? pool : words;
+  const rangedPool = pool.length ? pool : words;
+  if (!setup.bookmarkedOnly) return rangedPool;
+  return rangedPool.filter((word) => isBookmarked(word));
 }
 
 function makeQuestionList(pool, count) {
@@ -1153,6 +1443,7 @@ function deleteDeck(id) {
     cancelLabel: "やめる",
     onConfirm: () => {
       state.decks = state.decks.filter((deck) => deck.id !== id);
+      if (state.bookmarks) delete state.bookmarks[id];
       saveState();
       renderDecks();
     },

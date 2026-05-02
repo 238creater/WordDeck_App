@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260502-25" />
+    <link rel="stylesheet" href="styles.css?v=20260503-04" />
   </head>
   <body>
     <main class="app-shell">
@@ -52,13 +52,35 @@
             <div id="lesson-options" class="option-grid"></div>
           </section>
 
+          <section class="settings-block bookmark-panel">
+            <div class="bookmark-panel-head">
+              <div>
+                <h2>しおり単語</h2>
+                <p><strong id="bookmark-count">0</strong> 語をマーク中</p>
+              </div>
+              <div class="bookmark-panel-actions">
+                <button id="bookmark-filter-button" class="secondary-button small" type="button">しおりのみで出題</button>
+                <button id="bookmark-list-toggle" class="secondary-button small" type="button">一覧を見る</button>
+              </div>
+            </div>
+          </section>
+
           <section class="settings-block">
             <h2>出題数</h2>
             <div id="count-options" class="count-grid"></div>
           </section>
 
           <section class="settings-block start-panel">
-            <p id="start-note" class="start-note"></p>
+            <div class="start-copy">
+              <label class="challenge-toggle">
+                <input id="challenge-toggle" type="checkbox" />
+                <span>
+                  <strong>一発勝負</strong>
+                  <small>間違えたらその場で終了</small>
+                </span>
+              </label>
+              <p id="start-note" class="start-note"></p>
+            </div>
             <button id="start-button" class="primary-button">開始</button>
           </section>
         </div>
@@ -75,6 +97,7 @@
 
         <div class="question-card">
           <p id="study-title" class="eyebrow">問題</p>
+          <button id="bookmark-current-button" class="bookmark-current-button" type="button" title="しおりを付ける" aria-label="しおりを付ける"><span></span>しおり</button>
           <div id="question-text" class="question-text"></div>
           <div id="feedback" class="feedback" aria-live="polite"></div>
           <div id="answer-note" class="answer-note"></div>
@@ -107,15 +130,18 @@
           </div>
         </div>
 
+        <div id="result-status" class="result-status is-hidden"></div>
+
+        <div class="result-actions">
+          <button class="secondary-button" data-result-action="retry-wrong">間違えた単語だけ</button>
+          <button class="secondary-button" data-result-action="repeat-same">同じ設定でもう一度</button>
+          <button class="secondary-button" data-action="back-to-setup">モード選択に戻る</button>
+        </div>
+
         <section class="wrong-section">
           <h2>間違えた単語</h2>
           <div id="wrong-list" class="wrong-list"></div>
         </section>
-
-        <div class="result-actions">
-          <button id="retry-button" class="primary-button">間違えた単語だけやり直す</button>
-          <button class="secondary-button" data-action="back-to-setup">モード選択に戻る</button>
-        </div>
       </section>
 
       <div id="quit-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="quit-dialog-title">
@@ -126,6 +152,19 @@
             <button id="confirm-quit-button" class="danger-button">終了する</button>
             <button id="cancel-quit-button" class="secondary-button">続ける</button>
           </div>
+        </div>
+      </div>
+
+      <div id="bookmark-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="bookmark-dialog-title">
+        <div class="dialog-panel bookmark-dialog-panel">
+          <div class="bookmark-dialog-head">
+            <div>
+              <p class="eyebrow">Bookmarks</p>
+              <h2 id="bookmark-dialog-title">しおり単語</h2>
+            </div>
+            <button id="close-bookmark-dialog-button" class="secondary-button small" type="button">閉じる</button>
+          </div>
+          <div id="bookmark-list" class="bookmark-list"></div>
         </div>
       </div>
 
@@ -145,6 +184,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260502-25"></script>
+    <script src="app.js?v=20260503-04"></script>
   </body>
 </html>

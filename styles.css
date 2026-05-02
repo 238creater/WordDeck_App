@@ -30,6 +30,19 @@ body {
   font-family: "Segoe UI", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
 }
 
+body.dialog-open {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+body.challenge-active {
+  color: #26312d;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(200, 62, 67, 0.1), transparent 32%),
+    radial-gradient(circle at 86% 8%, rgba(244, 201, 93, 0.2), transparent 30%),
+    #f1ece1;
+}
+
 button,
 input {
   font: inherit;
@@ -174,8 +187,21 @@ h2 {
 }
 
 .secondary-button {
+  border: 1px solid rgba(188, 199, 194, 0.95);
   color: var(--ink);
-  background: #e9eeec;
+  background: linear-gradient(180deg, #f7faf8, #dfe8e4);
+  box-shadow: var(--shadow-soft);
+}
+
+.secondary-button:hover:not(:disabled) {
+  border-color: rgba(139, 154, 146, 0.95);
+  background: #d8e2de;
+}
+
+.secondary-button:disabled {
+  color: #7a8780;
+  background: #edf1ef;
+  box-shadow: none;
 }
 
 .danger-button {
@@ -235,6 +261,67 @@ h2 {
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(12px);
+}
+
+body.challenge-active .import-panel,
+body.challenge-active .deck-card,
+body.challenge-active .settings-block,
+body.challenge-active .question-card,
+body.challenge-active .result-summary,
+body.challenge-active .wrong-section {
+  border-color: rgba(176, 132, 56, 0.26);
+  background: rgba(255, 252, 244, 0.92);
+  box-shadow: 0 16px 38px rgba(91, 63, 28, 0.12);
+}
+
+body.challenge-active .study-status {
+  background: rgba(241, 236, 225, 0.94);
+}
+
+body.challenge-active .eyebrow,
+body.challenge-active .start-note,
+body.challenge-active .wrong-list,
+body.challenge-active .result-summary p,
+body.challenge-active .answer-note,
+body.challenge-active .challenge-toggle small {
+  color: #6f665b;
+}
+
+body.challenge-active .mode-button,
+body.challenge-active .range-toggle,
+body.challenge-active .range-all-button,
+body.challenge-active .secondary-button,
+body.challenge-active .choice-button,
+body.challenge-active .answer-input {
+  border-color: rgba(146, 104, 42, 0.42);
+  color: #26312d;
+  background: #fffaf0;
+}
+
+body.challenge-active .mode-button.is-selected,
+body.challenge-active #lesson-options .mode-button.is-selected {
+  border-color: rgba(180, 100, 56, 0.58);
+  color: #5a2f22;
+  background: #f8dcc8;
+  box-shadow: inset 0 0 0 1px rgba(180, 100, 56, 0.16);
+}
+
+body.challenge-active .primary-button {
+  color: #ffffff;
+  background: linear-gradient(180deg, #8d5a38, #683d2b);
+  box-shadow: 0 10px 24px rgba(91, 63, 28, 0.18);
+}
+
+body.challenge-active .choice-button.correct,
+body.challenge-active .answer-display.is-correct {
+  color: #0d5f42;
+  background: #dff4ea;
+}
+
+body.challenge-active .choice-button.wrong,
+body.challenge-active .answer-display.is-wrong {
+  color: #9f2f34;
+  background: #fae3e4;
 }
 
 .import-panel {
@@ -314,6 +401,157 @@ code {
 
 .settings-block h2 {
   margin-bottom: 12px;
+}
+
+.bookmark-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bookmark-panel-head h2 {
+  margin-bottom: 4px;
+}
+
+.bookmark-panel-head p {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.bookmark-panel-head p strong {
+  color: var(--ink);
+  font-size: 1.15rem;
+}
+
+.bookmark-panel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.bookmark-panel-actions .secondary-button {
+  border-color: rgba(188, 199, 194, 0.95);
+  color: var(--ink);
+  background: linear-gradient(180deg, #f7faf8, #dfe8e4);
+  box-shadow: var(--shadow-soft);
+}
+
+.bookmark-panel-actions .secondary-button:hover:not(:disabled) {
+  border-color: rgba(139, 154, 146, 0.95);
+  background: #d8e2de;
+}
+
+.bookmark-panel.is-filtered {
+  position: relative;
+  border-color: rgba(200, 62, 67, 0.24);
+  background: linear-gradient(90deg, rgba(250, 227, 228, 0.72), rgba(255, 255, 255, 0.86) 34%);
+}
+
+.bookmark-panel.is-filtered::before {
+  content: "しおりのみ";
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #9f2f34;
+  background: #fae3e4;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.bookmark-panel.is-filtered #bookmark-filter-button {
+  color: #9f2f34;
+  border-color: rgba(200, 62, 67, 0.38);
+  background: rgba(250, 227, 228, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(200, 62, 67, 0.12), var(--shadow-soft);
+}
+
+body.challenge-active .bookmark-panel-actions .secondary-button {
+  border-color: rgba(146, 104, 42, 0.42);
+  color: #26312d;
+  background: #fffaf0;
+  box-shadow: var(--shadow-soft);
+}
+
+body.challenge-active .bookmark-panel.is-filtered {
+  border-color: rgba(157, 77, 54, 0.36);
+  background: linear-gradient(90deg, rgba(248, 220, 200, 0.84), rgba(255, 252, 244, 0.94) 40%);
+}
+
+body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
+  border-color: rgba(157, 77, 54, 0.48);
+  color: #7b3026;
+  background: #f8dcc8;
+}
+
+.bookmark-list {
+  display: grid;
+  gap: 16px;
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.bookmark-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.bookmark-dialog-head h2 {
+  font-size: 1.35rem;
+}
+
+.bookmark-group {
+  display: grid;
+  gap: 8px;
+}
+
+.bookmark-group h3 {
+  margin: 0;
+  color: var(--blue);
+  font-size: 0.9rem;
+}
+
+.bookmark-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 180px);
+  gap: 8px;
+}
+
+.bookmark-item {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-height: 112px;
+  padding: 10px;
+  border: 1px solid rgba(217, 223, 216, 0.86);
+  border-radius: 8px;
+  background: #fbfcfc;
+}
+
+.bookmark-item strong,
+.bookmark-item span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.bookmark-item span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.32;
+}
+
+.bookmark-item .secondary-button {
+  min-height: 34px;
+  padding: 6px 10px;
 }
 
 .option-grid {
@@ -585,12 +823,45 @@ code {
   box-shadow: inset 0 0 0 1px rgba(45, 113, 136, 0.18);
 }
 
+.challenge-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.challenge-toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--red);
+}
+
+.challenge-toggle span {
+  display: grid;
+  gap: 2px;
+}
+
+.challenge-toggle strong {
+  font-size: 1rem;
+}
+
+.challenge-toggle small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .start-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 160px;
   align-items: center;
   gap: 14px;
   margin-top: 0;
+}
+
+.start-copy {
+  display: grid;
+  gap: 10px;
 }
 
 .start-panel .primary-button {
@@ -658,15 +929,70 @@ body.study-active .study-status {
 }
 
 .question-card {
+  position: relative;
   height: clamp(285px, 38vh, 360px);
   display: grid;
-  grid-template-rows: 20px minmax(112px, 1fr) 62px 34px;
+  grid-template-rows: 1fr;
   align-items: center;
   gap: 10px;
   padding: 34px 22px;
   text-align: center;
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+
+.question-card .eyebrow {
+  position: absolute;
+  top: 26px;
+  left: 22px;
+  right: 22px;
+}
+
+.bookmark-current-button {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+  display: inline-flex;
+  width: auto;
+  height: 46px;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 13px;
+  border: 1px solid rgba(217, 223, 216, 0.95);
+  border-radius: 8px;
+  color: #8b948e;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.bookmark-current-button span {
+  position: relative;
+  width: 12px;
+  height: 17px;
+  border-radius: 2px 2px 1px 1px;
+  background: currentColor;
+}
+
+.bookmark-current-button span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.bookmark-current-button.is-bookmarked {
+  border-color: rgba(244, 201, 93, 0.72);
+  color: #7a4b13;
+  background: linear-gradient(180deg, #fff5cf, #ffe8a3);
 }
 
 .question-text {
@@ -723,6 +1049,10 @@ body.study-active .study-status {
 }
 
 .feedback {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 48px;
   height: 62px;
   font-size: 3rem;
   font-weight: 900;
@@ -743,6 +1073,10 @@ body.study-active .study-status {
 }
 
 .answer-note {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
   height: 38px;
   color: var(--muted);
   font-size: 0.92rem;
@@ -890,13 +1224,88 @@ body.study-active .answer-area {
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.result-actions {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid rgba(217, 223, 216, 0.62);
   margin-bottom: 18px;
+  background: rgba(244, 246, 248, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+.result-actions button {
+  width: 100%;
+  min-height: 50px;
+  padding-inline: 12px;
+}
+
+.result-status {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(217, 223, 216, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+  font-weight: 900;
+  text-align: center;
+}
+
+.result-status.is-cleared {
+  border-color: rgba(23, 130, 91, 0.22);
+  color: #0d5f42;
+  background: var(--green-soft);
+}
+
+.result-status.is-failed {
+  border-color: rgba(200, 62, 67, 0.24);
+  color: #9f2f34;
+  background: var(--red-soft);
+}
+
+.result-actions .secondary-button {
+  border-color: rgba(188, 199, 194, 0.95);
+  color: var(--ink);
+  background: linear-gradient(180deg, #f7faf8, #dfe8e4);
+  box-shadow: var(--shadow-soft);
+}
+
+.result-actions .secondary-button:hover:not(:disabled) {
+  border-color: rgba(139, 154, 146, 0.95);
+  background: #d8e2de;
+}
+
+body.challenge-active .result-actions .secondary-button {
+  border-color: rgba(146, 104, 42, 0.42);
+  color: #26312d;
+  background: #fffaf0;
+  box-shadow: var(--shadow-soft);
+}
+
+body.challenge-active .result-actions .secondary-button:hover:not(:disabled) {
+  border-color: rgba(117, 83, 33, 0.6);
+  background: #f4ead6;
+}
+
+body.challenge-active .result-actions {
+  background: rgba(241, 236, 225, 0.94);
 }
 
 .result-summary div {
   padding: 24px 12px;
   text-align: center;
   background: var(--surface);
+}
+
+body.challenge-active .result-summary div {
+  background: rgba(255, 252, 244, 0.94);
 }
 
 .result-summary span {
@@ -911,50 +1320,76 @@ body.study-active .answer-area {
 }
 
 .wrong-section {
-  padding: 18px;
+  padding: 14px;
 }
 
 .wrong-list {
   display: grid;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 0;
+  margin-top: 8px;
 }
 
 .wrong-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 1.2fr);
-  gap: 14px;
-  padding: 10px 0;
+  grid-template-columns: minmax(0, 0.9fr) minmax(230px, 1.35fr);
+  gap: 12px;
+  padding: 8px 0;
   border-top: 1px solid var(--line);
+  font-size: 0.94rem;
+  line-height: 1.35;
+}
+
+.wrong-item strong {
+  font-size: 1rem;
+  line-height: 1.25;
 }
 
 .wrong-item span {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 .wrong-item dl {
   display: grid;
-  gap: 6px;
+  gap: 3px;
   margin: 0;
+}
+
+.wrong-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 10px;
+  align-items: center;
 }
 
 .wrong-item dl div {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
   gap: 8px;
+  min-height: 24px;
 }
 
 .wrong-item dt {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 900;
+  line-height: 1;
 }
 
 .wrong-item dd {
   margin: 0;
   overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.wrong-bookmark-button {
+  min-height: 36px;
+  padding: 7px 10px;
+  white-space: nowrap;
 }
 
 .is-hidden {
@@ -987,6 +1422,7 @@ body.study-active .answer-area {
   padding: 18px;
   background: rgba(18, 27, 23, 0.32);
   backdrop-filter: blur(8px);
+  overscroll-behavior: contain;
 }
 
 .dialog-backdrop.is-hidden {
@@ -995,11 +1431,18 @@ body.study-active .answer-area {
 
 .dialog-panel {
   width: min(420px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 22px;
   border: 1px solid rgba(217, 223, 216, 0.92);
   border-radius: 8px;
   background: var(--surface);
   box-shadow: 0 28px 70px rgba(18, 27, 23, 0.24);
+}
+
+.dialog-panel.bookmark-dialog-panel {
+  width: min(980px, calc(100vw - 32px));
 }
 
 .dialog-panel h2 {
@@ -1129,10 +1572,45 @@ body.study-active .answer-area {
     width: 100%;
   }
 
+  .bookmark-panel-head,
+  .bookmark-panel-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bookmark-panel-actions button {
+    width: 100%;
+  }
+
+  .bookmark-list {
+    max-height: min(60vh, 460px);
+  }
+
+  .bookmark-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .option-grid,
-  .choice-grid,
-  .result-summary {
+  .choice-grid {
     grid-template-columns: 1fr;
+  }
+
+  .result-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .result-summary div {
+    padding: 14px 6px;
+  }
+
+  .result-summary span {
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+
+  .result-summary p {
+    font-size: 0.78rem;
+    font-weight: 800;
   }
 
   #count-options.count-grid {
@@ -1159,6 +1637,11 @@ body.study-active .answer-area {
     padding: 12px;
   }
 
+  .challenge-toggle {
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
   .start-note {
     text-align: left;
     font-size: 0.92rem;
@@ -1181,9 +1664,15 @@ body.study-active .answer-area {
 
   .question-card {
     height: clamp(238px, 35dvh, 310px);
-    grid-template-rows: 18px minmax(86px, 1fr) 56px 32px;
+    grid-template-rows: 1fr;
     gap: 8px;
     padding: 24px 16px;
+  }
+
+  .question-card .eyebrow {
+    top: 18px;
+    left: 16px;
+    right: 16px;
   }
 
   .question-text {
@@ -1216,10 +1705,26 @@ body.study-active .answer-area {
   }
 
   body.study-active .question-card {
-    height: auto;
-    min-height: 0;
+    height: clamp(218px, 32dvh, 280px);
+    min-height: 218px;
     padding: 16px 14px;
-    grid-template-rows: 16px minmax(70px, 1fr) 46px 34px;
+    grid-template-rows: 1fr;
+  }
+
+  body.study-active .question-card .eyebrow {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+  }
+
+  body.study-active .bookmark-current-button {
+    top: 10px;
+    right: 10px;
+    width: auto;
+    height: 40px;
+    min-height: 40px;
+    padding-inline: 10px;
+    font-size: 0.82rem;
   }
 
   body.study-active .question-text {
@@ -1256,11 +1761,17 @@ body.study-active .answer-area {
   }
 
   body.study-active .feedback {
+    left: 14px;
+    right: 14px;
+    bottom: 42px;
     height: 46px;
     font-size: 2.25rem;
   }
 
   body.study-active .answer-note {
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
     height: 34px;
     font-size: 0.82rem;
   }
@@ -1362,6 +1873,7 @@ body.study-active .answer-area {
 
   .result-actions,
   .dialog-actions {
+    display: flex;
     flex-direction: column;
   }
 
@@ -1372,11 +1884,22 @@ body.study-active .answer-area {
 
   .wrong-item {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 3px;
+    padding: 7px 0;
   }
 
   .wrong-item dl div {
     grid-template-columns: 38px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .wrong-detail {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .wrong-bookmark-button {
+    width: 100%;
   }
 
   .dialog-panel {
