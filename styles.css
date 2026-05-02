@@ -30,12 +30,6 @@ body {
   font-family: "Segoe UI", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
 }
 
-html.study-active,
-body.study-active {
-  overflow: hidden;
-  height: 100%;
-}
-
 button,
 input {
   font: inherit;
@@ -85,28 +79,11 @@ button:disabled {
 }
 
 body.study-active .app-shell {
-  min-height: 100dvh;
-  padding-top: 0;
-  padding-bottom: 0;
-  overflow: hidden;
+  padding-top: 10px;
 }
 
 body.study-active #study-screen.is-active {
-  position: fixed;
-  inset: 0;
-  z-index: 15;
-  width: min(980px, calc(100% - 32px));
-  height: 100dvh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
-  gap: 12px;
-  margin: 0 auto;
-  padding: 10px 0;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(45, 113, 136, 0.12), transparent 34%),
-    radial-gradient(circle at 86% 8%, rgba(244, 201, 93, 0.16), transparent 28%),
-    var(--bg);
+  display: block;
 }
 
 .topbar,
@@ -694,14 +671,35 @@ body.study-active .study-status {
 
 .question-text {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 1.18em;
   display: grid;
   place-items: center;
+  overflow: hidden;
   overflow-wrap: anywhere;
   font-size: 4.6rem;
   font-weight: 900;
   line-height: 1.08;
   letter-spacing: 0;
+}
+
+.question-text.is-single-token {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.question-text.is-long {
+  font-size: 3.7rem;
+}
+
+.question-text.is-very-long {
+  font-size: 3rem;
+}
+
+.question-text.is-extra-long {
+  font-size: 2.45rem;
 }
 
 .feedback {
@@ -1135,17 +1133,12 @@ body.study-active .answer-area {
 
   body.study-active .app-shell {
     width: min(100% - 18px, 980px);
-    min-height: 100dvh;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   body.study-active #study-screen.is-active {
-    width: min(100% - 18px, 980px);
-    height: 100dvh;
-    grid-template-rows: auto minmax(190px, 0.95fr) minmax(0, auto) auto;
-    gap: 8px;
-    padding: 8px 0;
+    display: block;
   }
 
   body.study-active .question-card {
@@ -1157,6 +1150,18 @@ body.study-active .answer-area {
 
   body.study-active .question-text {
     font-size: 2.35rem;
+  }
+
+  body.study-active .question-text.is-long {
+    font-size: 1.96rem;
+  }
+
+  body.study-active .question-text.is-very-long {
+    font-size: 1.58rem;
+  }
+
+  body.study-active .question-text.is-extra-long {
+    font-size: 1.32rem;
   }
 
   body.study-active .feedback {

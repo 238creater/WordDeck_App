@@ -109,12 +109,13 @@ function saveState() {
 }
 
 function showScreen(name) {
-  if (name === "study") forceScrollToTop();
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
-  document.documentElement.classList.toggle("study-active", name === "study");
-  if (name === "study") scrollToTop();
+  if (name === "study") {
+    forceScrollToTop();
+    scrollToTop();
+  }
 }
 
 function forceScrollToTop() {
@@ -126,7 +127,8 @@ function forceScrollToTop() {
 function scrollToTop() {
   requestAnimationFrame(() => {
     forceScrollToTop();
-    window.setTimeout(forceScrollToTop, 80);
+    requestAnimationFrame(forceScrollToTop);
+    window.setTimeout(forceScrollToTop, 120);
   });
 }
 
@@ -411,8 +413,8 @@ function startStudy() {
     locked: false,
   };
 
-  showScreen("study");
   renderQuestion();
+  showScreen("study");
 }
 
 function updateStartState(deck) {
@@ -454,7 +456,7 @@ function renderQuestion() {
   feedback.className = "feedback";
   answerNote.textContent = session.current.hint || "";
   nextButton.classList.add("is-hidden");
-  questionText.textContent = session.current.prompt;
+  setQuestionText(session.current.prompt);
   updateStudyStatus();
 
   if (mode.type === "input") {
@@ -462,6 +464,19 @@ function renderQuestion() {
   } else {
     renderChoiceAnswer();
   }
+}
+
+function setQuestionText(text) {
+  const value = String(text);
+  questionText.textContent = value;
+  questionText.classList.remove("is-single-token", "is-long", "is-very-long", "is-extra-long");
+
+  const compactLength = value.replace(/\s+/g, "").length;
+  const isSingleToken = !/\s/.test(value);
+  if (isSingleToken) questionText.classList.add("is-single-token");
+  if (compactLength >= 11) questionText.classList.add("is-long");
+  if (compactLength >= 14) questionText.classList.add("is-very-long");
+  if (compactLength >= 18) questionText.classList.add("is-extra-long");
 }
 
 function renderInputAnswer() {
@@ -607,8 +622,8 @@ function retryWrongWords() {
     current: null,
     locked: false,
   };
-  showScreen("study");
   renderQuestion();
+  showScreen("study");
 }
 
 function updateStudyStatus() {
