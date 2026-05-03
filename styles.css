@@ -35,6 +35,10 @@ body.dialog-open {
   overscroll-behavior: contain;
 }
 
+body.dialog-open .app-shell {
+  min-height: 100dvh;
+}
+
 body.challenge-active {
   color: #26312d;
   background:
@@ -292,6 +296,7 @@ h2 {
   border: 1px solid rgba(217, 223, 216, 0.9);
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
@@ -772,6 +777,7 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   padding: 22px 22px 14px;
   border-bottom: 1px solid rgba(217, 223, 216, 0.72);
   background: rgba(255, 255, 255, 0.96);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -986,6 +992,7 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   z-index: 2;
   padding: 12px 0 14px;
   background: rgba(244, 246, 248, 0.94);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -1340,6 +1347,7 @@ body.study-active .answer-area {
   border-bottom: 1px solid rgba(217, 223, 216, 0.62);
   margin-bottom: 18px;
   background: rgba(244, 246, 248, 0.94);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -1517,12 +1525,15 @@ body.challenge-active .result-summary div {
 
 .dialog-backdrop {
   position: fixed;
-  inset: 0;
+  inset: -2px 0;
   z-index: 20;
   display: grid;
+  width: 100vw;
+  min-height: calc(100dvh + 4px);
   place-items: center;
   padding: 18px;
   background: rgba(18, 27, 23, 0.32);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   overscroll-behavior: contain;
 }
@@ -1557,6 +1568,7 @@ body.challenge-active .result-summary div {
   z-index: 2;
   margin: 0 0 14px;
   background: rgba(244, 246, 248, 0.96);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
