@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260503-51" />
+    <link rel="stylesheet" href="styles.css?v=20260503-60" />
   </head>
   <body>
     <main class="app-shell">
@@ -34,10 +34,11 @@
       <section id="setup-screen" class="screen" aria-labelledby="setup-title">
         <header class="topbar compact">
           <button class="icon-button" data-action="back-to-decks" title="単語帳へ戻る">←</button>
-          <div>
+          <div class="topbar-title">
             <p id="active-deck-name" class="eyebrow"></p>
             <h1 id="setup-title">学習設定</h1>
           </div>
+          <button id="open-word-list-button" class="secondary-button small setup-list-button" type="button">単語一覧</button>
         </header>
 
         <div class="settings-grid">
@@ -92,6 +93,25 @@
         </div>
       </section>
 
+      <section id="word-list-screen" class="screen word-list-screen" aria-labelledby="word-list-title">
+        <header class="topbar compact word-list-topbar">
+          <button class="icon-button" data-action="back-to-setup" title="学習設定へ戻る">←</button>
+          <div class="topbar-title">
+            <p id="word-list-deck-name" class="eyebrow"></p>
+            <h1 id="word-list-title">単語一覧</h1>
+          </div>
+        </header>
+
+        <div class="word-list-search">
+          <input id="word-search-input" type="search" autocomplete="off" placeholder="英語・日本語・Stageで検索" />
+          <button id="clear-word-search-button" class="secondary-button small" type="button">クリア</button>
+          <button id="close-word-search-button" class="secondary-button small word-search-close-button" type="button">閉じる</button>
+        </div>
+
+        <div id="word-list-content" class="word-list-content"></div>
+        <div id="word-search-results" class="word-search-results is-hidden"></div>
+      </section>
+
       <section id="study-screen" class="screen study-screen" aria-labelledby="study-title">
         <header class="study-status">
           <button class="quit-button" data-action="quit-study" title="学習を終了">× 終了</button>
@@ -103,7 +123,7 @@
 
         <div class="question-card">
           <p id="study-title" class="eyebrow">問題</p>
-          <button id="bookmark-current-button" class="bookmark-current-button" type="button" title="しおりを付ける" aria-label="しおりを付ける"><span></span>しおり</button>
+          <button id="bookmark-current-button" class="bookmark-current-button" type="button" aria-label="しおりを付ける"><span></span>しおり</button>
           <div id="question-text" class="question-text"></div>
           <div id="feedback" class="feedback" aria-live="polite"></div>
           <div id="answer-note" class="answer-note"></div>
@@ -166,7 +186,10 @@
               <p class="eyebrow">Bookmarks</p>
               <h2 id="bookmark-dialog-title">しおり単語</h2>
             </div>
-            <button id="close-bookmark-dialog-button" class="secondary-button small" type="button">閉じる</button>
+            <div class="dialog-head-actions">
+              <button id="clear-bookmarks-button" class="danger-button small" type="button">一括解除</button>
+              <button id="close-bookmark-dialog-button" class="secondary-button small" type="button">閉じる</button>
+            </div>
           </div>
           <div id="bookmark-list" class="bookmark-list"></div>
         </div>
@@ -196,12 +219,12 @@
           <p></p>
         </div>
         <div class="deck-actions">
-          <button class="secondary-button small" data-role="delete">削除</button>
+          <button class="danger-button small" data-role="delete">削除</button>
           <button class="primary-button small" data-role="study">学習</button>
         </div>
       </article>
     </template>
 
-    <script src="app.js?v=20260503-50"></script>
+    <script src="app.js?v=20260503-60"></script>
   </body>
 </html>

@@ -49,6 +49,7 @@ let session = null;
 const screens = {
   decks: document.querySelector("#deck-screen"),
   setup: document.querySelector("#setup-screen"),
+  wordList: document.querySelector("#word-list-screen"),
   study: document.querySelector("#study-screen"),
   result: document.querySelector("#result-screen"),
 };
@@ -62,6 +63,13 @@ const lessonOptions = document.querySelector("#range-list");
 const rangeSummaryTitle = document.querySelector("#range-summary-title");
 const rangeSummaryDetail = document.querySelector("#range-summary-detail");
 const openRangeDialogButton = document.querySelector("#open-range-dialog-button");
+const openWordListButton = document.querySelector("#open-word-list-button");
+const wordListDeckName = document.querySelector("#word-list-deck-name");
+const wordSearchInput = document.querySelector("#word-search-input");
+const clearWordSearchButton = document.querySelector("#clear-word-search-button");
+const closeWordSearchButton = document.querySelector("#close-word-search-button");
+const wordListContent = document.querySelector("#word-list-content");
+const wordSearchResults = document.querySelector("#word-search-results");
 const bookmarkCount = document.querySelector("#bookmark-count");
 const bookmarkFilterButton = document.querySelector("#bookmark-filter-button");
 const bookmarkListToggle = document.querySelector("#bookmark-list-toggle");
@@ -81,6 +89,7 @@ const nextButton = document.querySelector("#next-button");
 const quitDialog = document.querySelector("#quit-dialog");
 const bookmarkDialog = document.querySelector("#bookmark-dialog");
 const rangeDialog = document.querySelector("#range-dialog");
+const clearBookmarksButton = document.querySelector("#clear-bookmarks-button");
 const closeBookmarkDialogButton = document.querySelector("#close-bookmark-dialog-button");
 const closeRangeDialogButton = document.querySelector("#close-range-dialog-button");
 const quitDialogTitle = document.querySelector("#quit-dialog-title");
@@ -92,6 +101,7 @@ let confirmDialogAction = null;
 let toastTimer = null;
 let scrollLockCount = 0;
 let lockedScrollY = 0;
+let wordSearchActive = false;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -107,6 +117,26 @@ bookmarkListToggle.addEventListener("click", () => {
 openRangeDialogButton.addEventListener("click", () => {
   openRangeDialog();
 });
+openWordListButton.addEventListener("click", () => {
+  renderWordListScreen();
+  showScreen("wordList");
+});
+wordSearchInput.addEventListener("input", renderWordSearchResults);
+wordSearchInput.addEventListener("focus", () => {
+  wordSearchActive = true;
+  renderWordSearchResults();
+});
+clearWordSearchButton.addEventListener("click", () => {
+  wordSearchInput.value = "";
+  renderWordSearchResults();
+  wordSearchInput.focus({ preventScroll: true });
+});
+closeWordSearchButton.addEventListener("click", () => {
+  wordSearchActive = false;
+  wordSearchInput.value = "";
+  wordSearchInput.blur();
+  renderWordSearchResults();
+});
 challengeToggle.addEventListener("change", () => {
   setup.challenge = challengeToggle.checked;
   if (setup.challenge && setup.count === "endless") setup.count = "10";
@@ -116,6 +146,7 @@ challengeToggle.addEventListener("change", () => {
 startButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
+clearBookmarksButton.addEventListener("click", confirmClearBookmarks);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
 closeRangeDialogButton.addEventListener("click", closeRangeDialog);
 cancelQuitButton.addEventListener("click", closeConfirmDialog);
@@ -219,6 +250,10 @@ function handleGlobalClick(event) {
   if (action === "toggle-result-bookmark") {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
     if (key) toggleResultBookmarkByKey(decodeURIComponent(key));
+  }
+  if (action === "toggle-list-bookmark") {
+    const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
+    if (key) toggleWordListBookmarkByKey(decodeURIComponent(key));
   }
 
   const resultAction = event.target.closest("[data-result-action]")?.dataset.resultAction;
@@ -538,6 +573,7 @@ function renderBookmarkPanel(deck) {
   bookmarkFilterButton.classList.toggle("is-selected", setup.bookmarkedOnly);
   bookmarkFilterButton.textContent = setup.bookmarkedOnly ? "しおりのみ出題中" : "しおりのみで出題";
   bookmarkFilterButton.disabled = markedWords.length === 0 && !setup.bookmarkedOnly;
+  clearBookmarksButton.disabled = markedWords.length === 0;
   document.querySelector(".bookmark-panel")?.classList.toggle("is-filtered", setup.bookmarkedOnly);
 
   bookmarkList.innerHTML = "";
@@ -568,6 +604,281 @@ function renderBookmarkPanel(deck) {
     });
     bookmarkList.appendChild(group);
   });
+}
+
+function renderWordListScreen() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  wordListDeckName.textContent = deck.name;
+  wordSearchInput.value = "";
+  wordSearchActive = false;
+  renderWordListContent(deck);
+  renderWordSearchResults();
+}
+
+function renderWordListContent(deck = getSelectedDeck()) {
+  if (!deck) return;
+  const grouped = getGroupedWordsByRange(deck.words);
+  wordListContent.innerHTML = "";
+
+  if (grouped.length === 0) {
+    wordListContent.innerHTML = '<div class="empty-state">表示できる単語がありません。</div>';
+    return;
+  }
+
+  grouped.forEach((stage) => {
+    const stageDetails = document.createElement("details");
+    stageDetails.className = "word-stage";
+    stageDetails.innerHTML = `
+      <summary class="word-stage-summary">
+        <span>${escapeHtml(stage.parent)}</span>
+        <strong>${stage.wordCount}語</strong>
+      </summary>
+      <div class="word-stage-body"></div>
+    `;
+    const stageBody = stageDetails.querySelector(".word-stage-body");
+    prepareSmoothDetails(stageDetails);
+
+    stage.children.forEach((part) => {
+      const partDetails = document.createElement("details");
+      partDetails.className = "word-part";
+      partDetails.innerHTML = `
+        <summary class="word-part-summary">
+          <span>${escapeHtml(part.childLabel)}</span>
+          <strong>${part.words.length}語</strong>
+        </summary>
+        <div class="word-card-grid"></div>
+      `;
+      const grid = partDetails.querySelector(".word-card-grid");
+      part.words.forEach((word) => {
+        grid.appendChild(createWordCard(word, deck.id));
+      });
+      prepareSmoothDetails(partDetails);
+      stageBody.appendChild(partDetails);
+    });
+
+    wordListContent.appendChild(stageDetails);
+  });
+}
+
+function renderWordSearchResults() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const query = wordSearchInput.value.trim();
+  const isSearching = wordSearchActive;
+  wordListContent.classList.toggle("is-hidden", isSearching);
+  wordSearchResults.classList.toggle("is-hidden", !isSearching);
+  clearWordSearchButton.disabled = query.length === 0;
+
+  if (!isSearching) {
+    wordSearchResults.innerHTML = "";
+    return;
+  }
+
+  if (!query) {
+    wordSearchResults.innerHTML = '<div class="empty-state">英語・日本語・Stage名の一部で検索できます。</div>';
+    return;
+  }
+
+  const normalizedQuery = normalizeSearchText(query);
+  const matchedWords = deck.words.filter((word) => {
+    const target = normalizeSearchText(`${word.english} ${formatJapanese(word)} ${word.lesson}`);
+    return target.includes(normalizedQuery);
+  });
+
+  wordSearchResults.innerHTML = "";
+  const resultHead = document.createElement("div");
+  resultHead.className = "word-search-head";
+  resultHead.innerHTML = `<strong>${matchedWords.length}件</strong><span>${escapeHtml(query)}</span>`;
+  wordSearchResults.appendChild(resultHead);
+
+  if (matchedWords.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "一致する単語がありません。";
+    wordSearchResults.appendChild(empty);
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "word-card-grid word-card-grid-search";
+  matchedWords
+    .slice()
+    .sort((a, b) => a.lesson.localeCompare(b.lesson, "ja", { numeric: true }) || a.english.localeCompare(b.english, "en", { numeric: true }))
+    .forEach((word) => {
+      grid.appendChild(createWordCard(word, deck.id, true));
+    });
+  wordSearchResults.appendChild(grid);
+  triggerAnimation(wordSearchResults, "is-refreshing");
+}
+
+function prepareSmoothDetails(details) {
+  const summary = details.querySelector("summary");
+  if (!summary) return;
+  summary.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSmoothDetails(details);
+  });
+}
+
+function toggleSmoothDetails(details) {
+  if (details.classList.contains("is-animating")) return;
+  const content = details.querySelector(":scope > div");
+  if (!content) {
+    details.open = !details.open;
+    return;
+  }
+
+  details.classList.add("is-animating");
+  if (details.open) {
+    closeSmoothDetails(details, content);
+    return;
+  }
+
+  openSmoothDetails(details, content);
+}
+
+function openSmoothDetails(details, content) {
+  details.open = true;
+  content.style.height = "0px";
+  content.style.opacity = "0";
+  requestAnimationFrame(() => {
+    content.style.height = `${content.scrollHeight}px`;
+    content.style.opacity = "1";
+    window.setTimeout(() => {
+      content.style.height = "";
+      content.style.opacity = "";
+      details.classList.remove("is-animating");
+    }, 240);
+  });
+}
+
+function closeSmoothDetails(details, content) {
+  const summary = details.querySelector("summary");
+  const runClose = () => {
+    const startHeight = content.offsetHeight;
+    content.style.height = `${startHeight}px`;
+    content.style.opacity = "1";
+    requestAnimationFrame(() => {
+      content.style.height = "0px";
+      content.style.opacity = "0";
+      window.setTimeout(() => {
+        details.open = false;
+        content.style.height = "";
+        content.style.opacity = "";
+        details.classList.remove("is-animating");
+      }, 220);
+    });
+  };
+
+  if (shouldAlignBeforeClose(details, summary)) {
+    const top = getStickyTop(summary);
+    const targetY = window.scrollY + details.getBoundingClientRect().top - top;
+    window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+    window.setTimeout(runClose, 170);
+    return;
+  }
+
+  runClose();
+}
+
+function shouldAlignBeforeClose(details, summary) {
+  if (!summary) return false;
+  const detailsTop = details.getBoundingClientRect().top;
+  const summaryTop = summary.getBoundingClientRect().top;
+  const stickyTop = getStickyTop(summary);
+  return detailsTop < stickyTop - 8 && Math.abs(summaryTop - stickyTop) < 4;
+}
+
+function getStickyTop(element) {
+  return Number.parseFloat(getComputedStyle(element).top) || 0;
+}
+
+function createWordCard(word, deckId, showRange = false) {
+  const card = document.createElement("article");
+  const bookmarked = isBookmarked(word, deckId);
+  card.className = "word-list-card";
+  const rangeLabel = showRange ? `<span class="word-list-range">${escapeHtml(formatRangeSummaryLabel(word.lesson))}</span>` : "";
+  card.innerHTML = `
+    <div class="word-list-card-body">
+      ${rangeLabel}
+      <strong>${escapeHtml(word.english)}</strong>
+      <span>${escapeHtml(formatJapanese(word))}</span>
+    </div>
+    <button class="secondary-button small word-list-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-list-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">
+      ${bookmarked ? "しおり解除" : "しおりに追加"}
+    </button>
+  `;
+  return card;
+}
+
+function toggleWordListBookmarkByKey(key) {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const word = deck.words.find((item) => getWordKey(item) === key);
+  if (!word) return;
+  const bookmarks = getBookmarkSet(deck.id);
+  const willRemove = bookmarks.has(key);
+  if (willRemove) {
+    bookmarks.delete(key);
+  } else {
+    bookmarks.add(key);
+  }
+  setBookmarkSet(deck.id, bookmarks);
+  renderBookmarkPanel(deck);
+  updateWordListBookmarkButtons(key, !willRemove);
+  showToast(willRemove ? "しおりを外しました。" : "しおりを付けました。");
+}
+
+function updateWordListBookmarkButtons(key, isBookmarkedNow) {
+  document
+    .querySelectorAll('[data-action="toggle-list-bookmark"]')
+    .forEach((button) => {
+      if (button.dataset.bookmarkKey !== encodeURIComponent(key)) return;
+      button.classList.toggle("is-bookmarked", isBookmarkedNow);
+      button.textContent = isBookmarkedNow ? "しおり解除" : "しおりに追加";
+    });
+}
+
+function getGroupedWordsByRange(words) {
+  const stages = new Map();
+  words.forEach((word) => {
+    const group = getStudyGroups([word])[0];
+    const { parent, child } = splitGroupLabel(group.label);
+    if (!stages.has(parent)) stages.set(parent, new Map());
+    const parts = stages.get(parent);
+    if (!parts.has(child)) parts.set(child, []);
+    parts.get(child).push(word);
+  });
+
+  return [...stages.entries()]
+    .sort(([stageA], [stageB]) => stageA.localeCompare(stageB, "ja", { numeric: true }))
+    .map(([parent, parts]) => {
+      const children = [...parts.entries()]
+        .map(([childLabel, partWords]) => ({
+          childLabel,
+          words: [...partWords].sort((a, b) => a.english.localeCompare(b.english, "en", { numeric: true })),
+        }))
+        .sort((a, b) => {
+          const aIndex = getPartOrderIndex(a.childLabel);
+          const bIndex = getPartOrderIndex(b.childLabel);
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          return a.childLabel.localeCompare(b.childLabel, "ja", { numeric: true });
+        });
+
+      return {
+        parent,
+        children,
+        wordCount: children.reduce((sum, child) => sum + child.words.length, 0),
+      };
+    });
+}
+
+function normalizeSearchText(value) {
+  return String(value)
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/\s+/g, "");
 }
 
 function groupWordsByLesson(words) {
@@ -1208,6 +1519,34 @@ function removeBookmarkByKey(key, deckId = selectedDeckId) {
   if (session?.current) renderBookmarkButton();
 }
 
+function confirmClearBookmarks() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const count = getBookmarkedWords(deck).length;
+  if (count === 0) return;
+
+  openConfirmDialog({
+    title: "しおりをすべて解除しますか？",
+    message: `${deck.name} のしおり ${count}語をすべて解除します。この操作は元に戻せません。`,
+    confirmLabel: "解除する",
+    cancelLabel: "やめる",
+    onConfirm: () => clearBookmarks(deck.id),
+  });
+}
+
+function clearBookmarks(deckId = selectedDeckId) {
+  if (!deckId) return;
+  setBookmarkSet(deckId, new Set());
+  if (setup.bookmarkedOnly) setup.bookmarkedOnly = false;
+  const deck = getSelectedDeck();
+  if (deck) {
+    renderBookmarkPanel(deck);
+    updateStartState(deck);
+  }
+  if (session?.current) renderBookmarkButton();
+  showToast("しおりをすべて解除しました。");
+}
+
 function toggleCurrentBookmark() {
   if (!session?.current?.word) return;
   const deckId = session.deck.id;
@@ -1231,8 +1570,8 @@ function renderBookmarkButton() {
   const marked = isBookmarked(session.current.word, session.deck.id);
   bookmarkCurrentButton.classList.toggle("is-bookmarked", marked);
   bookmarkCurrentButton.innerHTML = "<span></span>しおり";
-  bookmarkCurrentButton.title = marked ? "しおりを外す" : "しおりを付ける";
-  bookmarkCurrentButton.setAttribute("aria-label", bookmarkCurrentButton.title);
+  bookmarkCurrentButton.removeAttribute("title");
+  bookmarkCurrentButton.setAttribute("aria-label", marked ? "しおりを外す" : "しおりを付ける");
 }
 
 function triggerAnimation(element, className) {
