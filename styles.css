@@ -96,7 +96,39 @@ body.study-active .app-shell {
 }
 
 body.study-active #study-screen.is-active {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.study-active.study-input-active #study-screen.is-active {
   display: block;
+  overflow: visible;
+}
+
+body.study-active {
+  min-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.study-active.study-input-active {
+  overflow: auto;
+  overscroll-behavior: auto;
+}
+
+body.study-active .app-shell {
+  height: 100dvh;
+  overflow: hidden;
+  padding-bottom: 10px;
+}
+
+body.study-active.study-input-active .app-shell {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
 }
 
 .topbar,
@@ -403,6 +435,40 @@ code {
   margin-bottom: 12px;
 }
 
+.range-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.range-summary-card > div {
+  min-width: 0;
+}
+
+.range-summary-card strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.range-summary-card p:last-child {
+  margin-top: 5px;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.range-summary-card .secondary-button {
+  flex: 0 0 auto;
+}
+
 .bookmark-panel-head {
   display: flex;
   align-items: center;
@@ -496,7 +562,8 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   padding-right: 2px;
 }
 
-.bookmark-dialog-head {
+.bookmark-dialog-head,
+.range-dialog-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -504,7 +571,8 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   margin-bottom: 14px;
 }
 
-.bookmark-dialog-head h2 {
+.bookmark-dialog-head h2,
+.range-dialog-head h2 {
   font-size: 1.35rem;
 }
 
@@ -694,6 +762,30 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   list-style: none;
   font-weight: 900;
   user-select: none;
+}
+
+.range-dialog-panel .range-dialog-head {
+  position: sticky;
+  top: -22px;
+  z-index: 4;
+  margin: -22px -22px 0;
+  padding: 22px 22px 14px;
+  border-bottom: 1px solid rgba(217, 223, 216, 0.72);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.range-dialog-panel .range-toolbar {
+  top: 63px;
+}
+
+.range-dialog-panel .range-group summary {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  cursor: default;
+}
+
+.range-dialog-panel .range-group summary::before {
+  display: none;
 }
 
 .range-group summary::-webkit-details-marker {
@@ -1017,8 +1109,8 @@ body.study-active .study-status {
 }
 
 .question-text.is-japanese {
-  white-space: nowrap;
-  overflow-wrap: normal;
+  white-space: normal;
+  overflow-wrap: break-word;
   word-break: normal;
   line-break: strict;
   font-size: 3.35rem;
@@ -1109,6 +1201,8 @@ body.study-active .study-status {
 body.study-active .answer-area {
   margin-top: 16px;
   min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
   gap: 16px;
 }
 
@@ -1453,6 +1547,39 @@ body.challenge-active .result-summary div {
   width: min(980px, calc(100vw - 32px));
 }
 
+.dialog-panel.range-dialog-panel {
+  width: min(860px, calc(100vw - 32px));
+}
+
+.range-dialog-panel .range-toolbar {
+  position: sticky;
+  top: 63px;
+  z-index: 2;
+  margin: 0 0 14px;
+  background: rgba(244, 246, 248, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.range-dialog-panel #lesson-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+  overflow: visible;
+  padding: 0;
+  scroll-snap-type: none;
+}
+
+.range-dialog-panel .range-group {
+  flex: none;
+  width: 100%;
+  max-width: none;
+}
+
+.range-dialog-panel .range-options {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .dialog-panel h2 {
   font-size: 1.25rem;
 }
@@ -1538,6 +1665,16 @@ body.challenge-active .result-summary div {
     padding: 16px;
   }
 
+  .range-summary-card {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .range-summary-card .secondary-button {
+    width: 100%;
+  }
+
   #lesson-options {
     margin-inline: -4px;
     padding: 2px 4px 14px;
@@ -1563,6 +1700,22 @@ body.challenge-active .result-summary div {
     padding: 10px;
   }
 
+  .range-dialog-panel .range-dialog-head {
+    top: -18px;
+    margin: -18px -18px 0;
+    padding: 18px 18px 12px;
+  }
+
+  .range-dialog-panel .range-group summary {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .range-dialog-panel .range-toggle {
+    grid-column: auto;
+    justify-self: end;
+    margin-top: 0;
+  }
+
   .range-toolbar {
     align-items: stretch;
     flex-direction: column;
@@ -1586,6 +1739,11 @@ body.challenge-active .result-summary div {
     grid-template-columns: 1fr;
     gap: 8px;
     padding: 0 10px 10px 10px;
+  }
+
+  .range-dialog-panel .range-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 10px 10px 42px;
   }
 
   .range-options .mode-button {
@@ -1716,11 +1874,21 @@ body.challenge-active .result-summary div {
 
   body.study-active .app-shell {
     width: min(100% - 18px, 980px);
+    height: 100dvh;
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
+  body.study-active.study-input-active .app-shell {
+    height: auto;
+    min-height: 100dvh;
+  }
+
   body.study-active #study-screen.is-active {
+    display: flex;
+  }
+
+  body.study-active.study-input-active #study-screen.is-active {
     display: block;
   }
 
@@ -1948,6 +2116,10 @@ body.challenge-active .result-summary div {
 
   .dialog-panel {
     padding: 18px;
+  }
+
+  .range-dialog-panel .range-toolbar {
+    top: 59px;
   }
 
   .toast {

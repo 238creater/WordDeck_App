@@ -59,6 +59,9 @@ const activeDeckName = document.querySelector("#active-deck-name");
 const modeOptions = document.querySelector("#mode-options");
 const rangeToolbar = document.querySelector("#range-toolbar");
 const lessonOptions = document.querySelector("#lesson-options");
+const rangeSummaryTitle = document.querySelector("#range-summary-title");
+const rangeSummaryDetail = document.querySelector("#range-summary-detail");
+const openRangeDialogButton = document.querySelector("#open-range-dialog-button");
 const bookmarkCount = document.querySelector("#bookmark-count");
 const bookmarkFilterButton = document.querySelector("#bookmark-filter-button");
 const bookmarkListToggle = document.querySelector("#bookmark-list-toggle");
@@ -78,7 +81,9 @@ const nextButton = document.querySelector("#next-button");
 const resultStatus = document.querySelector("#result-status");
 const quitDialog = document.querySelector("#quit-dialog");
 const bookmarkDialog = document.querySelector("#bookmark-dialog");
+const rangeDialog = document.querySelector("#range-dialog");
 const closeBookmarkDialogButton = document.querySelector("#close-bookmark-dialog-button");
+const closeRangeDialogButton = document.querySelector("#close-range-dialog-button");
 const quitDialogTitle = document.querySelector("#quit-dialog-title");
 const quitDialogMessage = document.querySelector("#quit-dialog-message");
 const cancelQuitButton = document.querySelector("#cancel-quit-button");
@@ -99,6 +104,9 @@ bookmarkFilterButton.addEventListener("click", () => {
 bookmarkListToggle.addEventListener("click", () => {
   openBookmarkDialog();
 });
+openRangeDialogButton.addEventListener("click", () => {
+  openRangeDialog();
+});
 challengeToggle.addEventListener("change", () => {
   setup.challenge = challengeToggle.checked;
   if (setup.challenge && setup.count === "endless") setup.count = "10";
@@ -109,6 +117,7 @@ startButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
+closeRangeDialogButton.addEventListener("click", closeRangeDialog);
 cancelQuitButton.addEventListener("click", closeConfirmDialog);
 confirmQuitButton.addEventListener("click", runConfirmDialogAction);
 quitDialog.addEventListener("click", (event) => {
@@ -116,6 +125,9 @@ quitDialog.addEventListener("click", (event) => {
 });
 bookmarkDialog.addEventListener("click", (event) => {
   if (event.target === bookmarkDialog) closeBookmarkDialog();
+});
+rangeDialog.addEventListener("click", (event) => {
+  if (event.target === rangeDialog) closeRangeDialog();
 });
 
 renderDecks();
@@ -144,6 +156,7 @@ function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
+  if (name !== "study") document.body.classList.remove("study-input-active");
   syncChallengeTheme(name);
   if (name === "study") {
     forceScrollToTop();
@@ -203,9 +216,9 @@ function handleGlobalClick(event) {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
     if (key) removeBookmarkByKey(decodeURIComponent(key));
   }
-  if (action === "add-result-bookmark") {
+  if (action === "toggle-result-bookmark") {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
-    if (key) addResultBookmarkByKey(decodeURIComponent(key));
+    if (key) toggleResultBookmarkByKey(decodeURIComponent(key));
   }
 
   const resultAction = event.target.closest("[data-result-action]")?.dataset.resultAction;
@@ -220,6 +233,10 @@ function handleKeyboard(event) {
   }
   if (!bookmarkDialog.classList.contains("is-hidden")) {
     if (event.key === "Escape") closeBookmarkDialog();
+    return;
+  }
+  if (!rangeDialog.classList.contains("is-hidden")) {
+    if (event.key === "Escape") closeRangeDialog();
     return;
   }
 
@@ -278,6 +295,21 @@ function openBookmarkDialog() {
 function closeBookmarkDialog() {
   if (!bookmarkDialog.classList.contains("is-hidden")) {
     bookmarkDialog.classList.add("is-hidden");
+    unlockPageScroll();
+  }
+}
+
+function openRangeDialog() {
+  const deck = getSelectedDeck();
+  if (deck) renderGroupButtons(deck);
+  rangeDialog.classList.remove("is-hidden");
+  lockPageScroll();
+  closeRangeDialogButton.focus();
+}
+
+function closeRangeDialog() {
+  if (!rangeDialog.classList.contains("is-hidden")) {
+    rangeDialog.classList.add("is-hidden");
     unlockPageScroll();
   }
 }
@@ -346,6 +378,7 @@ function renderSetup() {
   });
 
   renderGroupButtons(deck);
+  renderRangeSummary(deck);
   renderBookmarkPanel(deck);
 
   const availableCountOptions = setup.challenge
@@ -377,12 +410,13 @@ function renderGroupButtons(deck) {
   const selectedIds = getSelectedGroupIds(groups);
   const allSelected = selectedIds.length === groups.length;
   const grouped = getGroupedStudyRanges(groups);
+  const selectedWordCount = getRangeWordCount(deck.words, selectedIds);
 
   rangeToolbar.innerHTML = "";
   rangeToolbar.innerHTML = `
     <div>
       <span>選択中</span>
-      <strong>${selectedIds.length}/${groups.length}</strong>
+      <strong>${selectedWordCount}語 / ${selectedIds.length}範囲</strong>
     </div>
   `;
   const allButton = document.createElement("button");
@@ -414,7 +448,6 @@ function renderGroupButtons(deck) {
     summary.addEventListener("click", (event) => {
       if (event.target.closest("[data-role='toggle-range']")) return;
       event.preventDefault();
-      toggleRangeGroup(details);
     });
     details.appendChild(summary);
 
@@ -458,6 +491,38 @@ function renderGroupButtons(deck) {
     details.appendChild(childList);
     lessonOptions.appendChild(details);
   });
+}
+
+function renderRangeSummary(deck) {
+  const groups = getStudyGroups(deck.words);
+  const selectedIds = getSelectedGroupIds(groups);
+  const selectedWordCount = getRangeWordCount(deck.words, selectedIds);
+  const allSelected = selectedIds.length === groups.length;
+
+  rangeSummaryTitle.textContent = `${selectedWordCount}語 / ${selectedIds.length}範囲`;
+  if (selectedIds.length === 0) {
+    rangeSummaryDetail.textContent = "出題範囲が未選択です。範囲を変更から選んでください。";
+    return;
+  }
+  if (allSelected) {
+    rangeSummaryDetail.textContent = "すべての範囲を出題対象にしています。";
+    return;
+  }
+
+  const labels = selectedIds.map(formatRangeSummaryLabel);
+  const visibleLabels = labels.slice(0, 3).join(" / ");
+  const hiddenCount = labels.length - 3;
+  rangeSummaryDetail.textContent = hiddenCount > 0 ? `${visibleLabels} ほか${hiddenCount}範囲` : visibleLabels;
+}
+
+function getRangeWordCount(words, selectedIds) {
+  const selected = new Set(selectedIds);
+  return words.filter((word) => selected.has(word.lesson)).length;
+}
+
+function formatRangeSummaryLabel(groupId) {
+  const { parent, child } = splitGroupLabel(groupId);
+  return parent === child ? parent : `${parent} ${child}`;
 }
 
 function renderBookmarkPanel(deck) {
@@ -585,8 +650,10 @@ function updateStartState(deck) {
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
 
-  if (setup.bookmarkedOnly && selectedCount === 0) {
-    startNote.textContent = "しおり単語がありません。学習中にしおりを付けてください。";
+  if (selectedCount === 0) {
+    startNote.textContent = setup.bookmarkedOnly
+      ? "選択中の範囲にしおり単語がありません。範囲を広げるか、しおりを追加してください。"
+      : "出題範囲が未選択です。範囲を変更から選んでください。";
     startNote.className = "start-note is-warning";
   } else if (mode.type === "choice" && selectedCount < 4) {
     startNote.textContent = setup.bookmarkedOnly
@@ -641,6 +708,7 @@ function renderQuestion() {
   const word = session.count === "endless" ? getEndlessWord() : session.questions[session.index];
   session.current = buildQuestion(word, mode);
   session.locked = false;
+  document.body.classList.remove("study-input-active");
 
   feedback.textContent = "";
   feedback.className = "feedback";
@@ -733,6 +801,12 @@ function renderInputAnswer() {
     if (answerNote.textContent === "英語を入力してください。") {
       answerNote.textContent = session.current.hint || "";
     }
+  });
+  input.addEventListener("focus", () => {
+    document.body.classList.add("study-input-active");
+  });
+  input.addEventListener("blur", () => {
+    document.body.classList.remove("study-input-active");
   });
   submitButton.addEventListener("pointerdown", (event) => {
     event.preventDefault();
@@ -910,7 +984,7 @@ function renderResult() {
           ${wrongItem.userAnswer ? `<div><dt>回答</dt><dd>${escapeHtml(wrongItem.userAnswer)}</dd></div>` : ""}
           <div><dt>正解</dt><dd>${escapeHtml(wrongItem.answer)}</dd></div>
         </dl>
-        <button class="secondary-button small wrong-bookmark-button" type="button" data-action="add-result-bookmark" data-bookmark-key="${encodeURIComponent(wordKey)}" ${bookmarked ? "disabled" : ""}>${bookmarked ? "追加済み" : "しおりに追加"}</button>
+        <button class="secondary-button small wrong-bookmark-button" type="button" data-action="toggle-result-bookmark" data-bookmark-key="${encodeURIComponent(wordKey)}">${bookmarked ? "しおり解除" : "しおりに追加"}</button>
       </div>
     `;
     wrongList.appendChild(element);
@@ -959,13 +1033,20 @@ function repeatSameStudy() {
   startStudy();
 }
 
-function addResultBookmarkByKey(key) {
+function toggleResultBookmarkByKey(key) {
   if (!session?.deck) return;
   const word = session.deck.words.find((item) => getWordKey(item) === key);
   if (!word) return;
-  const added = addBookmark(word, session.deck.id);
+  const bookmarks = getBookmarkSet(session.deck.id);
+  const willRemove = bookmarks.has(key);
+  if (willRemove) {
+    bookmarks.delete(key);
+  } else {
+    bookmarks.add(key);
+  }
+  setBookmarkSet(session.deck.id, bookmarks);
   renderResult();
-  showToast(added ? "しおりを付けました。" : "すでにしおりが付いています。");
+  showToast(willRemove ? "しおりを外しました。" : "しおりを付けました。");
 }
 
 function updateStudyStatus() {
@@ -1144,9 +1225,8 @@ function getBookmarkedWords(deck = getSelectedDeck()) {
 }
 
 function getWordPool(words) {
-  const selectedGroups = setup.groups.length ? new Set(setup.groups) : new Set(getStudyGroups(words).map((group) => group.id));
-  const pool = words.filter((word) => selectedGroups.has(word.lesson));
-  const rangedPool = pool.length ? pool : words;
+  const selectedGroups = new Set(getSelectedGroupIds(getStudyGroups(words)));
+  const rangedPool = words.filter((word) => selectedGroups.has(word.lesson));
   if (!setup.bookmarkedOnly) return rangedPool;
   return rangedPool.filter((word) => isBookmarked(word));
 }
