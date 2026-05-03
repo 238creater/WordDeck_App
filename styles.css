@@ -39,6 +39,10 @@ body.dialog-open .app-shell {
   min-height: 100dvh;
 }
 
+body.dialog-open .screen {
+  filter: blur(4px);
+}
+
 body.challenge-active {
   color: #26312d;
   background:
@@ -1532,19 +1536,13 @@ body.challenge-active .result-summary div {
   min-height: 100dvh;
   place-items: center;
   padding: 18px;
-  background: transparent;
+  background: rgba(18, 27, 23, 0.46);
   overscroll-behavior: contain;
   overflow: hidden;
 }
 
 .dialog-backdrop::before {
-  content: "";
-  position: fixed;
-  inset: -40dvh -20vw;
-  z-index: -1;
-  background: rgba(18, 27, 23, 0.36);
-  -webkit-backdrop-filter: blur(9px);
-  backdrop-filter: blur(9px);
+  display: none;
 }
 
 .dialog-backdrop.is-hidden {
