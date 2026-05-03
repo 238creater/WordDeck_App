@@ -31,8 +31,13 @@ body {
 }
 
 body.dialog-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
   overflow: hidden;
   overscroll-behavior: contain;
+  touch-action: none;
 }
 
 body.dialog-open .app-shell {
@@ -779,14 +784,12 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   z-index: 4;
   margin: -22px -22px 0;
   padding: 22px 22px 14px;
-  border-bottom: 1px solid rgba(217, 223, 216, 0.72);
-  background: rgba(255, 255, 255, 0.96);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  border-bottom: 0;
+  background: var(--surface);
 }
 
 .range-dialog-panel .range-toolbar {
-  top: 63px;
+  top: 66px;
 }
 
 .range-dialog-panel .range-group summary {
@@ -1556,6 +1559,7 @@ body.challenge-active .result-summary div {
   max-height: calc(100dvh - 36px);
   overflow: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   padding: 22px;
   border: 1px solid rgba(217, 223, 216, 0.92);
   border-radius: 8px;
@@ -1573,12 +1577,12 @@ body.challenge-active .result-summary div {
 
 .range-dialog-panel .range-toolbar {
   position: sticky;
-  top: 63px;
+  top: 0;
   z-index: 2;
   margin: 0 0 14px;
-  background: rgba(244, 246, 248, 0.96);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: var(--surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .range-dialog-panel #lesson-options {
@@ -2140,7 +2144,7 @@ body.challenge-active .result-summary div {
   }
 
   .range-dialog-panel .range-toolbar {
-    top: 59px;
+    top: 60px;
   }
 
   .toast {

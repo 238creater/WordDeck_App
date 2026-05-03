@@ -92,6 +92,7 @@ const toast = document.querySelector("#toast");
 let confirmDialogAction = null;
 let toastTimer = null;
 let scrollLockCount = 0;
+let lockedScrollY = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -316,12 +317,21 @@ function closeRangeDialog() {
 
 function lockPageScroll() {
   scrollLockCount += 1;
+  if (scrollLockCount === 1) {
+    lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = `-${lockedScrollY}px`;
+  }
   document.body.classList.add("dialog-open");
 }
 
 function unlockPageScroll() {
   scrollLockCount = Math.max(0, scrollLockCount - 1);
-  if (scrollLockCount === 0) document.body.classList.remove("dialog-open");
+  if (scrollLockCount === 0) {
+    document.body.classList.remove("dialog-open");
+    document.body.style.top = "";
+    window.scrollTo(0, lockedScrollY);
+    lockedScrollY = 0;
+  }
 }
 
 function showToast(message, variant = "success") {
