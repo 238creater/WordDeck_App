@@ -58,7 +58,7 @@ const csvInput = document.querySelector("#csv-input");
 const activeDeckName = document.querySelector("#active-deck-name");
 const modeOptions = document.querySelector("#mode-options");
 const rangeToolbar = document.querySelector("#range-toolbar");
-const lessonOptions = document.querySelector("#lesson-options");
+const lessonOptions = document.querySelector("#range-list");
 const rangeSummaryTitle = document.querySelector("#range-summary-title");
 const rangeSummaryDetail = document.querySelector("#range-summary-detail");
 const openRangeDialogButton = document.querySelector("#open-range-dialog-button");
@@ -441,25 +441,22 @@ function renderGroupButtons(deck) {
 
   lessonOptions.innerHTML = "";
   grouped.forEach((range) => {
-    const details = document.createElement("details");
-    details.className = "range-group";
-    details.open = true;
+    const stageCard = document.createElement("article");
+    stageCard.className = "range-stage";
 
-    const summary = document.createElement("summary");
+    const stageHead = document.createElement("div");
+    stageHead.className = "range-stage-head";
     const rangeSelectedCount = range.children.filter((group) => selectedIds.includes(group.id)).length;
     const rangeAllSelected = rangeSelectedCount === range.children.length;
     const rangePartlySelected = rangeSelectedCount > 0 && !rangeAllSelected;
-    summary.innerHTML = `
-      <span class="range-title">${escapeHtml(range.parent)}</span>
-      <strong class="range-count">${rangeSelectedCount}/${range.children.length}</strong>
+    stageHead.classList.toggle("is-selected", rangeAllSelected);
+    stageHead.classList.toggle("is-partial", rangePartlySelected);
+    stageHead.innerHTML = `
+      <div>
+        <span class="range-title">${escapeHtml(range.parent)}</span>
+        <strong class="range-count">${rangeSelectedCount}/${range.children.length}</strong>
+      </div>
     `;
-    summary.classList.toggle("is-selected", rangeAllSelected);
-    summary.classList.toggle("is-partial", rangePartlySelected);
-    summary.addEventListener("click", (event) => {
-      if (event.target.closest("[data-role='toggle-range']")) return;
-      event.preventDefault();
-    });
-    details.appendChild(summary);
 
     const toggleButton = document.createElement("button");
     toggleButton.className = `range-toggle${rangeAllSelected ? " is-selected" : ""}`;
@@ -480,10 +477,11 @@ function renderGroupButtons(deck) {
       setup.groups = [...current];
       renderSetup();
     });
-    summary.appendChild(toggleButton);
+    stageHead.appendChild(toggleButton);
+    stageCard.appendChild(stageHead);
 
     const childList = document.createElement("div");
-    childList.className = "range-options";
+    childList.className = "range-stage-options";
     range.children.forEach((group) => {
       const button = createGroupButton(group.childLabel, selectedIds.includes(group.id));
       button.addEventListener("click", () => {
@@ -498,8 +496,8 @@ function renderGroupButtons(deck) {
       });
       childList.appendChild(button);
     });
-    details.appendChild(childList);
-    lessonOptions.appendChild(details);
+    stageCard.appendChild(childList);
+    lessonOptions.appendChild(stageCard);
   });
 }
 
