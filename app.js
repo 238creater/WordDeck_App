@@ -78,7 +78,6 @@ const feedback = document.querySelector("#feedback");
 const answerNote = document.querySelector("#answer-note");
 const answerArea = document.querySelector("#answer-area");
 const nextButton = document.querySelector("#next-button");
-const resultStatus = document.querySelector("#result-status");
 const quitDialog = document.querySelector("#quit-dialog");
 const bookmarkDialog = document.querySelector("#bookmark-dialog");
 const rangeDialog = document.querySelector("#range-dialog");
@@ -673,12 +672,12 @@ function updateStartState(deck) {
     startNote.className = "start-note is-warning";
   } else if (count === "endless") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語を一周ずつランダムに出題します。一発勝負は間違えたら終了です。`
+      ? `${selectedCount}語を一周ずつランダムに出題します。チャレンジモードは間違えたら終了です。`
       : `${selectedCount}語を一周ずつランダムに出題します。`;
     startNote.className = "start-note";
   } else if (count === "all") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語をすべてランダムに出題します。一発勝負は間違えたら終了です。`
+      ? `${selectedCount}語をすべてランダムに出題します。チャレンジモードは間違えたら終了です。`
       : `${selectedCount}語をすべてランダムに出題します。`;
     startNote.className = "start-note";
   } else if (!canStart) {
@@ -688,7 +687,7 @@ function updateStartState(deck) {
     startNote.className = "start-note is-warning";
   } else {
     startNote.textContent = setup.challenge
-      ? `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。一発勝負は間違えたら終了です。`
+      ? `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。チャレンジモードは間違えたら終了です。`
       : `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。`;
     startNote.className = "start-note";
   }
@@ -736,7 +735,6 @@ function renderQuestion() {
 function setQuestionText(text) {
   const value = String(text);
   questionText.textContent = value;
-  questionText.title = value;
   questionText.classList.remove(
     "is-single-token",
     "is-japanese",
@@ -844,7 +842,6 @@ function renderChoiceAnswer() {
     button.type = "button";
     button.dataset.choiceId = choice.id;
     button.textContent = choice.label;
-    button.title = choice.label;
     button.addEventListener("click", () => {
       if (!session.locked) submitChoiceAnswer(choice, button);
     });
@@ -958,10 +955,7 @@ function nextQuestion() {
 }
 
 function renderResult() {
-  document.querySelector("#result-correct").textContent = session.correct;
-  document.querySelector("#result-wrong").textContent = session.answered - session.correct;
-  document.querySelector("#result-accuracy").textContent = `${getAccuracy()}%`;
-  renderResultStatus();
+  renderResultSummary();
 
   const wrongList = document.querySelector("#wrong-list");
   setRetryButtonsHidden(session.wrongWords.length === 0);
@@ -999,22 +993,36 @@ function renderResult() {
   });
 }
 
-function renderResultStatus() {
-  resultStatus.className = "result-status is-hidden";
-  resultStatus.textContent = "";
-  if (!session.challenge) return;
+function renderResultSummary() {
+  const summary = document.querySelector(".result-summary");
+  summary.classList.toggle("is-challenge-result", Boolean(session.challenge));
 
-  const failed = session.answered > session.correct;
-  const endlessLabel = session.count === "endless" ? `${session.correct}問連続正解` : "";
-  resultStatus.textContent = failed
-    ? `一発勝負: 失敗 (${session.correct}問連続正解)`
-    : `一発勝負: ${endlessLabel || "クリア"}`;
-  resultStatus.className = `result-status ${failed ? "is-failed" : "is-cleared"}`;
+  if (session.challenge) {
+    const failed = session.answered > session.correct;
+    document.querySelector("#result-correct").textContent = failed ? "失敗" : "成功";
+    document.querySelector("#result-correct").parentElement.classList.toggle("is-failed", failed);
+    document.querySelector("#result-correct").parentElement.classList.toggle("is-cleared", !failed);
+    document.querySelector("#result-correct").nextElementSibling.textContent = "";
+    document.querySelector("#result-wrong").textContent = `${session.correct}問`;
+    document.querySelector("#result-wrong").nextElementSibling.textContent = "連続正解";
+    document.querySelector("#result-accuracy").textContent = "";
+    return;
+  }
+
+  document.querySelector("#result-correct").parentElement.classList.remove("is-failed", "is-cleared");
+  document.querySelector("#result-correct").textContent = session.correct;
+  document.querySelector("#result-correct").nextElementSibling.textContent = "正解";
+  document.querySelector("#result-wrong").textContent = session.answered - session.correct;
+  document.querySelector("#result-wrong").nextElementSibling.textContent = "不正解";
+  document.querySelector("#result-accuracy").textContent = `${getAccuracy()}%`;
+  document.querySelector("#result-accuracy").nextElementSibling.textContent = "正答率";
 }
 
 function setRetryButtonsHidden(isHidden) {
   document.querySelectorAll('[data-result-action="retry-wrong"]').forEach((button) => {
-    button.classList.toggle("is-hidden", isHidden);
+    button.classList.toggle("is-placeholder", isHidden);
+    button.disabled = isHidden;
+    button.setAttribute("aria-hidden", String(isHidden));
   });
 }
 
@@ -1214,6 +1222,7 @@ function toggleCurrentBookmark() {
   }
   setBookmarkSet(deckId, bookmarks);
   renderBookmarkButton();
+  triggerAnimation(bookmarkCurrentButton, "is-bouncing");
   showToast(willMark ? "しおりを付けました。" : "しおりを外しました。");
 }
 
@@ -1224,6 +1233,16 @@ function renderBookmarkButton() {
   bookmarkCurrentButton.innerHTML = "<span></span>しおり";
   bookmarkCurrentButton.title = marked ? "しおりを外す" : "しおりを付ける";
   bookmarkCurrentButton.setAttribute("aria-label", bookmarkCurrentButton.title);
+}
+
+function triggerAnimation(element, className) {
+  if (!element) return;
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element.classList.add(className);
+  window.setTimeout(() => {
+    element.classList.remove(className);
+  }, 720);
 }
 
 function getBookmarkedWords(deck = getSelectedDeck()) {

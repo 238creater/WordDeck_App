@@ -111,7 +111,7 @@ body:not(.study-active) button:active:not(:disabled) {
 
 .screen.is-active {
   display: block;
-  animation: screen-enter 190ms ease both;
+  animation: screen-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 body.study-active .app-shell {
@@ -135,17 +135,22 @@ body.study-active.study-input-active #study-screen.is-active {
 @keyframes screen-enter {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px) scale(0.995);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .screen.is-active {
+    animation: none;
+  }
+
+  .bookmark-current-button.is-bouncing,
+  .result-summary span {
     animation: none;
   }
 
@@ -268,7 +273,7 @@ h2 {
   border: 1px solid rgba(188, 199, 194, 0.95);
   color: var(--ink);
   background: linear-gradient(180deg, #f7faf8, #dfe8e4);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 8px 20px rgba(32, 44, 38, 0.1);
 }
 
 .secondary-button:hover:not(:disabled) {
@@ -374,7 +379,8 @@ body.challenge-active .choice-button,
 body.challenge-active .answer-input {
   border-color: rgba(146, 104, 42, 0.42);
   color: #26312d;
-  background: #fffaf0;
+  background: linear-gradient(180deg, #fffaf0, #f4ead6);
+  box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
 body.challenge-active .mode-button.is-selected,
@@ -385,11 +391,83 @@ body.challenge-active #lesson-options .mode-button.is-selected {
   box-shadow: inset 0 0 0 1px rgba(180, 100, 56, 0.16);
 }
 
+body.challenge-active .range-summary-card,
+body.challenge-active .range-stage {
+  border-color: rgba(176, 132, 56, 0.28);
+  background: rgba(255, 252, 244, 0.9);
+  box-shadow: 0 10px 24px rgba(91, 63, 28, 0.1);
+}
+
+body.challenge-active .dialog-panel,
+body.challenge-active .bookmark-item {
+  border-color: rgba(176, 132, 56, 0.28);
+  background: rgba(255, 252, 244, 0.96);
+}
+
+body.challenge-active .dialog-panel {
+  box-shadow: 0 28px 70px rgba(91, 63, 28, 0.24);
+}
+
+body.challenge-active .bookmark-group h3 {
+  color: #7b432d;
+}
+
+body.challenge-active .bookmark-dialog-head,
+body.challenge-active .range-dialog-head {
+  background: transparent;
+}
+
+body.challenge-active .range-dialog-head h2,
+body.challenge-active .bookmark-dialog-head h2 {
+  color: #5a2f22;
+}
+
+body.challenge-active .range-toolbar {
+  border-color: rgba(176, 132, 56, 0.24);
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.94), rgba(248, 238, 216, 0.82));
+}
+
+body.challenge-active .study-metrics span,
+body.challenge-active .study-metrics strong,
+body.challenge-active .bookmark-current-button {
+  border-color: rgba(176, 132, 56, 0.32);
+  color: #5a2f22;
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.96), rgba(244, 234, 214, 0.9));
+  box-shadow: 0 9px 22px rgba(91, 63, 28, 0.14);
+}
+
+body.challenge-active .bookmark-current-button span {
+  color: #8d765f;
+}
+
+body.challenge-active .study-metrics strong {
+  color: #7b3026;
+}
+
+body.challenge-active .bookmark-current-button.is-bookmarked {
+  border-color: rgba(180, 100, 56, 0.56);
+  color: #5a2f22;
+  background: linear-gradient(180deg, #f8dcc8, #efc0aa);
+  box-shadow: 0 10px 24px rgba(91, 63, 28, 0.18);
+}
+
+body.challenge-active .bookmark-current-button.is-bookmarked span {
+  color: #5a2f22;
+}
+
 body.challenge-active .range-stage-options .mode-button.is-selected {
   border-color: rgba(180, 100, 56, 0.58);
   color: #5a2f22;
   background: #f8dcc8;
   box-shadow: inset 0 0 0 1px rgba(180, 100, 56, 0.16);
+}
+
+body.challenge-active .range-all-button.is-selected,
+body.challenge-active .range-toggle.is-selected {
+  border-color: rgba(123, 67, 45, 0.72);
+  color: #ffffff;
+  background: linear-gradient(180deg, #a86942, #7b432d);
+  box-shadow: 0 9px 22px rgba(91, 63, 28, 0.2);
 }
 
 body.challenge-active .range-stage-options .mode-button.is-selected::before {
@@ -560,7 +638,7 @@ code {
   border-color: rgba(188, 199, 194, 0.95);
   color: var(--ink);
   background: linear-gradient(180deg, #f7faf8, #dfe8e4);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 8px 20px rgba(32, 44, 38, 0.1);
 }
 
 .bookmark-panel-actions .secondary-button:hover:not(:disabled) {
@@ -597,8 +675,8 @@ code {
 body.challenge-active .bookmark-panel-actions .secondary-button {
   border-color: rgba(146, 104, 42, 0.42);
   color: #26312d;
-  background: #fffaf0;
-  box-shadow: var(--shadow-soft);
+  background: linear-gradient(180deg, #fffaf0, #f4ead6);
+  box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
 body.challenge-active .bookmark-panel.is-filtered {
@@ -609,7 +687,8 @@ body.challenge-active .bookmark-panel.is-filtered {
 body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   border-color: rgba(157, 77, 54, 0.48);
   color: #7b3026;
-  background: #f8dcc8;
+  background: linear-gradient(180deg, #f8dcc8, #efc0aa);
+  box-shadow: inset 0 0 0 1px rgba(157, 77, 54, 0.12), 0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
 .bookmark-list {
@@ -619,6 +698,29 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 112, 102, 0.56) transparent;
+}
+
+.bookmark-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bookmark-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bookmark-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(99, 112, 102, 0.52);
+}
+
+body.challenge-active .bookmark-list {
+  scrollbar-color: rgba(141, 90, 56, 0.58) transparent;
+}
+
+body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
+  background: rgba(141, 90, 56, 0.54);
 }
 
 .bookmark-dialog-head,
@@ -780,7 +882,8 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--ink);
-  background: #f5f7f6;
+  background: linear-gradient(180deg, #fbfcfc, #e7eeeb);
+  box-shadow: 0 7px 18px rgba(32, 44, 38, 0.09);
   font-weight: 900;
 }
 
@@ -893,7 +996,8 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--ink);
-  background: #f5f7f6;
+  background: linear-gradient(180deg, #fbfcfc, #e7eeeb);
+  box-shadow: 0 6px 16px rgba(32, 44, 38, 0.08);
   font-size: 0.82rem;
   font-weight: 900;
   white-space: nowrap;
@@ -933,7 +1037,7 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   width: 100%;
   min-height: 50px;
   border-radius: 8px;
-  background: #fbfcfc;
+  background: linear-gradient(180deg, #ffffff, #eef3f1);
 }
 
 .range-options .mode-button::before {
@@ -961,7 +1065,8 @@ body.challenge-active .bookmark-panel.is-filtered #bookmark-filter-button {
   padding: 12px;
   border: 1px solid var(--line);
   color: var(--ink);
-  background: #fbfcfc;
+  background: linear-gradient(180deg, #ffffff, #eef3f1);
+  box-shadow: 0 8px 20px rgba(32, 44, 38, 0.08);
   font-weight: 800;
 }
 
@@ -1124,6 +1229,7 @@ body.study-active .study-status {
   width: 12px;
   height: 17px;
   border-radius: 2px 2px 1px 1px;
+  color: #8b948e;
   background: currentColor;
 }
 
@@ -1139,9 +1245,18 @@ body.study-active .study-status {
 }
 
 .bookmark-current-button.is-bookmarked {
-  border-color: rgba(244, 201, 93, 0.72);
-  color: #7a4b13;
-  background: linear-gradient(180deg, #fff5cf, #ffe8a3);
+  border-color: rgba(23, 130, 91, 0.34);
+  color: #0d5f42;
+  background: linear-gradient(180deg, #eefaf4, #dff4ea);
+  box-shadow: 0 10px 24px rgba(23, 130, 91, 0.12);
+}
+
+.bookmark-current-button.is-bookmarked span {
+  color: #0d5f42;
+}
+
+.bookmark-current-button.is-bouncing {
+  animation: bookmark-bounce 420ms cubic-bezier(0.2, 0.9, 0.2, 1.2);
 }
 
 .question-text {
@@ -1274,11 +1389,11 @@ body.study-active .answer-area {
   min-height: 82px;
   padding: 14px;
   border: 2px solid var(--line);
-  background: var(--surface);
+  background: linear-gradient(180deg, #ffffff, #f1f5f3);
   color: var(--ink);
   font-weight: 850;
   line-height: 1.45;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 9px 22px rgba(32, 44, 38, 0.09);
   overflow-wrap: anywhere;
 }
 
@@ -1386,6 +1501,32 @@ body.study-active .answer-area {
   margin-bottom: 12px;
 }
 
+.result-summary.is-challenge-result {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.result-summary.is-challenge-result div:nth-child(3) {
+  display: none;
+}
+
+.result-summary.is-challenge-result div {
+  display: grid;
+  min-height: 132px;
+  place-items: center;
+}
+
+.result-summary.is-challenge-result div p:empty {
+  display: none;
+}
+
+.result-summary.is-challenge-result div.is-cleared span {
+  color: var(--green);
+}
+
+.result-summary.is-challenge-result div.is-failed span {
+  color: var(--red);
+}
+
 .result-actions {
   position: sticky;
   top: 0;
@@ -1407,27 +1548,9 @@ body.study-active .answer-area {
   padding-inline: 12px;
 }
 
-.result-status {
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(217, 223, 216, 0.9);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow-soft);
-  font-weight: 900;
-  text-align: center;
-}
-
-.result-status.is-cleared {
-  border-color: rgba(23, 130, 91, 0.22);
-  color: #0d5f42;
-  background: var(--green-soft);
-}
-
-.result-status.is-failed {
-  border-color: rgba(200, 62, 67, 0.24);
-  color: #9f2f34;
-  background: var(--red-soft);
+.result-actions button.is-placeholder {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .result-actions .secondary-button {
@@ -1445,8 +1568,8 @@ body.study-active .answer-area {
 body.challenge-active .result-actions .secondary-button {
   border-color: rgba(146, 104, 42, 0.42);
   color: #26312d;
-  background: #fffaf0;
-  box-shadow: var(--shadow-soft);
+  background: linear-gradient(180deg, #fffaf0, #f4ead6);
+  box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
 body.challenge-active .result-actions .secondary-button:hover:not(:disabled) {
@@ -1472,6 +1595,15 @@ body.challenge-active .result-summary div {
   display: block;
   font-size: 3.4rem;
   font-weight: 900;
+  animation: result-number-pop 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.result-summary div:nth-child(2) span {
+  animation-delay: 70ms;
+}
+
+.result-summary div:nth-child(3) span {
+  animation-delay: 140ms;
 }
 
 .result-summary p,
@@ -1708,7 +1840,8 @@ body.challenge-active .result-summary div {
   display: -webkit-box;
   padding: 12px 14px 12px 36px;
   border-radius: 8px;
-  background: #fbfcfc;
+  background: linear-gradient(180deg, #ffffff, #eef3f1);
+  box-shadow: 0 7px 18px rgba(32, 44, 38, 0.08);
   line-height: 1.18;
   text-align: center;
   overflow: hidden;
@@ -1733,6 +1866,19 @@ body.challenge-active .result-summary div {
 .range-stage-options .mode-button.is-selected::before {
   border-color: var(--blue);
   background: var(--blue);
+}
+
+.range-stage-options .mode-button {
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.range-stage-options .mode-button:active:not(:disabled) {
+  filter: brightness(0.97);
+  box-shadow: inset 0 0 0 1px rgba(45, 113, 136, 0.1);
 }
 
 .dialog-panel h2 {
@@ -1782,6 +1928,33 @@ body.challenge-active .result-summary div {
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 8px);
+}
+
+@keyframes bookmark-bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.08);
+  }
+
+  72% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes result-number-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 720px) {
@@ -1949,6 +2122,10 @@ body.challenge-active .result-summary div {
 
   .result-summary {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .result-summary.is-challenge-result {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .result-summary div {
@@ -2326,9 +2503,14 @@ body.challenge-active .result-summary div {
     background: linear-gradient(180deg, #f7faf8, #dfe8e4);
   }
 
+  body.challenge-active .secondary-button:hover:not(:disabled),
+  body.challenge-active .mode-button:hover:not(:disabled),
+  body.challenge-active .range-all-button:hover:not(:disabled),
+  body.challenge-active .range-toggle:hover:not(:disabled),
+  body.challenge-active .choice-button:hover:not(:disabled),
   body.challenge-active .result-actions .secondary-button:hover:not(:disabled),
   body.challenge-active .bookmark-panel-actions .secondary-button:hover:not(:disabled) {
     border-color: rgba(146, 104, 42, 0.42);
-    background: #fffaf0;
+    background: linear-gradient(180deg, #fffaf0, #f4ead6);
   }
 }
