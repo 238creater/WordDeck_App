@@ -1525,17 +1525,26 @@ body.challenge-active .result-summary div {
 
 .dialog-backdrop {
   position: fixed;
-  inset: -2px 0;
+  inset: 0;
   z-index: 20;
   display: grid;
-  width: 100vw;
-  min-height: calc(100dvh + 4px);
+  width: 100%;
+  min-height: 100dvh;
   place-items: center;
   padding: 18px;
-  background: rgba(18, 27, 23, 0.32);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: transparent;
   overscroll-behavior: contain;
+  overflow: hidden;
+}
+
+.dialog-backdrop::before {
+  content: "";
+  position: fixed;
+  inset: -40dvh -20vw;
+  z-index: -1;
+  background: rgba(18, 27, 23, 0.36);
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
 }
 
 .dialog-backdrop.is-hidden {
@@ -1543,6 +1552,8 @@ body.challenge-active .result-summary div {
 }
 
 .dialog-panel {
+  position: relative;
+  z-index: 1;
   width: min(420px, 100%);
   max-height: calc(100dvh - 36px);
   overflow: auto;
