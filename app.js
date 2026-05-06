@@ -64,10 +64,12 @@ const rangeSummaryTitle = document.querySelector("#range-summary-title");
 const rangeSummaryDetail = document.querySelector("#range-summary-detail");
 const openRangeDialogButton = document.querySelector("#open-range-dialog-button");
 const openWordListButton = document.querySelector("#open-word-list-button");
+const wordListScreen = document.querySelector("#word-list-screen");
 const wordListDeckName = document.querySelector("#word-list-deck-name");
 const wordSearchInput = document.querySelector("#word-search-input");
 const clearWordSearchButton = document.querySelector("#clear-word-search-button");
 const closeWordSearchButton = document.querySelector("#close-word-search-button");
+const wordSearchFilters = document.querySelector("#word-search-filters");
 const wordListContent = document.querySelector("#word-list-content");
 const wordSearchResults = document.querySelector("#word-search-results");
 const bookmarkCount = document.querySelector("#bookmark-count");
@@ -102,6 +104,8 @@ let toastTimer = null;
 let scrollLockCount = 0;
 let lockedScrollY = 0;
 let wordSearchActive = false;
+let wordSearchStageFilter = "all";
+let wordSearchPartFilter = "all";
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -132,9 +136,15 @@ clearWordSearchButton.addEventListener("click", () => {
   wordSearchInput.focus({ preventScroll: true });
 });
 closeWordSearchButton.addEventListener("click", () => {
-  wordSearchActive = false;
-  wordSearchInput.value = "";
-  wordSearchInput.blur();
+  closeWordSearch();
+});
+wordSearchFilters.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-search-filter]");
+  if (!button) return;
+  const { searchFilter, value } = button.dataset;
+  if (searchFilter === "stage") wordSearchStageFilter = value;
+  if (searchFilter === "part") wordSearchPartFilter = value;
+  renderWordSearchFilters();
   renderWordSearchResults();
 });
 challengeToggle.addEventListener("change", () => {
@@ -612,7 +622,10 @@ function renderWordListScreen() {
   wordListDeckName.textContent = deck.name;
   wordSearchInput.value = "";
   wordSearchActive = false;
+  wordSearchStageFilter = "all";
+  wordSearchPartFilter = "all";
   renderWordListContent(deck);
+  renderWordSearchFilters(deck);
   renderWordSearchResults();
 }
 
@@ -666,9 +679,12 @@ function renderWordSearchResults() {
   if (!deck) return;
   const query = wordSearchInput.value.trim();
   const isSearching = wordSearchActive;
+  const hasFilters = wordSearchStageFilter !== "all" || wordSearchPartFilter !== "all";
+  wordListScreen.classList.toggle("is-searching", isSearching);
+  wordListScreen.classList.toggle("has-search-query", query.length > 0);
   wordListContent.classList.toggle("is-hidden", isSearching);
   wordSearchResults.classList.toggle("is-hidden", !isSearching);
-  clearWordSearchButton.disabled = query.length === 0;
+  wordSearchFilters.classList.toggle("is-hidden", !isSearching);
 
   if (!isSearching) {
     wordSearchResults.innerHTML = "";
@@ -676,20 +692,25 @@ function renderWordSearchResults() {
   }
 
   if (!query) {
-    wordSearchResults.innerHTML = '<div class="empty-state">英語・日本語・Stage名の一部で検索できます。</div>';
+    wordSearchResults.innerHTML = hasFilters
+      ? '<div class="empty-state">検索語を入力すると、この条件で絞り込みます。</div>'
+      : '<div class="empty-state">英語・日本語で検索できます。Stageや品詞はフィルターで絞り込めます。</div>';
     return;
   }
 
   const normalizedQuery = normalizeSearchText(query);
   const matchedWords = deck.words.filter((word) => {
-    const target = normalizeSearchText(`${word.english} ${formatJapanese(word)} ${word.lesson}`);
-    return target.includes(normalizedQuery);
+    if (!matchesWordSearchFilters(word)) return false;
+    if (!normalizedQuery) return true;
+    const english = normalizeSearchText(word.english);
+    const japanese = normalizeSearchText(formatJapanese(word));
+    return english.startsWith(normalizedQuery) || japanese.includes(normalizedQuery);
   });
 
   wordSearchResults.innerHTML = "";
   const resultHead = document.createElement("div");
   resultHead.className = "word-search-head";
-  resultHead.innerHTML = `<strong>${matchedWords.length}件</strong><span>${escapeHtml(query)}</span>`;
+  resultHead.innerHTML = `<strong>${matchedWords.length}件</strong><span>${escapeHtml(getWordSearchLabel(query))}</span>`;
   wordSearchResults.appendChild(resultHead);
 
   if (matchedWords.length === 0) {
@@ -710,6 +731,76 @@ function renderWordSearchResults() {
     });
   wordSearchResults.appendChild(grid);
   triggerAnimation(wordSearchResults, "is-refreshing");
+}
+
+function closeWordSearch() {
+  wordSearchActive = false;
+  wordSearchInput.value = "";
+  wordSearchStageFilter = "all";
+  wordSearchPartFilter = "all";
+  wordSearchInput.blur();
+  renderWordSearchFilters();
+  renderWordSearchResults();
+}
+
+function renderWordSearchFilters(deck = getSelectedDeck()) {
+  if (!deck) return;
+  const stages = getSearchStageOptions(deck.words);
+  const parts = getSearchPartOptions(deck.words);
+  wordSearchFilters.innerHTML = `
+    <section class="word-search-filter-group">
+      <h2>Stage</h2>
+      <div class="word-search-filter-options">
+        ${renderSearchFilterButton("stage", "all", "すべて", wordSearchStageFilter === "all")}
+        ${stages.map((stage) => renderSearchFilterButton("stage", stage, stage, wordSearchStageFilter === stage)).join("")}
+      </div>
+    </section>
+    <section class="word-search-filter-group">
+      <h2>品詞</h2>
+      <div class="word-search-filter-options">
+        ${renderSearchFilterButton("part", "all", "すべて", wordSearchPartFilter === "all")}
+        ${parts.map((part) => renderSearchFilterButton("part", part, part, wordSearchPartFilter === part)).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderSearchFilterButton(type, value, label, selected) {
+  return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${type}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
+}
+
+function matchesWordSearchFilters(word) {
+  const { parent, child } = getWordRangeMeta(word);
+  return (wordSearchStageFilter === "all" || parent === wordSearchStageFilter)
+    && (wordSearchPartFilter === "all" || child === wordSearchPartFilter);
+}
+
+function getWordSearchLabel(query) {
+  const labels = [];
+  if (query) labels.push(query);
+  if (wordSearchStageFilter !== "all") labels.push(wordSearchStageFilter);
+  if (wordSearchPartFilter !== "all") labels.push(wordSearchPartFilter);
+  return labels.join(" / ") || "すべて";
+}
+
+function getSearchStageOptions(words) {
+  return [...new Set(words.map((word) => getWordRangeMeta(word).parent))]
+    .sort((a, b) => a.localeCompare(b, "ja", { numeric: true }));
+}
+
+function getSearchPartOptions(words) {
+  return [...new Set(words.map((word) => getWordRangeMeta(word).child))]
+    .sort((a, b) => {
+      const aIndex = getPartOrderIndex(a);
+      const bIndex = getPartOrderIndex(b);
+      if (aIndex !== bIndex) return aIndex - bIndex;
+      return a.localeCompare(b, "ja", { numeric: true });
+    });
+}
+
+function getWordRangeMeta(word) {
+  const group = getStudyGroups([word])[0];
+  return splitGroupLabel(group.label);
 }
 
 function prepareSmoothDetails(details) {
@@ -749,49 +840,43 @@ function openSmoothDetails(details, content) {
       content.style.height = "";
       content.style.opacity = "";
       details.classList.remove("is-animating");
-    }, 240);
+    }, details.classList.contains("word-stage") ? 360 : 300);
   });
 }
 
 function closeSmoothDetails(details, content) {
-  const summary = details.querySelector("summary");
-  const runClose = () => {
-    const startHeight = content.offsetHeight;
-    content.style.height = `${startHeight}px`;
-    content.style.opacity = "1";
-    requestAnimationFrame(() => {
-      content.style.height = "0px";
-      content.style.opacity = "0";
-      window.setTimeout(() => {
-        details.open = false;
-        content.style.height = "";
-        content.style.opacity = "";
-        details.classList.remove("is-animating");
-      }, 220);
-    });
-  };
-
-  if (shouldAlignBeforeClose(details, summary)) {
-    const top = getStickyTop(summary);
-    const targetY = window.scrollY + details.getBoundingClientRect().top - top;
-    window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
-    window.setTimeout(runClose, 170);
-    return;
-  }
-
-  runClose();
+  const startHeight = content.offsetHeight;
+  const isStage = details.classList.contains("word-stage");
+  details.classList.add("is-closing");
+  content.style.height = `${startHeight}px`;
+  content.style.opacity = "1";
+  requestAnimationFrame(() => {
+    content.style.height = "0px";
+    content.style.opacity = "0";
+    window.setTimeout(() => {
+      const scrollY = window.scrollY;
+      details.open = false;
+      window.scrollTo(0, scrollY);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+      content.style.height = "";
+      content.style.opacity = "";
+      details.classList.remove("is-animating", "is-closing");
+      if (isStage) closeNestedWordParts(details);
+    }, isStage ? 360 : 300);
+  });
 }
 
-function shouldAlignBeforeClose(details, summary) {
-  if (!summary) return false;
-  const detailsTop = details.getBoundingClientRect().top;
-  const summaryTop = summary.getBoundingClientRect().top;
-  const stickyTop = getStickyTop(summary);
-  return detailsTop < stickyTop - 8 && Math.abs(summaryTop - stickyTop) < 4;
-}
-
-function getStickyTop(element) {
-  return Number.parseFloat(getComputedStyle(element).top) || 0;
+function closeNestedWordParts(stageDetails) {
+  stageDetails.querySelectorAll(".word-part[open]").forEach((part) => {
+    part.open = false;
+    part.classList.remove("is-animating", "is-closing");
+    const grid = part.querySelector(":scope > .word-card-grid");
+    if (!grid) return;
+    grid.style.height = "";
+    grid.style.opacity = "";
+  });
 }
 
 function createWordCard(word, deckId, showRange = false) {

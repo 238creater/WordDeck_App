@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260503-60" />
+    <link rel="stylesheet" href="styles.css?v=20260506-70" />
   </head>
   <body>
     <main class="app-shell">
@@ -103,10 +103,13 @@
         </header>
 
         <div class="word-list-search">
-          <input id="word-search-input" type="search" autocomplete="off" placeholder="英語・日本語・Stageで検索" />
-          <button id="clear-word-search-button" class="secondary-button small" type="button">クリア</button>
           <button id="close-word-search-button" class="secondary-button small word-search-close-button" type="button">閉じる</button>
+          <div class="word-search-field">
+            <input id="word-search-input" type="text" autocomplete="off" placeholder="英語・日本語で検索" />
+            <button id="clear-word-search-button" class="word-search-clear-button" type="button" aria-label="検索文字をクリア">×</button>
+          </div>
         </div>
+        <div id="word-search-filters" class="word-search-filters is-hidden"></div>
 
         <div id="word-list-content" class="word-list-content"></div>
         <div id="word-search-results" class="word-search-results is-hidden"></div>
@@ -225,6 +228,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260503-60"></script>
+    <script src="app.js?v=20260506-69"></script>
   </body>
 </html>
