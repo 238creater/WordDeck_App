@@ -1753,6 +1753,7 @@ body.study-active .study-status {
   position: relative;
   height: 10px;
   margin: 0 0 14px;
+  padding-right: 34px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(217, 223, 216, 0.82);
@@ -1769,9 +1770,9 @@ body.study-active .study-status {
 .time-bar span {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 10px;
   color: rgba(23, 32, 27, 0.72);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 900;
   line-height: 1;
   transform: translateY(-50%);
@@ -2966,8 +2967,14 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   .time-bar {
     flex: 0 0 auto;
-    height: 9px;
+    height: 12px;
     margin: 0 0 10px;
+    padding-right: 38px;
+  }
+
+  .time-bar span {
+    right: 11px;
+    font-size: 0.72rem;
   }
 
   .quit-button {
