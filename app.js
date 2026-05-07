@@ -1311,6 +1311,7 @@ function stopQuestionTimer({ freezeProgress = true, resetState = false } = {}) {
   if (freezeProgress && (questionTimer || questionTimerInterval)) {
     const barWidth = timeBar.getBoundingClientRect().width || 1;
     const fillWidth = timeBarFill.getBoundingClientRect().width;
+    timeBarFill.style.transition = "none";
     timeBarFill.style.width = `${Math.max(0, Math.min(100, (fillWidth / barWidth) * 100))}%`;
   }
   window.clearTimeout(questionTimer);
@@ -1319,8 +1320,8 @@ function stopQuestionTimer({ freezeProgress = true, resetState = false } = {}) {
   questionTimerInterval = null;
   if (resetState) {
     timeBar.classList.remove("is-low", "is-critical");
+    timeBarFill.style.transition = "";
   }
-  timeBarFill.style.transition = "";
 }
 
 function handleTimeUp() {
