@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260506-71" />
+    <link rel="stylesheet" href="styles.css?v=20260507-78" />
   </head>
   <body>
     <main class="app-shell">
@@ -77,6 +77,11 @@
             <div id="count-options" class="count-grid"></div>
           </section>
 
+          <section class="settings-block">
+            <h2>制限時間</h2>
+            <div id="time-options" class="time-grid"></div>
+          </section>
+
           <section class="settings-block start-panel">
             <div class="start-copy">
               <label class="challenge-toggle">
@@ -103,11 +108,11 @@
         </header>
 
         <div class="word-list-search">
-          <button id="close-word-search-button" class="secondary-button small word-search-close-button" type="button">閉じる</button>
           <div class="word-search-field">
             <input id="word-search-input" type="text" autocomplete="off" placeholder="英語・日本語で検索" />
             <button id="clear-word-search-button" class="word-search-clear-button" type="button" aria-label="検索文字をクリア">×</button>
           </div>
+          <button id="close-word-search-button" class="secondary-button small word-search-close-button" type="button">閉じる</button>
         </div>
         <div id="word-search-filters" class="word-search-filters is-hidden"></div>
 
@@ -123,6 +128,11 @@
             <strong id="accuracy">正答率 0%</strong>
           </div>
         </header>
+
+        <div id="time-bar" class="time-bar is-hidden" aria-hidden="true">
+          <div id="time-bar-fill" class="time-bar-fill"></div>
+          <span id="time-bar-text">10s</span>
+        </div>
 
         <div class="question-card">
           <p id="study-title" class="eyebrow">問題</p>
@@ -166,7 +176,10 @@
         </div>
 
         <section class="wrong-section">
-          <h2>間違えた単語</h2>
+          <div class="wrong-section-head">
+            <h2>間違えた単語</h2>
+            <button id="toggle-wrong-bookmarks-button" class="secondary-button small" type="button">まとめてしおり</button>
+          </div>
           <div id="wrong-list" class="wrong-list"></div>
         </section>
       </section>
@@ -228,6 +241,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260507-72"></script>
+    <script src="app.js?v=20260507-83"></script>
   </body>
 </html>

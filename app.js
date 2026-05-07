@@ -15,6 +15,14 @@ const countOptions = [
   { id: "endless", label: "エンドレス", value: "endless" },
 ];
 
+const timeLimitOptions = [
+  { id: "none", label: "なし", value: null },
+  { id: "5", label: "5秒", value: 5 },
+  { id: "10", label: "10秒", value: 10 },
+  { id: "15", label: "15秒", value: 15 },
+  { id: "30", label: "30秒", value: 30 },
+];
+
 const partOrder = ["動詞", "名詞", "形容詞", "副詞・その他"];
 
 const sampleDeck = {
@@ -41,6 +49,7 @@ let setup = {
   mode: modes[0].id,
   groups: [],
   count: "10",
+  timeLimit: "none",
   challenge: false,
   bookmarkedOnly: false,
 };
@@ -77,17 +86,22 @@ const bookmarkFilterButton = document.querySelector("#bookmark-filter-button");
 const bookmarkListToggle = document.querySelector("#bookmark-list-toggle");
 const bookmarkList = document.querySelector("#bookmark-list");
 const countOptionsEl = document.querySelector("#count-options");
+const timeOptionsEl = document.querySelector("#time-options");
 const challengeToggle = document.querySelector("#challenge-toggle");
 const startButton = document.querySelector("#start-button");
 const startNote = document.querySelector("#start-note");
 const questionCount = document.querySelector("#question-count");
 const accuracy = document.querySelector("#accuracy");
+const timeBar = document.querySelector("#time-bar");
+const timeBarFill = document.querySelector("#time-bar-fill");
+const timeBarText = document.querySelector("#time-bar-text");
 const questionText = document.querySelector("#question-text");
 const bookmarkCurrentButton = document.querySelector("#bookmark-current-button");
 const feedback = document.querySelector("#feedback");
 const answerNote = document.querySelector("#answer-note");
 const answerArea = document.querySelector("#answer-area");
 const nextButton = document.querySelector("#next-button");
+const toggleWrongBookmarksButton = document.querySelector("#toggle-wrong-bookmarks-button");
 const quitDialog = document.querySelector("#quit-dialog");
 const bookmarkDialog = document.querySelector("#bookmark-dialog");
 const rangeDialog = document.querySelector("#range-dialog");
@@ -106,6 +120,8 @@ let lockedScrollY = 0;
 let wordSearchActive = false;
 let wordSearchStageFilter = "all";
 let wordSearchPartFilter = "all";
+let questionTimer = null;
+let questionTimerInterval = null;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -156,6 +172,7 @@ challengeToggle.addEventListener("change", () => {
 startButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
+toggleWrongBookmarksButton.addEventListener("click", toggleWrongBookmarks);
 clearBookmarksButton.addEventListener("click", confirmClearBookmarks);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
 closeRangeDialogButton.addEventListener("click", closeRangeDialog);
@@ -388,6 +405,7 @@ function showToast(message, variant = "success") {
 }
 
 function quitStudy() {
+  stopQuestionTimer();
   session = null;
   renderSetup();
   showScreen("setup");
@@ -440,6 +458,10 @@ function renderSetup() {
     : countOptions;
   renderOptionButtons(countOptionsEl, availableCountOptions, setup.count, (id) => {
     setup.count = id;
+    renderSetup();
+  });
+  renderOptionButtons(timeOptionsEl, timeLimitOptions, setup.timeLimit, (id) => {
+    setup.timeLimit = id;
     renderSetup();
   });
 
@@ -766,7 +788,7 @@ function renderWordSearchFilters(deck = getSelectedDeck()) {
 }
 
 function renderSearchFilterButton(type, value, label, selected) {
-  return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${type}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
+  return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${escapeAttribute(type)}" data-value="${escapeAttribute(value)}">${escapeHtml(label)}</button>`;
 }
 
 function matchesWordSearchFilters(word) {
@@ -1015,6 +1037,7 @@ function startStudy() {
   const deck = getSelectedDeck();
   const pool = getWordPool(deck.words);
   const count = countOptions.find((option) => option.id === setup.count).value;
+  const timeLimit = timeLimitOptions.find((option) => option.id === setup.timeLimit)?.value ?? null;
   const mode = getSelectedMode();
   if (!canStartStudy(pool, count, mode)) {
     updateStartState(deck);
@@ -1034,6 +1057,7 @@ function startStudy() {
     wrongWords: [],
     wrongItems: [],
     challenge: setup.challenge,
+    timeLimit,
     current: null,
     locked: false,
   };
@@ -1049,6 +1073,8 @@ function updateStartState(deck) {
   const canStart = canStartStudy(pool, count, mode);
   const selectedCount = pool.length;
   const choiceReady = mode.type !== "choice" || canBuildChoicesForPool(pool, mode);
+  const timeLimit = timeLimitOptions.find((option) => option.id === setup.timeLimit)?.value ?? null;
+  const timeText = timeLimit ? ` 制限時間は1問${timeLimit}秒です。` : "";
 
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
@@ -1068,13 +1094,13 @@ function updateStartState(deck) {
     startNote.className = "start-note is-warning";
   } else if (count === "endless") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語を一周ずつランダムに出題します。チャレンジモードは間違えたら終了です。`
-      : `${selectedCount}語を一周ずつランダムに出題します。`;
+      ? `${selectedCount}語を一周ずつランダムに出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${selectedCount}語を一周ずつランダムに出題します。${timeText}`;
     startNote.className = "start-note";
   } else if (count === "all") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語をすべてランダムに出題します。チャレンジモードは間違えたら終了です。`
-      : `${selectedCount}語をすべてランダムに出題します。`;
+      ? `${selectedCount}語をすべてランダムに出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${selectedCount}語をすべてランダムに出題します。${timeText}`;
     startNote.className = "start-note";
   } else if (!canStart) {
     startNote.textContent = setup.bookmarkedOnly
@@ -1083,8 +1109,8 @@ function updateStartState(deck) {
     startNote.className = "start-note is-warning";
   } else {
     startNote.textContent = setup.challenge
-      ? `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。チャレンジモードは間違えたら終了です。`
-      : `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。`;
+      ? `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。${timeText}`;
     startNote.className = "start-note";
   }
 }
@@ -1107,6 +1133,7 @@ function getChoiceLabel(word, mode) {
 }
 
 function renderQuestion() {
+  stopQuestionTimer({ resetState: true });
   const mode = modes.find((item) => item.id === session.mode);
   const word = session.count === "endless" ? getEndlessWord() : session.questions[session.index];
   session.current = buildQuestion(word, mode);
@@ -1126,6 +1153,7 @@ function renderQuestion() {
   } else {
     renderChoiceAnswer();
   }
+  startQuestionTimer();
 }
 
 function setQuestionText(text) {
@@ -1245,6 +1273,91 @@ function renderChoiceAnswer() {
   });
 }
 
+function startQuestionTimer() {
+  stopQuestionTimer({ resetState: true });
+  if (!session?.timeLimit) {
+    timeBar.classList.add("is-hidden");
+    timeBar.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  const duration = session.timeLimit * 1000;
+  const endAt = Date.now() + duration;
+  timeBar.classList.remove("is-hidden", "is-low", "is-critical");
+  timeBar.setAttribute("aria-hidden", "false");
+  timeBarText.textContent = `${session.timeLimit}s`;
+  timeBarFill.style.transition = "none";
+  timeBarFill.style.width = "100%";
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      timeBarFill.style.transition = `width ${duration}ms linear`;
+      timeBarFill.style.width = "0%";
+    });
+  });
+
+  questionTimerInterval = window.setInterval(() => {
+    const remaining = Math.max(0, endAt - Date.now());
+    const ratio = remaining / duration;
+    timeBarText.textContent = `${Math.ceil(remaining / 1000)}s`;
+    timeBar.classList.toggle("is-low", ratio <= 0.45 && ratio > 0.18);
+    timeBar.classList.toggle("is-critical", ratio <= 0.18);
+  }, 120);
+
+  questionTimer = window.setTimeout(handleTimeUp, duration);
+}
+
+function stopQuestionTimer({ freezeProgress = true, resetState = false } = {}) {
+  if (freezeProgress && (questionTimer || questionTimerInterval)) {
+    const barWidth = timeBar.getBoundingClientRect().width || 1;
+    const fillWidth = timeBarFill.getBoundingClientRect().width;
+    timeBarFill.style.width = `${Math.max(0, Math.min(100, (fillWidth / barWidth) * 100))}%`;
+  }
+  window.clearTimeout(questionTimer);
+  window.clearInterval(questionTimerInterval);
+  questionTimer = null;
+  questionTimerInterval = null;
+  if (resetState) {
+    timeBar.classList.remove("is-low", "is-critical");
+  }
+  timeBarFill.style.transition = "";
+}
+
+function handleTimeUp() {
+  if (!session || session.locked) return;
+  stopQuestionTimer({ freezeProgress: false });
+  timeBarText.textContent = "0s";
+  timeBar.classList.remove("is-low");
+  timeBar.classList.add("is-critical");
+  timeBarFill.style.transition = "none";
+  timeBarFill.style.width = "0%";
+  lockCurrentAnswerAsTimedOut();
+  finishAnswer(false, `正解: ${session.current.answerLabel || session.current.answer}`, "時間切れ", { timedOut: true });
+}
+
+function lockCurrentAnswerAsTimedOut() {
+  const input = document.querySelector("#answer-input");
+  const submitButton = document.querySelector("#answer-submit-button");
+  if (input) {
+    input.blur();
+    replaceInputWithAnswer(input, "時間切れ", false);
+  }
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "時間切れ";
+  }
+
+  answerArea.querySelectorAll(".choice-button").forEach((button) => {
+    button.disabled = true;
+    const buttonChoice = session.current.choices?.find((item) => item.id === button.dataset.choiceId);
+    if (buttonChoice?.isCorrect) {
+      button.classList.add("correct");
+    } else {
+      button.classList.add("dimmed");
+    }
+  });
+}
+
 function submitInputAnswer(value) {
   const isCorrect = normalizeEnglish(value) === normalizeEnglish(session.current.answer);
   const form = document.querySelector("#answer-form");
@@ -1316,6 +1429,7 @@ function submitChoiceAnswer(choice) {
 }
 
 function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
+  stopQuestionTimer();
   session.locked = true;
   session.answered += 1;
   if (isCorrect) {
@@ -1355,6 +1469,7 @@ function renderResult() {
 
   const wrongList = document.querySelector("#wrong-list");
   setRetryButtonsHidden(session.challenge || session.wrongWords.length === 0);
+  updateWrongBookmarkBulkButton();
   wrongList.innerHTML = "";
   if (session.wrongWords.length === 0) {
     wrongList.innerHTML = '<p>全問正解です。</p>';
@@ -1386,6 +1501,33 @@ function renderResult() {
       </div>
     `;
     wrongList.appendChild(element);
+  });
+}
+
+function updateWrongBookmarkBulkButton() {
+  const wrongWords = getResultWrongWords();
+  const isHidden = session.challenge || wrongWords.length === 0;
+  toggleWrongBookmarksButton.classList.toggle("is-hidden", isHidden);
+  toggleWrongBookmarksButton.disabled = isHidden;
+  if (isHidden) return;
+
+  const bookmarks = getBookmarkSet(session.deck.id);
+  const allBookmarked = wrongWords.every((word) => bookmarks.has(getWordKey(word)));
+  toggleWrongBookmarksButton.textContent = allBookmarked ? "まとめて解除" : "まとめてしおり";
+  toggleWrongBookmarksButton.classList.toggle("is-removing", allBookmarked);
+}
+
+function getResultWrongWords() {
+  if (!session) return [];
+  const words = session.wrongItems?.length
+    ? session.wrongItems.map((item) => item.word)
+    : session.wrongWords;
+  const seen = new Set();
+  return words.filter((word) => {
+    const key = getWordKey(word);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 }
 
@@ -1461,6 +1603,26 @@ function toggleResultBookmarkByKey(key) {
   showToast(willRemove ? "しおりを外しました。" : "しおりを付けました。");
 }
 
+function toggleWrongBookmarks() {
+  if (!session?.deck) return;
+  const wrongWords = getResultWrongWords();
+  if (wrongWords.length === 0) return;
+
+  const bookmarks = getBookmarkSet(session.deck.id);
+  const allBookmarked = wrongWords.every((word) => bookmarks.has(getWordKey(word)));
+  wrongWords.forEach((word) => {
+    const key = getWordKey(word);
+    if (allBookmarked) {
+      bookmarks.delete(key);
+    } else {
+      bookmarks.add(key);
+    }
+  });
+  setBookmarkSet(session.deck.id, bookmarks);
+  renderResult();
+  showToast(allBookmarked ? "間違えた単語のしおりを解除しました。" : "間違えた単語をしおりに追加しました。");
+}
+
 function updateStudyStatus() {
   const currentNumber = session.count === "endless" ? session.answered + 1 : Math.min(session.index + 1, session.questions.length);
   const total = session.count === "endless" ? "∞" : session.questions.length;
@@ -1515,36 +1677,56 @@ function getDuplicateJapaneseHint(answerWord, prompt) {
 }
 
 function makeChoices(answerWord, labelForWord, answerLabel) {
+  const answerPart = getChoicePartLabel(answerWord);
+  const baseCandidates = session.pool.filter((word) => word !== answerWord);
+  const samePartSafeCandidates = shuffle(
+    baseCandidates.filter((word) => answerPart && getChoicePartLabel(word) === answerPart && !hasSharedJapanese(word, answerWord)),
+  );
   const safeCandidates = shuffle(
-    session.pool.filter((word) => word !== answerWord && !hasSharedJapanese(word, answerWord)),
+    baseCandidates.filter((word) => !hasSharedJapanese(word, answerWord)),
+  );
+  const samePartFallbackCandidates = shuffle(
+    baseCandidates.filter((word) => answerPart && getChoicePartLabel(word) === answerPart && hasSharedJapanese(word, answerWord)),
   );
   const fallbackCandidates = shuffle(
-    session.pool.filter((word) => word !== answerWord && hasSharedJapanese(word, answerWord)),
+    baseCandidates.filter((word) => hasSharedJapanese(word, answerWord)),
   );
   const usedLabels = new Set([answerLabel]);
+  const usedWords = new Set([answerWord]);
   const choices = [];
 
-  fillChoicesFromCandidates(choices, safeCandidates, usedLabels, labelForWord);
+  fillChoicesFromCandidates(choices, samePartSafeCandidates, usedLabels, usedWords, labelForWord);
+  fillChoicesFromCandidates(choices, safeCandidates, usedLabels, usedWords, labelForWord);
   if (choices.length < 3) {
-    fillChoicesFromCandidates(choices, fallbackCandidates, usedLabels, labelForWord);
+    fillChoicesFromCandidates(choices, samePartFallbackCandidates, usedLabels, usedWords, labelForWord);
+  }
+  if (choices.length < 3) {
+    fillChoicesFromCandidates(choices, fallbackCandidates, usedLabels, usedWords, labelForWord);
   }
 
   choices.push({ id: createId(), label: answerLabel, isCorrect: true });
   return shuffle(choices);
 }
 
-function fillChoicesFromCandidates(choices, candidates, usedLabels, labelForWord) {
+function fillChoicesFromCandidates(choices, candidates, usedLabels, usedWords, labelForWord) {
   for (const word of candidates) {
+    if (choices.length >= 3) break;
+    if (usedWords.has(word)) continue;
     const label = labelForWord(word);
     if (usedLabels.has(label)) continue;
+    usedWords.add(word);
     usedLabels.add(label);
     choices.push({
       id: createId(),
       label,
       isCorrect: false,
     });
-    if (choices.length === 3) break;
   }
+}
+
+function getChoicePartLabel(word) {
+  const { parent, child } = getWordRangeMeta(word);
+  return parent === "その他" && child === word.lesson ? "" : child;
 }
 
 function hasSharedJapanese(wordA, wordB) {
@@ -1991,4 +2173,12 @@ function escapeHtml(value) {
   const element = document.createElement("span");
   element.textContent = value;
   return element.innerHTML;
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

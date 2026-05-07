@@ -865,7 +865,7 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   top: 0;
   z-index: 8;
   display: grid;
-  grid-template-columns: 0 minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 0;
   gap: 10px;
   padding: 10px 0 14px;
   margin-bottom: 8px;
@@ -891,7 +891,7 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
 }
 
 .word-list-screen.is-searching .word-list-search {
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .word-list-screen.is-searching .word-search-close-button {
@@ -1643,6 +1643,16 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
   min-height: 56px;
 }
 
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.time-grid .mode-button {
+  min-height: 54px;
+}
+
 .mode-button {
   min-height: 70px;
   padding: 12px;
@@ -1737,6 +1747,71 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
 body.study-active .study-status {
   position: static;
   margin-bottom: 0;
+}
+
+.time-bar {
+  position: relative;
+  height: 10px;
+  margin: 0 0 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(217, 223, 216, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(188, 199, 194, 0.6);
+}
+
+.time-bar-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+}
+
+.time-bar span {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  color: rgba(23, 32, 27, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.time-bar.is-low .time-bar-fill {
+  background: linear-gradient(90deg, #d6a636, #f4c95d);
+}
+
+.time-bar.is-critical .time-bar-fill {
+  background: linear-gradient(90deg, #d14c51, var(--red));
+}
+
+body.challenge-active .time-bar {
+  background: rgba(244, 234, 214, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(176, 132, 56, 0.22);
+}
+
+body.challenge-active .time-bar-fill {
+  background: linear-gradient(90deg, #2d7188, #17825b);
+}
+
+body.challenge-active .time-bar.is-low .time-bar-fill {
+  background: linear-gradient(90deg, #f0b13a, #f4c95d);
+}
+
+body.challenge-active .time-bar.is-critical .time-bar-fill {
+  background: linear-gradient(90deg, #e05256, #c83e43);
+}
+
+body.challenge-active .time-bar.is-low {
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 166, 54, 0.42),
+    0 0 0 2px rgba(244, 201, 93, 0.12);
+}
+
+body.challenge-active .time-bar.is-critical {
+  box-shadow:
+    inset 0 0 0 1px rgba(200, 62, 67, 0.42),
+    0 0 0 2px rgba(200, 62, 67, 0.14);
 }
 
 .study-metrics {
@@ -2196,6 +2271,34 @@ body.challenge-active .result-summary div {
 
 .wrong-section {
   padding: 14px;
+}
+
+.wrong-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wrong-section-head h2 {
+  margin: 0;
+}
+
+.wrong-section-head .secondary-button {
+  flex: 0 0 auto;
+  min-height: 38px;
+}
+
+.wrong-section-head .secondary-button.is-removing {
+  border-color: rgba(200, 62, 67, 0.28);
+  color: #9f2f34;
+  background: rgba(250, 227, 228, 0.72);
+}
+
+body.challenge-active .wrong-section-head .secondary-button.is-removing {
+  border-color: rgba(180, 100, 56, 0.56);
+  color: #5a2f22;
+  background: linear-gradient(180deg, #f8dcc8, #efc0aa);
 }
 
 .wrong-list {
@@ -2720,13 +2823,13 @@ body.challenge-active .result-summary div {
   }
 
   .word-list-search {
-    grid-template-columns: 0 minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 0;
     gap: 8px;
     padding: 8px 0 12px;
   }
 
   .word-list-screen.is-searching .word-list-search {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 64px;
   }
 
   .word-list-screen.is-searching .word-search-close-button {
@@ -2822,6 +2925,15 @@ body.challenge-active .result-summary div {
     min-height: 52px;
   }
 
+  .time-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .time-grid .mode-button {
+    min-height: 50px;
+  }
+
   .mode-button {
     min-height: 58px;
   }
@@ -2850,6 +2962,11 @@ body.challenge-active .result-summary div {
   .study-status {
     margin-bottom: 12px;
     padding: 8px 0 10px;
+  }
+
+  .time-bar {
+    height: 9px;
+    margin: -4px 0 10px;
   }
 
   .quit-button {
@@ -3126,6 +3243,15 @@ body.challenge-active .result-summary div {
   .wrong-detail {
     grid-template-columns: 1fr;
     gap: 7px;
+  }
+
+  .wrong-section-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wrong-section-head .secondary-button {
+    width: 100%;
   }
 
   .wrong-bookmark-button {
