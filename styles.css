@@ -2965,8 +2965,9 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .time-bar {
+    flex: 0 0 auto;
     height: 9px;
-    margin: -4px 0 10px;
+    margin: 0 0 10px;
   }
 
   .quit-button {
@@ -3051,6 +3052,9 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .question-text {
+    height: 100%;
+    box-sizing: border-box;
+    padding: 42px 4px 74px;
     font-size: 2.35rem;
   }
 
