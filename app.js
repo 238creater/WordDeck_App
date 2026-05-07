@@ -1354,7 +1354,7 @@ function renderResult() {
   renderResultSummary();
 
   const wrongList = document.querySelector("#wrong-list");
-  setRetryButtonsHidden(session.wrongWords.length === 0);
+  setRetryButtonsHidden(session.challenge || session.wrongWords.length === 0);
   wrongList.innerHTML = "";
   if (session.wrongWords.length === 0) {
     wrongList.innerHTML = '<p>全問正解です。</p>';
