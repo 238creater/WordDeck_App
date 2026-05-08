@@ -1199,6 +1199,7 @@ body.challenge-active .word-part-summary {
 }
 
 .word-stage-body {
+  box-sizing: border-box;
   display: grid;
   gap: 10px;
   padding: 10px;
@@ -1206,6 +1207,7 @@ body.challenge-active .word-part-summary {
 
 .word-stage.is-animating > .word-stage-body,
 .word-part.is-animating > .word-card-grid {
+  min-height: 0;
   overflow: hidden;
   will-change: height, opacity;
   transition:
@@ -1226,16 +1228,12 @@ body.challenge-active .word-part-summary {
     opacity 170ms ease;
 }
 
-.word-stage.is-closing .word-part-summary {
-  position: relative;
-  top: auto;
-}
-
 .word-part[open] > .word-part-summary {
   border-bottom: 1px solid rgba(217, 223, 216, 0.9);
 }
 
 .word-card-grid {
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;

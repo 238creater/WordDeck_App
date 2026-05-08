@@ -985,26 +985,42 @@ function openSmoothDetails(details, content) {
 function closeSmoothDetails(details, content) {
   const startHeight = content.offsetHeight;
   const isStage = details.classList.contains("word-stage");
-  const duration = getDetailsAnimationDuration(details);
-  if (isStage) closeNestedWordParts(details);
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
+  const finish = onceTransitionDone(content, () => {
+    details.open = false;
+    if (isStage) closeNestedWordParts(details);
+    content.style.height = "";
+    content.style.opacity = "";
+    details.classList.remove("is-animating", "is-closing");
+  }, getDetailsAnimationDuration(details) + 80);
   requestAnimationFrame(() => {
     content.style.height = "0px";
     content.style.opacity = "0";
-    window.setTimeout(() => {
-      const scrollY = window.scrollY;
-      details.open = false;
-      window.scrollTo(0, scrollY);
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
-      content.style.height = "";
-      content.style.opacity = "";
-      details.classList.remove("is-animating", "is-closing");
-    }, duration);
+    finish.arm();
   });
+}
+
+function onceTransitionDone(element, callback, fallbackDelay) {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    element.removeEventListener("transitionend", onEnd);
+    window.clearTimeout(timer);
+    callback();
+  };
+  const onEnd = (event) => {
+    if (event.target === element && event.propertyName === "height") finish();
+  };
+  let timer = null;
+  element.addEventListener("transitionend", onEnd);
+  return {
+    arm() {
+      timer = window.setTimeout(finish, fallbackDelay);
+    },
+  };
 }
 
 function getDetailsAnimationDuration(details) {
