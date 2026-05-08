@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260507-80" />
+    <link rel="stylesheet" href="styles.css?v=20260508-01" />
   </head>
   <body>
     <main class="app-shell">
@@ -95,6 +95,14 @@
             </div>
             <button id="start-button" class="primary-button">開始</button>
           </section>
+        </div>
+
+        <div id="floating-start-bar" class="floating-start-bar" aria-hidden="true">
+          <div>
+            <strong id="floating-start-title">開始できます</strong>
+            <span id="floating-start-detail">選択範囲 0語</span>
+          </div>
+          <button id="floating-start-button" class="primary-button small" type="button">開始</button>
         </div>
       </section>
 
@@ -241,6 +249,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260508-06"></script>
+    <script src="app.js?v=20260508-09"></script>
   </body>
 </html>

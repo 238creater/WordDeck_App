@@ -91,6 +91,11 @@ const timeOptionsEl = document.querySelector("#time-options");
 const challengeToggle = document.querySelector("#challenge-toggle");
 const startButton = document.querySelector("#start-button");
 const startNote = document.querySelector("#start-note");
+const startPanel = document.querySelector(".start-panel");
+const floatingStartBar = document.querySelector("#floating-start-bar");
+const floatingStartButton = document.querySelector("#floating-start-button");
+const floatingStartTitle = document.querySelector("#floating-start-title");
+const floatingStartDetail = document.querySelector("#floating-start-detail");
 const questionCount = document.querySelector("#question-count");
 const accuracy = document.querySelector("#accuracy");
 const timeBar = document.querySelector("#time-bar");
@@ -123,9 +128,11 @@ let wordSearchStageFilters = new Set();
 let wordSearchPartFilters = new Set();
 let questionTimer = null;
 let questionTimerInterval = null;
+let startPanelVisible = true;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
+window.addEventListener("resize", updateFloatingStartVisibility);
 csvInput.addEventListener("change", handleCsvImport);
 document.querySelector("#load-sample-button").addEventListener("click", addSampleDeck);
 bookmarkFilterButton.addEventListener("click", () => {
@@ -172,6 +179,7 @@ challengeToggle.addEventListener("change", () => {
   renderSetup();
 });
 startButton.addEventListener("click", startStudy);
+floatingStartButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
 toggleWrongBookmarksButton.addEventListener("click", toggleWrongBookmarks);
@@ -191,6 +199,7 @@ rangeDialog.addEventListener("click", (event) => {
 });
 
 renderDecks();
+initFloatingStartObserver();
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -218,12 +227,56 @@ function showScreen(name) {
   document.body.classList.toggle("study-active", name === "study");
   if (name !== "study") document.body.classList.remove("study-input-active");
   syncChallengeTheme(name);
+  updateFloatingStartVisibility();
   if (name === "study") {
     forceScrollToTop();
     scrollToTop();
   } else {
     scrollToTop();
   }
+}
+
+function initFloatingStartObserver() {
+  if (!startButton || !floatingStartBar) return;
+  if (!("IntersectionObserver" in window)) {
+    window.addEventListener("scroll", updateStartPanelVisibility, { passive: true });
+    updateStartPanelVisibility();
+    return;
+  }
+
+  const observer = new IntersectionObserver(([entry]) => {
+    startPanelVisible = Boolean(entry?.isIntersecting);
+    updateFloatingStartVisibility();
+  }, {
+    root: null,
+    threshold: 0.45,
+  });
+  observer.observe(startButton);
+}
+
+function updateStartPanelVisibility() {
+  measureStartPanelVisibility();
+  updateFloatingStartVisibility();
+}
+
+function measureStartPanelVisibility() {
+  if (!startButton) return;
+  const rect = startButton.getBoundingClientRect();
+  const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+  startPanelVisible = visibleHeight >= Math.min(32, rect.height * 0.45);
+}
+
+function updateFloatingStartVisibility() {
+  if (!floatingStartBar) return;
+  if (screens.setup.classList.contains("is-active")) {
+    measureStartPanelVisibility();
+  }
+  const shouldShow = screens.setup.classList.contains("is-active")
+    && window.matchMedia("(max-width: 720px)").matches
+    && !startPanelVisible;
+  floatingStartBar.classList.toggle("is-visible", shouldShow);
+  floatingStartBar.setAttribute("aria-hidden", String(!shouldShow));
+  screens.setup.classList.toggle("has-floating-start", shouldShow);
 }
 
 function syncChallengeTheme(screenName = getActiveScreenName()) {
@@ -249,8 +302,14 @@ function forceScrollToTop() {
 function scrollToTop() {
   requestAnimationFrame(() => {
     forceScrollToTop();
-    requestAnimationFrame(forceScrollToTop);
-    window.setTimeout(forceScrollToTop, 120);
+    requestAnimationFrame(() => {
+      forceScrollToTop();
+      updateFloatingStartVisibility();
+    });
+    window.setTimeout(() => {
+      forceScrollToTop();
+      updateFloatingStartVisibility();
+    }, 120);
   });
 }
 
@@ -394,6 +453,7 @@ function unlockPageScroll() {
     document.body.style.top = "";
     window.scrollTo(0, lockedScrollY);
     lockedScrollY = 0;
+    requestAnimationFrame(updateFloatingStartVisibility);
   }
 }
 
@@ -927,6 +987,7 @@ function openSmoothDetails(details, content) {
 function closeSmoothDetails(details, content) {
   const startHeight = content.offsetHeight;
   const isStage = details.classList.contains("word-stage");
+  if (isStage) closeNestedWordParts(details);
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
@@ -943,13 +1004,12 @@ function closeSmoothDetails(details, content) {
       content.style.height = "";
       content.style.opacity = "";
       details.classList.remove("is-animating", "is-closing");
-      if (isStage) closeNestedWordParts(details);
     }, isStage ? 360 : 300);
   });
 }
 
 function closeNestedWordParts(stageDetails) {
-  stageDetails.querySelectorAll(".word-part[open]").forEach((part) => {
+  stageDetails.querySelectorAll(".word-part").forEach((part) => {
     part.open = false;
     part.classList.remove("is-animating", "is-closing");
     const grid = part.querySelector(":scope > .word-card-grid");
@@ -1136,6 +1196,11 @@ function updateStartState(deck) {
 
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
+  floatingStartButton.disabled = !canStart;
+  floatingStartButton.classList.toggle("is-disabled", !canStart);
+  floatingStartTitle.textContent = canStart ? "この設定で開始" : "開始できません";
+  floatingStartTitle.classList.toggle("is-warning", !canStart);
+  floatingStartDetail.textContent = getFloatingStartDetail(selectedCount, count);
 
   if (selectedCount === 0) {
     startNote.textContent = setup.bookmarkedOnly
@@ -1171,6 +1236,17 @@ function updateStartState(deck) {
       : `${setup.bookmarkedOnly ? "しおり単語" : "選択範囲"}${selectedCount}語から重複なしで${count}問出題します。${timeText}`;
     startNote.className = "start-note";
   }
+  updateFloatingStartVisibility();
+}
+
+function getFloatingStartDetail(selectedCount, count) {
+  const countLabel = count === "endless"
+    ? "エンドレス"
+    : count === "all"
+      ? "全部"
+      : `${count}問`;
+  const sourceLabel = setup.bookmarkedOnly ? "しおり" : "選択範囲";
+  return `${sourceLabel} ${selectedCount}語 / ${countLabel}`;
 }
 
 function canStartStudy(pool, count, mode = getSelectedMode()) {
