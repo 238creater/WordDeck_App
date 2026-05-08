@@ -129,10 +129,12 @@ let wordSearchPartFilters = new Set();
 let questionTimer = null;
 let questionTimerInterval = null;
 let startPanelVisible = true;
+let floatingStartFrame = null;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
-window.addEventListener("resize", updateFloatingStartVisibility);
+window.addEventListener("scroll", scheduleFloatingStartUpdate, { passive: true });
+window.addEventListener("resize", scheduleFloatingStartUpdate);
 csvInput.addEventListener("change", handleCsvImport);
 document.querySelector("#load-sample-button").addEventListener("click", addSampleDeck);
 bookmarkFilterButton.addEventListener("click", () => {
@@ -199,7 +201,7 @@ rangeDialog.addEventListener("click", (event) => {
 });
 
 renderDecks();
-initFloatingStartObserver();
+scheduleFloatingStartUpdate();
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -236,34 +238,19 @@ function showScreen(name) {
   }
 }
 
-function initFloatingStartObserver() {
-  if (!startButton || !floatingStartBar) return;
-  if (!("IntersectionObserver" in window)) {
-    window.addEventListener("scroll", updateStartPanelVisibility, { passive: true });
-    updateStartPanelVisibility();
-    return;
-  }
-
-  const observer = new IntersectionObserver(([entry]) => {
-    startPanelVisible = Boolean(entry?.isIntersecting);
+function scheduleFloatingStartUpdate() {
+  if (floatingStartFrame) return;
+  floatingStartFrame = requestAnimationFrame(() => {
+    floatingStartFrame = null;
     updateFloatingStartVisibility();
-  }, {
-    root: null,
-    threshold: 0.45,
   });
-  observer.observe(startButton);
-}
-
-function updateStartPanelVisibility() {
-  measureStartPanelVisibility();
-  updateFloatingStartVisibility();
 }
 
 function measureStartPanelVisibility() {
   if (!startButton) return;
   const rect = startButton.getBoundingClientRect();
-  const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-  startPanelVisible = visibleHeight >= Math.min(32, rect.height * 0.45);
+  const lowerSafeLine = window.innerHeight - 92;
+  startPanelVisible = rect.bottom > 16 && rect.top < lowerSafeLine;
 }
 
 function updateFloatingStartVisibility() {

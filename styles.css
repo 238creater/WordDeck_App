@@ -2960,7 +2960,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     font-size: 0.92rem;
   }
 
-  #setup-screen.has-floating-start {
+  #setup-screen {
     padding-bottom: 86px;
   }
 
