@@ -1228,6 +1228,16 @@ body.challenge-active .word-part-summary {
     opacity 170ms ease;
 }
 
+.word-stage.is-stage-closing {
+  will-change: height;
+  transition: height 260ms cubic-bezier(0.32, 0, 0.24, 1);
+}
+
+.word-stage.is-stage-closing > .word-stage-body {
+  pointer-events: none;
+  transition: opacity 170ms ease;
+}
+
 .word-part[open] > .word-part-summary {
   border-bottom: 1px solid rgba(217, 223, 216, 0.9);
 }

@@ -983,8 +983,13 @@ function openSmoothDetails(details, content) {
 }
 
 function closeSmoothDetails(details, content) {
-  const startHeight = content.offsetHeight;
   const isStage = details.classList.contains("word-stage");
+  if (isStage) {
+    closeStageDetails(details, content);
+    return;
+  }
+
+  const startHeight = content.offsetHeight;
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
@@ -997,6 +1002,31 @@ function closeSmoothDetails(details, content) {
   }, getDetailsAnimationDuration(details) + 80);
   requestAnimationFrame(() => {
     content.style.height = "0px";
+    content.style.opacity = "0";
+    finish.arm();
+  });
+}
+
+function closeStageDetails(details, content) {
+  const summary = details.querySelector(":scope > summary");
+  const startHeight = details.offsetHeight;
+  const endHeight = summary?.offsetHeight || 54;
+  details.classList.add("is-stage-closing");
+  details.style.height = `${startHeight}px`;
+  details.style.overflow = "hidden";
+  content.style.opacity = "1";
+
+  const finish = onceTransitionDone(details, () => {
+    details.open = false;
+    closeNestedWordParts(details);
+    details.style.height = "";
+    details.style.overflow = "";
+    content.style.opacity = "";
+    details.classList.remove("is-animating", "is-stage-closing");
+  }, getDetailsAnimationDuration(details) + 90);
+
+  requestAnimationFrame(() => {
+    details.style.height = `${endHeight}px`;
     content.style.opacity = "0";
     finish.arm();
   });
