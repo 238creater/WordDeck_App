@@ -158,9 +158,11 @@ wordSearchFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-search-filter]");
   if (!button) return;
   const { searchFilter, value } = button.dataset;
+  const scrollState = getWordSearchScrollState();
   toggleWordSearchFilter(searchFilter, value);
   renderWordSearchFilters();
   renderWordSearchResults();
+  restoreWordSearchScrollState(scrollState);
 });
 challengeToggle.addEventListener("change", () => {
   setup.challenge = challengeToggle.checked;
@@ -786,6 +788,25 @@ function renderWordSearchFilters(deck = getSelectedDeck()) {
 
 function renderSearchFilterButton(type, value, label, selected) {
   return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${escapeAttribute(type)}" data-value="${escapeAttribute(value)}">${escapeHtml(label)}</button>`;
+}
+
+function getWordSearchScrollState() {
+  return {
+    pageY: window.scrollY || document.documentElement.scrollTop || 0,
+    filterX: [...wordSearchFilters.querySelectorAll(".word-search-filter-options")].map((element) => element.scrollLeft),
+  };
+}
+
+function restoreWordSearchScrollState(state) {
+  if (!state) return;
+  const restore = () => {
+    wordSearchFilters.querySelectorAll(".word-search-filter-options").forEach((element, index) => {
+      element.scrollLeft = state.filterX[index] || 0;
+    });
+    window.scrollTo(0, state.pageY);
+  };
+  restore();
+  requestAnimationFrame(restore);
 }
 
 function toggleWordSearchFilter(type, value) {
