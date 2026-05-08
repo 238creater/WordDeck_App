@@ -712,27 +712,27 @@ function renderWordListContent(deck = getSelectedDeck()) {
   }
 
   grouped.forEach((stage) => {
-    const stageDetails = document.createElement("details");
+    const stageDetails = document.createElement("article");
     stageDetails.className = "word-stage";
     stageDetails.innerHTML = `
-      <summary class="word-stage-summary">
+      <button class="word-stage-summary" type="button" aria-expanded="false">
         <span>${escapeHtml(stage.parent)}</span>
         <strong>${stage.wordCount}語</strong>
-      </summary>
-      <div class="word-stage-body"></div>
+      </button>
+      <div class="word-stage-body" hidden></div>
     `;
     const stageBody = stageDetails.querySelector(".word-stage-body");
     prepareSmoothDetails(stageDetails);
 
     stage.children.forEach((part) => {
-      const partDetails = document.createElement("details");
+      const partDetails = document.createElement("article");
       partDetails.className = "word-part";
       partDetails.innerHTML = `
-        <summary class="word-part-summary">
+        <button class="word-part-summary" type="button" aria-expanded="false">
           <span>${escapeHtml(part.childLabel)}</span>
           <strong>${part.words.length}語</strong>
-        </summary>
-        <div class="word-card-grid"></div>
+        </button>
+        <div class="word-card-grid" hidden></div>
       `;
       const grid = partDetails.querySelector(".word-card-grid");
       part.words.forEach((word) => {
@@ -941,7 +941,7 @@ function getWordRangeMeta(word) {
 }
 
 function prepareSmoothDetails(details) {
-  const summary = details.querySelector("summary");
+  const summary = details.querySelector(":scope > .word-stage-summary, :scope > .word-part-summary");
   if (!summary) return;
   summary.addEventListener("click", (event) => {
     event.preventDefault();
@@ -953,12 +953,12 @@ function toggleSmoothDetails(details) {
   if (details.classList.contains("is-animating")) return;
   const content = details.querySelector(":scope > div");
   if (!content) {
-    details.open = !details.open;
+    details.classList.toggle("is-open");
     return;
   }
 
   details.classList.add("is-animating");
-  if (details.open) {
+  if (details.classList.contains("is-open")) {
     closeSmoothDetails(details, content);
     return;
   }
@@ -967,7 +967,10 @@ function toggleSmoothDetails(details) {
 }
 
 function openSmoothDetails(details, content) {
-  details.open = true;
+  const summary = details.querySelector(":scope > .word-stage-summary, :scope > .word-part-summary");
+  details.classList.add("is-open");
+  summary?.setAttribute("aria-expanded", "true");
+  content.hidden = false;
   content.style.height = "0px";
   content.style.opacity = "0";
   const duration = getDetailsAnimationDuration(details);
@@ -984,49 +987,28 @@ function openSmoothDetails(details, content) {
 
 function closeSmoothDetails(details, content) {
   const isStage = details.classList.contains("word-stage");
-  if (isStage) {
-    closeStageDetails(details, content);
-    return;
-  }
-
+  const summary = details.querySelector(":scope > .word-stage-summary, :scope > .word-part-summary");
   const startHeight = content.offsetHeight;
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
+  if (isStage) {
+    details.classList.remove("is-open");
+    summary?.setAttribute("aria-expanded", "false");
+  }
   const finish = onceTransitionDone(content, () => {
-    details.open = false;
     if (isStage) closeNestedWordParts(details);
+    if (!isStage) {
+      details.classList.remove("is-open");
+      summary?.setAttribute("aria-expanded", "false");
+    }
+    content.hidden = true;
     content.style.height = "";
     content.style.opacity = "";
     details.classList.remove("is-animating", "is-closing");
   }, getDetailsAnimationDuration(details) + 80);
   requestAnimationFrame(() => {
     content.style.height = "0px";
-    content.style.opacity = "0";
-    finish.arm();
-  });
-}
-
-function closeStageDetails(details, content) {
-  const summary = details.querySelector(":scope > summary");
-  const startHeight = details.offsetHeight;
-  const endHeight = summary?.offsetHeight || 54;
-  details.classList.add("is-stage-closing");
-  details.style.height = `${startHeight}px`;
-  details.style.overflow = "hidden";
-  content.style.opacity = "1";
-
-  const finish = onceTransitionDone(details, () => {
-    details.open = false;
-    closeNestedWordParts(details);
-    details.style.height = "";
-    details.style.overflow = "";
-    content.style.opacity = "";
-    details.classList.remove("is-animating", "is-stage-closing");
-  }, getDetailsAnimationDuration(details) + 90);
-
-  requestAnimationFrame(() => {
-    details.style.height = `${endHeight}px`;
     content.style.opacity = "0";
     finish.arm();
   });
@@ -1059,10 +1041,12 @@ function getDetailsAnimationDuration(details) {
 
 function closeNestedWordParts(stageDetails) {
   stageDetails.querySelectorAll(".word-part").forEach((part) => {
-    part.open = false;
+    part.classList.remove("is-open");
     part.classList.remove("is-animating", "is-closing");
+    part.querySelector(":scope > .word-part-summary")?.setAttribute("aria-expanded", "false");
     const grid = part.querySelector(":scope > .word-card-grid");
     if (!grid) return;
+    grid.hidden = true;
     grid.style.height = "";
     grid.style.opacity = "";
   });
