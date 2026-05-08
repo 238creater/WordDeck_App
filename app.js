@@ -1,10 +1,11 @@
 const STORAGE_KEY = "word-deck-app:v1";
 
 const modes = [
-  { id: "choice-ja-en", label: "4択 日本語 → 英語", type: "choice" },
   { id: "choice-en-ja", label: "4択 英語 → 日本語", type: "choice" },
+  { id: "choice-ja-en", label: "4択 日本語 → 英語", type: "choice" },
   { id: "input-ja-en", label: "記述 日本語 → 英語", type: "input" },
 ];
+const DEFAULT_MODE_ID = "choice-en-ja";
 
 const countOptions = [
   { id: "10", label: "10問", value: 10 },
@@ -46,7 +47,7 @@ const sampleDeck = {
 let state = loadState();
 let selectedDeckId = null;
 let setup = {
-  mode: modes[0].id,
+  mode: DEFAULT_MODE_ID,
   groups: [],
   count: "10",
   timeLimit: "none",
@@ -429,6 +430,7 @@ function renderDecks() {
     node.querySelector('[data-role="study"]').addEventListener("click", () => {
       selectedDeckId = deck.id;
       session = null;
+      setup.mode = DEFAULT_MODE_ID;
       setup.groups = getStudyGroups(deck.words).map((group) => group.id);
       setup.challenge = false;
       setup.bookmarkedOnly = false;
