@@ -118,8 +118,8 @@ let toastTimer = null;
 let scrollLockCount = 0;
 let lockedScrollY = 0;
 let wordSearchActive = false;
-let wordSearchStageFilter = "all";
-let wordSearchPartFilter = "all";
+let wordSearchStageFilters = new Set();
+let wordSearchPartFilters = new Set();
 let questionTimer = null;
 let questionTimerInterval = null;
 
@@ -158,8 +158,7 @@ wordSearchFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-search-filter]");
   if (!button) return;
   const { searchFilter, value } = button.dataset;
-  if (searchFilter === "stage") wordSearchStageFilter = value;
-  if (searchFilter === "part") wordSearchPartFilter = value;
+  toggleWordSearchFilter(searchFilter, value);
   renderWordSearchFilters();
   renderWordSearchResults();
 });
@@ -644,8 +643,7 @@ function renderWordListScreen() {
   wordListDeckName.textContent = deck.name;
   wordSearchInput.value = "";
   wordSearchActive = false;
-  wordSearchStageFilter = "all";
-  wordSearchPartFilter = "all";
+  resetWordSearchFilters();
   renderWordListContent(deck);
   renderWordSearchFilters(deck);
   renderWordSearchResults();
@@ -701,7 +699,7 @@ function renderWordSearchResults() {
   if (!deck) return;
   const query = wordSearchInput.value.trim();
   const isSearching = wordSearchActive;
-  const hasFilters = wordSearchStageFilter !== "all" || wordSearchPartFilter !== "all";
+  const hasFilters = hasWordSearchFilters();
   wordListScreen.classList.toggle("is-searching", isSearching);
   wordListScreen.classList.toggle("has-search-query", query.length > 0);
   wordListContent.classList.toggle("is-hidden", isSearching);
@@ -758,8 +756,7 @@ function renderWordSearchResults() {
 function closeWordSearch() {
   wordSearchActive = false;
   wordSearchInput.value = "";
-  wordSearchStageFilter = "all";
-  wordSearchPartFilter = "all";
+  resetWordSearchFilters();
   wordSearchInput.blur();
   renderWordSearchFilters();
   renderWordSearchResults();
@@ -773,15 +770,15 @@ function renderWordSearchFilters(deck = getSelectedDeck()) {
     <section class="word-search-filter-group">
       <h2>Stage</h2>
       <div class="word-search-filter-options">
-        ${renderSearchFilterButton("stage", "all", "すべて", wordSearchStageFilter === "all")}
-        ${stages.map((stage) => renderSearchFilterButton("stage", stage, stage, wordSearchStageFilter === stage)).join("")}
+        ${renderSearchFilterButton("stage", "all", "すべて", wordSearchStageFilters.size === 0)}
+        ${stages.map((stage) => renderSearchFilterButton("stage", stage, stage, wordSearchStageFilters.has(stage))).join("")}
       </div>
     </section>
     <section class="word-search-filter-group">
       <h2>品詞</h2>
       <div class="word-search-filter-options">
-        ${renderSearchFilterButton("part", "all", "すべて", wordSearchPartFilter === "all")}
-        ${parts.map((part) => renderSearchFilterButton("part", part, part, wordSearchPartFilter === part)).join("")}
+        ${renderSearchFilterButton("part", "all", "すべて", wordSearchPartFilters.size === 0)}
+        ${parts.map((part) => renderSearchFilterButton("part", part, part, wordSearchPartFilters.has(part))).join("")}
       </div>
     </section>
   `;
@@ -791,18 +788,56 @@ function renderSearchFilterButton(type, value, label, selected) {
   return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${escapeAttribute(type)}" data-value="${escapeAttribute(value)}">${escapeHtml(label)}</button>`;
 }
 
+function toggleWordSearchFilter(type, value) {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const targetSet = type === "stage" ? wordSearchStageFilters : wordSearchPartFilters;
+  const allOptions = type === "stage" ? getSearchStageOptions(deck.words) : getSearchPartOptions(deck.words);
+
+  if (value === "all") {
+    targetSet.clear();
+    return;
+  }
+
+  if (targetSet.has(value)) {
+    targetSet.delete(value);
+  } else {
+    targetSet.add(value);
+  }
+
+  if (targetSet.size >= allOptions.length) {
+    targetSet.clear();
+  }
+}
+
+function resetWordSearchFilters() {
+  wordSearchStageFilters.clear();
+  wordSearchPartFilters.clear();
+}
+
+function hasWordSearchFilters() {
+  return wordSearchStageFilters.size > 0 || wordSearchPartFilters.size > 0;
+}
+
 function matchesWordSearchFilters(word) {
   const { parent, child } = getWordRangeMeta(word);
-  return (wordSearchStageFilter === "all" || parent === wordSearchStageFilter)
-    && (wordSearchPartFilter === "all" || child === wordSearchPartFilter);
+  return (wordSearchStageFilters.size === 0 || wordSearchStageFilters.has(parent))
+    && (wordSearchPartFilters.size === 0 || wordSearchPartFilters.has(child));
 }
 
 function getWordSearchLabel(query) {
   const labels = [];
   if (query) labels.push(query);
-  if (wordSearchStageFilter !== "all") labels.push(wordSearchStageFilter);
-  if (wordSearchPartFilter !== "all") labels.push(wordSearchPartFilter);
+  labels.push(...getSearchFilterLabelItems("Stage", wordSearchStageFilters));
+  labels.push(...getSearchFilterLabelItems("品詞", wordSearchPartFilters));
   return labels.join(" / ") || "すべて";
+}
+
+function getSearchFilterLabelItems(prefix, values) {
+  if (values.size === 0) return [];
+  const labels = [...values];
+  if (labels.length <= 2) return [`${prefix}: ${labels.join(", ")}`];
+  return [`${prefix}: ${labels.slice(0, 2).join(", ")} ほか${labels.length - 2}`];
 }
 
 function getSearchStageOptions(words) {
