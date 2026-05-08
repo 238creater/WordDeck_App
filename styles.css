@@ -1078,7 +1078,7 @@ body.challenge-active .word-search-filter-button.is-selected {
 
 .word-search-results.is-refreshing .word-list-card,
 .word-search-results.is-refreshing .empty-state {
-  animation: search-result-enter 180ms ease both;
+  animation: search-result-enter 140ms ease both;
 }
 
 .word-stage,
@@ -1209,21 +1209,21 @@ body.challenge-active .word-part-summary {
   overflow: hidden;
   will-change: height, opacity;
   transition:
-    height 300ms cubic-bezier(0.22, 0.72, 0.18, 1),
-    opacity 240ms ease;
+    height 220ms cubic-bezier(0.22, 0.72, 0.18, 1),
+    opacity 160ms ease;
 }
 
 .word-stage.is-closing > .word-stage-body,
 .word-part.is-closing > .word-card-grid {
   transition:
-    height 300ms cubic-bezier(0.32, 0, 0.24, 1),
-    opacity 220ms ease;
+    height 220ms cubic-bezier(0.32, 0, 0.24, 1),
+    opacity 150ms ease;
 }
 
 .word-stage.is-closing > .word-stage-body {
   transition:
-    height 360ms cubic-bezier(0.32, 0, 0.24, 1),
-    opacity 260ms ease;
+    height 260ms cubic-bezier(0.32, 0, 0.24, 1),
+    opacity 170ms ease;
 }
 
 .word-stage.is-closing .word-part-summary {
@@ -1257,6 +1257,9 @@ body.challenge-active .word-part-summary {
   border-radius: 8px;
   background: #fbfcfc;
   box-shadow: 0 7px 18px rgba(32, 44, 38, 0.06);
+  contain: content;
+  content-visibility: auto;
+  contain-intrinsic-size: 136px;
 }
 
 body.challenge-active .word-list-card {

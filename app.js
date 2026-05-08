@@ -130,6 +130,7 @@ let questionTimer = null;
 let questionTimerInterval = null;
 let startPanelVisible = true;
 let floatingStartFrame = null;
+let wordSearchTimer = null;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -151,7 +152,7 @@ openWordListButton.addEventListener("click", () => {
   renderWordListScreen();
   showScreen("wordList");
 });
-wordSearchInput.addEventListener("input", renderWordSearchResults);
+wordSearchInput.addEventListener("input", scheduleWordSearchResults);
 wordSearchInput.addEventListener("focus", () => {
   wordSearchActive = true;
   renderWordSearchResults();
@@ -789,6 +790,7 @@ function renderWordSearchResults() {
     empty.className = "empty-state";
     empty.textContent = "一致する単語がありません。";
     wordSearchResults.appendChild(empty);
+    triggerAnimation(wordSearchResults, "is-refreshing", 220);
     return;
   }
 
@@ -801,10 +803,18 @@ function renderWordSearchResults() {
       grid.appendChild(createWordCard(word, deck.id, true));
     });
   wordSearchResults.appendChild(grid);
-  triggerAnimation(wordSearchResults, "is-refreshing");
+  if (matchedWords.length <= 60) {
+    triggerAnimation(wordSearchResults, "is-refreshing", 220);
+  }
+}
+
+function scheduleWordSearchResults() {
+  window.clearTimeout(wordSearchTimer);
+  wordSearchTimer = window.setTimeout(renderWordSearchResults, 70);
 }
 
 function closeWordSearch() {
+  window.clearTimeout(wordSearchTimer);
   wordSearchActive = false;
   wordSearchInput.value = "";
   resetWordSearchFilters();
@@ -960,6 +970,7 @@ function openSmoothDetails(details, content) {
   details.open = true;
   content.style.height = "0px";
   content.style.opacity = "0";
+  const duration = getDetailsAnimationDuration(details);
   requestAnimationFrame(() => {
     content.style.height = `${content.scrollHeight}px`;
     content.style.opacity = "1";
@@ -967,13 +978,14 @@ function openSmoothDetails(details, content) {
       content.style.height = "";
       content.style.opacity = "";
       details.classList.remove("is-animating");
-    }, details.classList.contains("word-stage") ? 360 : 300);
+    }, duration);
   });
 }
 
 function closeSmoothDetails(details, content) {
   const startHeight = content.offsetHeight;
   const isStage = details.classList.contains("word-stage");
+  const duration = getDetailsAnimationDuration(details);
   if (isStage) closeNestedWordParts(details);
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
@@ -991,8 +1003,12 @@ function closeSmoothDetails(details, content) {
       content.style.height = "";
       content.style.opacity = "";
       details.classList.remove("is-animating", "is-closing");
-    }, isStage ? 360 : 300);
+    }, duration);
   });
+}
+
+function getDetailsAnimationDuration(details) {
+  return details.classList.contains("word-stage") ? 260 : 220;
 }
 
 function closeNestedWordParts(stageDetails) {
@@ -1963,14 +1979,14 @@ function renderBookmarkButton() {
   bookmarkCurrentButton.setAttribute("aria-label", marked ? "しおりを外す" : "しおりを付ける");
 }
 
-function triggerAnimation(element, className) {
+function triggerAnimation(element, className, duration = 720) {
   if (!element) return;
   element.classList.remove(className);
   void element.offsetWidth;
   element.classList.add(className);
   window.setTimeout(() => {
     element.classList.remove(className);
-  }, 720);
+  }, duration);
 }
 
 function getBookmarkedWords(deck = getSelectedDeck()) {
