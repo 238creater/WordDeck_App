@@ -1,9 +1,9 @@
 const STORAGE_KEY = "word-deck-app:v1";
 
 const modes = [
-  { id: "input-ja-en", label: "日本語 → 英語", type: "input" },
-  { id: "choice-en-ja", label: "4択 英語 → 日本語", type: "choice" },
   { id: "choice-ja-en", label: "4択 日本語 → 英語", type: "choice" },
+  { id: "choice-en-ja", label: "4択 英語 → 日本語", type: "choice" },
+  { id: "input-ja-en", label: "記述 日本語 → 英語", type: "input" },
 ];
 
 const countOptions = [
