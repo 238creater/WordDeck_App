@@ -958,15 +958,21 @@ function toggleSmoothDetails(details) {
   }
 
   details.classList.add("is-animating");
-  if (details.classList.contains("is-open")) {
-    closeSmoothDetails(details, content);
+  const isStage = details.classList.contains("word-stage");
+  const isOpen = details.classList.contains("is-open");
+  if (isOpen && isStage) {
+    closeStageDetails(details, content);
+    return;
+  }
+  if (isOpen) {
+    closePartDetails(details, content);
     return;
   }
 
-  openSmoothDetails(details, content);
+  openAccordionDetails(details, content);
 }
 
-function openSmoothDetails(details, content) {
+function openAccordionDetails(details, content) {
   const summary = details.querySelector(":scope > .word-stage-summary, :scope > .word-part-summary");
   details.classList.add("is-open");
   summary?.setAttribute("aria-expanded", "true");
@@ -985,23 +991,15 @@ function openSmoothDetails(details, content) {
   });
 }
 
-function closeSmoothDetails(details, content) {
-  const isStage = details.classList.contains("word-stage");
+function closePartDetails(details, content) {
   const summary = details.querySelector(":scope > .word-stage-summary, :scope > .word-part-summary");
   const startHeight = content.offsetHeight;
   details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
-  if (isStage) {
+  const finish = onceTransitionDone(content, () => {
     details.classList.remove("is-open");
     summary?.setAttribute("aria-expanded", "false");
-  }
-  const finish = onceTransitionDone(content, () => {
-    if (isStage) closeNestedWordParts(details);
-    if (!isStage) {
-      details.classList.remove("is-open");
-      summary?.setAttribute("aria-expanded", "false");
-    }
     content.hidden = true;
     content.style.height = "";
     content.style.opacity = "";
@@ -1014,7 +1012,71 @@ function closeSmoothDetails(details, content) {
   });
 }
 
-function onceTransitionDone(element, callback, fallbackDelay) {
+function closeStageDetails(details, content) {
+  const summary = details.querySelector(":scope > .word-stage-summary");
+  if (!hasOpenNestedParts(details)) {
+    closeCompactStageDetails(details, content, summary);
+    return;
+  }
+
+  const startHeight = content.offsetHeight;
+  details.classList.add("is-closing", "is-stage-closing");
+  content.style.height = `${startHeight}px`;
+  content.style.opacity = "1";
+
+  const fadeDone = onceTransitionDone(content, () => {
+    details.classList.remove("is-stage-fading");
+    closeNestedWordParts(details);
+    content.style.height = `${startHeight}px`;
+    void content.offsetHeight;
+    const heightDone = onceTransitionDone(content, () => {
+      details.classList.remove("is-open");
+      summary?.setAttribute("aria-expanded", "false");
+      content.hidden = true;
+      content.style.height = "";
+      content.style.opacity = "";
+      details.classList.remove("is-animating", "is-closing", "is-stage-closing", "is-stage-fading");
+    }, 260, ["height"]);
+    requestAnimationFrame(() => {
+      content.style.height = "0px";
+      heightDone.arm();
+    });
+  }, 150, ["opacity"]);
+
+  requestAnimationFrame(() => {
+    details.classList.add("is-stage-fading");
+    content.style.opacity = "0";
+    fadeDone.arm();
+  });
+}
+
+function closeCompactStageDetails(details, content, summary) {
+  const startHeight = content.offsetHeight;
+  details.classList.add("is-closing", "is-stage-compact-closing");
+  details.classList.remove("is-open");
+  summary?.setAttribute("aria-expanded", "false");
+  content.style.height = `${startHeight}px`;
+  content.style.opacity = "1";
+
+  const finish = onceTransitionDone(content, () => {
+    content.hidden = true;
+    content.style.height = "";
+    content.style.opacity = "";
+    details.classList.remove("is-animating", "is-closing", "is-stage-compact-closing");
+  }, 170, ["height"]);
+
+  requestAnimationFrame(() => {
+    content.style.height = "0px";
+    content.style.opacity = "0";
+    finish.arm();
+  });
+}
+
+function hasOpenNestedParts(stageDetails) {
+  return Boolean(stageDetails.querySelector(".word-part.is-open"));
+}
+
+function onceTransitionDone(element, callback, fallbackDelay, propertyNames = ["height"]) {
   let done = false;
   const finish = () => {
     if (done) return;
@@ -1024,7 +1086,8 @@ function onceTransitionDone(element, callback, fallbackDelay) {
     callback();
   };
   const onEnd = (event) => {
-    if (event.target === element && event.propertyName === "height") finish();
+    if (event.target !== element) return;
+    if (propertyNames.includes(event.propertyName)) finish();
   };
   let timer = null;
   element.addEventListener("transitionend", onEnd);
