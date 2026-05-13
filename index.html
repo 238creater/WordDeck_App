@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-08" />
+    <link rel="stylesheet" href="styles.css?v=20260514-10" />
   </head>
   <body>
     <main class="app-shell">
@@ -36,9 +36,13 @@
           <button class="icon-button" data-action="back-to-decks" title="単語帳へ戻る">←</button>
           <div class="topbar-title">
             <p id="active-deck-name" class="eyebrow"></p>
-            <h1 id="setup-title">学習設定</h1>
+            <h1 id="setup-title">ホーム</h1>
           </div>
-          <button id="open-word-list-button" class="secondary-button small setup-list-button" type="button">単語一覧</button>
+          <div class="setup-header-actions">
+            <button id="open-detail-settings-button" class="secondary-button small setup-list-button" type="button">詳細設定</button>
+            <button id="open-learning-record-button" class="secondary-button small setup-list-button" type="button">学習記録</button>
+            <button id="open-word-list-button" class="secondary-button small setup-list-button" type="button">単語一覧</button>
+          </div>
         </header>
 
         <div class="settings-grid">
@@ -59,27 +63,35 @@
             </div>
           </section>
 
-          <section class="settings-block bookmark-panel">
-            <div class="bookmark-panel-head">
-              <div>
-                <h2>しおり単語</h2>
-                <p><strong id="bookmark-count">0</strong> 語をマーク中</p>
-              </div>
-              <div class="bookmark-panel-actions">
-                <button id="bookmark-filter-button" class="secondary-button small" type="button">しおりのみで出題</button>
-                <button id="bookmark-list-toggle" class="secondary-button small" type="button">一覧を見る</button>
-              </div>
-            </div>
-          </section>
-
           <section class="settings-block">
             <h2>出題数</h2>
             <div id="count-options" class="count-grid"></div>
           </section>
 
+          <section class="settings-block preset-panel">
+            <h2>学習プリセット</h2>
+            <div class="preset-grid">
+              <button class="secondary-button small" type="button" data-preset="standard">通常練習</button>
+              <button class="secondary-button small" type="button" data-preset="speed">速答練習</button>
+              <button class="secondary-button small" type="button" data-preset="review">苦手復習</button>
+              <button id="favorite-preset-menu-button" class="secondary-button small" type="button">お気に入り</button>
+            </div>
+          </section>
+
           <section class="settings-block">
             <h2>制限時間</h2>
             <div id="time-options" class="time-grid"></div>
+          </section>
+
+          <section id="continue-panel" class="settings-block continue-panel is-hidden">
+            <div>
+              <h2>前回の続き</h2>
+              <p id="continue-detail"></p>
+            </div>
+            <div class="continue-actions">
+              <button id="continue-study-button" class="primary-button" type="button">続きから</button>
+              <button id="discard-progress-button" class="secondary-button" type="button">破棄</button>
+            </div>
           </section>
 
           <section class="settings-block start-panel">
@@ -88,7 +100,7 @@
                 <input id="challenge-toggle" type="checkbox" />
                 <span>
                   <strong>チャレンジモード</strong>
-                  <small>間違えたらその場で終了</small>
+                  <small>間違えたらその場で終了。エンドレスは使えません。</small>
                 </span>
               </label>
               <p id="start-note" class="start-note"></p>
@@ -97,6 +109,137 @@
           </section>
         </div>
 
+      </section>
+
+      <section id="detail-settings-screen" class="screen" aria-labelledby="detail-settings-title">
+        <header class="topbar compact">
+          <button class="icon-button" data-action="back-to-setup" title="ホームへ戻る">←</button>
+          <div class="topbar-title">
+            <p id="detail-deck-name" class="eyebrow"></p>
+            <h1 id="detail-settings-title">詳細設定</h1>
+          </div>
+        </header>
+
+        <div class="settings-grid detail-settings-grid">
+          <section class="settings-block bookmark-panel">
+            <div class="bookmark-panel-head">
+              <div>
+                <h2>復習セット</h2>
+                <p><strong id="bookmark-count">0</strong> 語を選択中</p>
+              </div>
+              <div class="bookmark-panel-actions">
+                <button id="bookmark-filter-button" class="secondary-button small" type="button">しおり</button>
+                <button id="recent-mistake-filter-button" class="secondary-button small" type="button">最近ミス</button>
+                <button id="smart-weak-filter-button" class="secondary-button small" type="button">苦手のみ</button>
+              </div>
+              <button id="bookmark-list-toggle" class="secondary-button small bookmark-list-open-button" type="button">復習一覧を見る</button>
+            </div>
+          </section>
+
+          <section class="settings-block">
+            <h2>出題方法</h2>
+            <div id="question-order-options" class="question-order-grid"></div>
+          </section>
+
+          <section class="settings-block data-management-panel">
+            <h2>復習データ管理</h2>
+            <div class="data-management-grid">
+              <button id="reset-learning-button" class="secondary-button small" type="button">おまかせをリセット</button>
+              <button id="reset-recent-mistakes-button" class="secondary-button small" type="button">最近ミスをリセット</button>
+              <button id="detail-clear-bookmarks-button" class="secondary-button small" type="button">しおりを一括解除</button>
+            </div>
+          </section>
+
+          <section class="settings-block favorite-preset-panel">
+            <h2>お気に入りプリセット</h2>
+            <div class="favorite-preset-form">
+              <input id="favorite-preset-name" type="text" maxlength="18" placeholder="例: 朝の10問" />
+              <button id="save-favorite-preset-button" class="secondary-button small" type="button">今の設定を保存</button>
+            </div>
+            <div id="favorite-preset-list" class="favorite-preset-list"></div>
+          </section>
+
+          <section class="settings-block goal-settings-panel">
+            <h2>今日の目標</h2>
+            <div id="goal-options" class="goal-options"></div>
+          </section>
+
+          <section class="settings-block after-study-panel">
+            <h2>学習後の動作</h2>
+            <div class="preference-list">
+              <label class="setting-toggle">
+                <input id="auto-bookmark-wrong-toggle" type="checkbox" />
+                <span>
+                  <strong>間違えた単語を自動でしおりに追加</strong>
+                  <small>通常モードの結果表示時に、間違えた単語をまとめて登録します。</small>
+                </span>
+              </label>
+              <label class="setting-toggle">
+                <input id="auto-bookmark-challenge-toggle" type="checkbox" />
+                <span>
+                  <strong>チャレンジ失敗時の単語を自動でしおりに追加</strong>
+                  <small>失敗した1語だけを登録します。</small>
+                </span>
+              </label>
+              <label class="setting-toggle">
+                <input id="include-timeout-recent-toggle" type="checkbox" />
+                <span>
+                  <strong>時間切れを最近ミスに含める</strong>
+                  <small>オフにすると、時間切れだけの単語は最近ミスから外します。</small>
+                </span>
+              </label>
+            </div>
+          </section>
+
+        </div>
+      </section>
+
+      <section id="learning-record-screen" class="screen" aria-labelledby="learning-record-title">
+        <header class="topbar compact">
+          <button class="icon-button" data-action="back-to-setup" title="ホームへ戻る">←</button>
+          <div class="topbar-title">
+            <p id="learning-record-deck-name" class="eyebrow"></p>
+            <h1 id="learning-record-title">学習記録</h1>
+          </div>
+        </header>
+
+        <div class="settings-grid learning-record-grid">
+          <section class="settings-block">
+            <h2>今日の学習</h2>
+            <div id="record-goal-panel" class="goal-record-panel">
+              <div>
+                <strong id="record-goal-label">目標 50問</strong>
+                <span id="record-goal-detail">0問 / 50問</span>
+              </div>
+              <div class="goal-progress-track" aria-hidden="true">
+                <div id="record-goal-progress" class="goal-progress-fill"></div>
+              </div>
+            </div>
+            <div class="record-summary">
+              <div>
+                <span id="record-today-answered">0</span>
+                <p>回答</p>
+              </div>
+              <div>
+                <span id="record-today-correct">0</span>
+                <p>正解</p>
+              </div>
+              <div>
+                <span id="record-today-accuracy">0%</span>
+                <p>正答率</p>
+              </div>
+              <div>
+                <span id="record-streak-days">0日</span>
+                <p>連続学習</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-block">
+            <h2>弱点サマリー</h2>
+            <div id="weakness-summary-list" class="weakness-summary-list"></div>
+          </section>
+        </div>
       </section>
 
       <div id="floating-start-bar" class="floating-start-bar" aria-hidden="true">
@@ -178,6 +321,16 @@
           </div>
         </div>
 
+        <section id="result-goal-panel" class="settings-block result-goal-panel">
+          <div>
+            <h2>今日の目標</h2>
+            <p id="result-goal-detail">0問 / 50問</p>
+          </div>
+          <div class="goal-progress-track" aria-hidden="true">
+            <div id="result-goal-progress" class="goal-progress-fill"></div>
+          </div>
+        </section>
+
         <div class="result-actions">
           <button class="secondary-button" data-result-action="retry-wrong">間違えた単語だけ</button>
           <button class="secondary-button" data-result-action="repeat-same">同じ設定でもう一度</button>
@@ -209,12 +362,16 @@
           <div class="bookmark-dialog-head">
             <div>
               <p class="eyebrow">Bookmarks</p>
-              <h2 id="bookmark-dialog-title">しおり単語</h2>
+              <h2 id="bookmark-dialog-title">復習一覧</h2>
             </div>
             <div class="dialog-head-actions">
               <button id="clear-bookmarks-button" class="danger-button small" type="button">一括解除</button>
               <button id="close-bookmark-dialog-button" class="secondary-button small" type="button">閉じる</button>
             </div>
+          </div>
+          <div class="review-list-tabs">
+            <button id="bookmark-tab-button" class="secondary-button small is-selected" type="button">しおり</button>
+            <button id="recent-mistake-tab-button" class="secondary-button small" type="button">最近ミス</button>
           </div>
           <div id="bookmark-list" class="bookmark-list"></div>
         </div>
@@ -234,6 +391,19 @@
         </div>
       </div>
 
+      <div id="favorite-preset-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="favorite-preset-dialog-title">
+        <div class="dialog-panel favorite-preset-dialog-panel">
+          <div class="favorite-preset-dialog-head">
+            <div>
+              <p class="eyebrow">Favorites</p>
+              <h2 id="favorite-preset-dialog-title">お気に入りプリセット</h2>
+            </div>
+            <button id="close-favorite-preset-dialog-button" class="secondary-button small" type="button">閉じる</button>
+          </div>
+          <div id="favorite-preset-menu" class="favorite-preset-menu"></div>
+        </div>
+      </div>
+
       <div id="toast" class="toast is-hidden" role="status" aria-live="polite"></div>
     </main>
 
@@ -250,6 +420,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260512-05"></script>
+    <script src="app.js?v=20260514-10"></script>
   </body>
 </html>
