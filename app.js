@@ -1251,7 +1251,7 @@ function renderWordSearchResults() {
   if (!query) {
     wordSearchResults.innerHTML = hasFilters
       ? '<div class="empty-state">検索語を入力すると、この条件で絞り込みます。</div>'
-      : '<div class="empty-state">英語・日本語で検索できます。Stageや品詞はフィルターで絞り込めます。</div>';
+      : '<div class="empty-state">英語・日本語で検索できます。大分類や小分類はフィルターで絞り込めます。</div>';
     return;
   }
 
@@ -1314,14 +1314,14 @@ function renderWordSearchFilters(deck = getSelectedDeck()) {
   const parts = getSearchPartOptions(deck.words);
   wordSearchFilters.innerHTML = `
     <section class="word-search-filter-group">
-      <h2>Stage</h2>
+      <h2>大分類</h2>
       <div class="word-search-filter-options">
         ${renderSearchFilterButton("stage", "all", "すべて", wordSearchStageFilters.size === 0)}
         ${stages.map((stage) => renderSearchFilterButton("stage", stage, stage, wordSearchStageFilters.has(stage))).join("")}
       </div>
     </section>
     <section class="word-search-filter-group">
-      <h2>品詞</h2>
+      <h2>小分類</h2>
       <div class="word-search-filter-options">
         ${renderSearchFilterButton("part", "all", "すべて", wordSearchPartFilters.size === 0)}
         ${parts.map((part) => renderSearchFilterButton("part", part, part, wordSearchPartFilters.has(part))).join("")}
@@ -1393,8 +1393,8 @@ function matchesWordSearchFilters(word) {
 function getWordSearchLabel(query) {
   const labels = [];
   if (query) labels.push(query);
-  labels.push(...getSearchFilterLabelItems("Stage", wordSearchStageFilters));
-  labels.push(...getSearchFilterLabelItems("品詞", wordSearchPartFilters));
+  labels.push(...getSearchFilterLabelItems("大分類", wordSearchStageFilters));
+  labels.push(...getSearchFilterLabelItems("小分類", wordSearchPartFilters));
   return labels.join(" / ") || "すべて";
 }
 

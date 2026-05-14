@@ -455,8 +455,7 @@ body.challenge-active .answer-input {
   box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
-body.challenge-active .mode-button.is-selected,
-body.challenge-active #lesson-options .mode-button.is-selected {
+body.challenge-active .mode-button.is-selected {
   border-color: rgba(123, 67, 45, 0.72);
   color: #ffffff;
   background: linear-gradient(180deg, #a86942, #7b432d);
@@ -1592,65 +1591,6 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
 #mode-options .mode-button {
   backface-visibility: hidden;
   transform: translateZ(0);
-}
-
-#lesson-options {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  margin-top: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2px 2px 14px;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(99, 112, 102, 0.56) transparent;
-}
-
-#lesson-options::-webkit-scrollbar {
-  height: 8px;
-}
-
-#lesson-options::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#lesson-options::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(99, 112, 102, 0.52);
-}
-
-#lesson-options .mode-button {
-  position: relative;
-  min-height: 58px;
-  padding: 12px 18px 12px 42px;
-  border-radius: 999px;
-}
-
-#lesson-options .mode-button::before {
-  content: "";
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #aebbb5;
-  border-radius: 999px;
-  transform: translateY(-50%);
-  background: white;
-  box-shadow: inset 0 0 0 3px white;
-}
-
-#lesson-options .mode-button.is-selected::before {
-  border-color: var(--blue);
-  background: var(--blue);
-}
-
-#lesson-options .mode-button.is-selected {
-  color: #163846;
-  background: linear-gradient(180deg, #edf8fb, var(--blue-soft));
 }
 
 .range-toolbar {
@@ -3434,12 +3374,6 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     width: 100%;
   }
 
-  #lesson-options {
-    margin-inline: -4px;
-    padding: 2px 4px 14px;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .range-group {
     flex-basis: min(74%, 260px);
     max-width: min(74%, 260px);
@@ -3447,10 +3381,6 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   .range-toolbar {
     margin-inline: -4px;
-  }
-
-  #lesson-options .mode-button {
-    min-height: 54px;
   }
 
   .range-group summary {
