@@ -68,6 +68,11 @@ body.dialog-open {
   touch-action: none;
 }
 
+body.word-detail-open {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
 body.dialog-open .app-shell {
   min-height: 100dvh;
 }
@@ -1557,6 +1562,7 @@ body.challenge-active .word-list-card .word-list-range {
   display: grid;
   gap: 14px;
   overflow-y: auto;
+  touch-action: pan-y;
 }
 
 #word-detail-panel {
@@ -1567,6 +1573,7 @@ body.challenge-active .word-list-card .word-list-range {
   align-items: center;
   justify-items: center;
   background: rgba(18, 27, 23, 0.18);
+  touch-action: none;
 }
 
 .word-detail-card {
@@ -2659,18 +2666,18 @@ body.challenge-active .time-bar.is-critical {
 
 .study-hint-button {
   position: absolute;
-  top: 18px;
-  right: 122px;
+  top: 76px;
+  right: 18px;
   z-index: 1;
-  height: 46px;
-  min-height: 46px;
-  padding: 0 13px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 11px;
   border: 1px solid rgba(217, 223, 216, 0.95);
   border-radius: 8px;
   color: #2d7188;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow-soft);
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 900;
 }
 
@@ -2697,6 +2704,10 @@ body.challenge-active .study-hint-button.is-active {
   color: #5a2f22;
   background: linear-gradient(180deg, #f8dcc8, #efc0aa);
   box-shadow: 0 10px 24px rgba(91, 63, 28, 0.18);
+}
+
+body.study-writing-active .question-text {
+  padding-right: 86px;
 }
 
 .question-text {
@@ -4201,8 +4212,13 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .question-card.is-cloze-question {
-    height: clamp(366px, 52dvh, 414px);
-    min-height: 366px;
+    height: clamp(318px, 44dvh, 366px);
+    min-height: 318px;
+  }
+
+  body.study-active.study-choice-active .question-card.is-cloze-question {
+    height: clamp(282px, 38dvh, 330px);
+    min-height: 282px;
   }
 
   body.study-active .question-card .eyebrow {
@@ -4222,12 +4238,12 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .study-hint-button {
-    top: 10px;
-    right: 104px;
-    height: 40px;
-    min-height: 40px;
-    padding-inline: 10px;
-    font-size: 0.8rem;
+    top: 56px;
+    right: 10px;
+    height: 32px;
+    min-height: 32px;
+    padding-inline: 9px;
+    font-size: 0.76rem;
   }
 
   body.study-active .question-text {
@@ -4274,9 +4290,13 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .question-text.is-cloze {
-    padding: 42px 0 42px;
+    padding: 42px 0 34px;
     font-size: clamp(1.04rem, 4.5vw, 1.42rem);
     line-height: 1.38;
+  }
+
+  body.study-active.study-writing-active .question-text.is-cloze {
+    padding-right: 82px;
   }
 
   body.study-active .cloze-layout {
@@ -4297,7 +4317,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     top: 2px;
     left: 8px;
     right: 8px;
-    bottom: 58px;
+    bottom: 46px;
     min-height: calc(2.76em + 10px);
     padding: 7px 6px;
   }
@@ -4305,8 +4325,8 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   body.study-active .cloze-japanese-scroll {
     left: 8px;
     right: 8px;
-    bottom: -8px;
-    height: 48px;
+    bottom: -10px;
+    height: 42px;
     padding: 5px 6px 3px;
   }
 

@@ -286,6 +286,7 @@ let startPanelVisible = true;
 let floatingStartFrame = null;
 let wordSearchTimer = null;
 let reviewListTab = "bookmarks";
+let wordDetailTouchStartY = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -423,6 +424,11 @@ favoritePresetDialog.addEventListener("click", (event) => {
 wordDetailPanel.addEventListener("click", (event) => {
   if (event.target === wordDetailPanel) closeWordDetailPanel();
 });
+wordDetailPanel.addEventListener("wheel", preventWordDetailBackgroundScroll, { passive: false });
+wordDetailPanel.addEventListener("touchstart", (event) => {
+  wordDetailTouchStartY = event.touches[0]?.clientY || 0;
+}, { passive: true });
+wordDetailPanel.addEventListener("touchmove", preventWordDetailBackgroundScroll, { passive: false });
 window.addEventListener("pagehide", () => {
   if (session && screens.study.classList.contains("is-active")) saveCurrentStudyProgress();
 });
@@ -494,7 +500,9 @@ function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
-  if (name !== "study") document.body.classList.remove("study-input-active");
+  if (name !== "study") {
+    document.body.classList.remove("study-input-active", "study-choice-active", "study-writing-active");
+  }
   syncChallengeTheme(name);
   updateFloatingStartVisibility();
   if (name === "study") {
@@ -1812,6 +1820,32 @@ function closeWordDetailPanel() {
   document.body.classList.remove("word-detail-open");
 }
 
+function preventWordDetailBackgroundScroll(event) {
+  const panel = event.target.closest(".word-detail-panel");
+  if (!panel) {
+    event.preventDefault();
+    return;
+  }
+
+  if (event.type === "wheel") {
+    if (canScrollElement(panel, event.deltaY)) return;
+    event.preventDefault();
+    return;
+  }
+
+  const currentY = event.touches[0]?.clientY || 0;
+  const deltaY = wordDetailTouchStartY - currentY;
+  if (canScrollElement(panel, deltaY)) return;
+  event.preventDefault();
+}
+
+function canScrollElement(element, deltaY) {
+  if (!element || element.scrollHeight <= element.clientHeight) return false;
+  if (deltaY > 0) return element.scrollTop + element.clientHeight < element.scrollHeight - 1;
+  if (deltaY < 0) return element.scrollTop > 0;
+  return true;
+}
+
 function renderWordDetail(deck, word) {
   const isCloze = isClozeDeck(deck);
   const key = getWordKey(word);
@@ -2130,6 +2164,8 @@ function renderQuestion() {
   session.current = buildQuestion(word, mode);
   session.locked = false;
   document.body.classList.remove("study-input-active");
+  document.body.classList.toggle("study-choice-active", mode.type === "choice");
+  document.body.classList.toggle("study-writing-active", mode.type === "input");
 
   feedback.textContent = "";
   feedback.className = "feedback";
