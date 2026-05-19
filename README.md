@@ -16,6 +16,16 @@ Stage1-名詞,water,水
 多義語,right,右/正しい/権利
 ```
 
+TOEICなどの文法・例文穴埋め用CSVも取り込めます。
+
+```csv
+stage,question_english,question_japanese,choices,answer
+Stage1-接続詞,Jackets are required for club members in the main dining room _ casual dress is acceptable in all other areas of the club.,クラブの他の場所では普段着が許される一方、主食堂内では、クラブ会員はジャケットが必要である。,while/during/because/unless,while
+Stage1-接続詞,The meeting was canceled _ the heavy rain.,大雨のため会議は中止された。,because of/despite/although/while,because of
+```
+
+穴埋め形式では `question_english` に `_` を1つだけ入れます。`choices` は `/` 区切りで4つ、`answer` はその中の正解を書きます。
+
 取り込んだ単語帳はブラウザのLocalStorageに保存されます。
 
 学習中に問題カード右上の `しおり` を押すと、その単語をしおり単語として保存できます。学習設定ではしおり単語の一覧確認、解除、しおり単語だけでの出題ができます。しおり単語の情報もCSVではなくブラウザのLocalStorageに保存されます。
@@ -32,9 +42,16 @@ TOEIC単語帳を単語数で細分化する場合は、たとえば `Stage1-001
 
 ## 学習モード
 
+単語帳形式:
+
 - 日本語 → 英語
 - 4択 英語 → 日本語
 - 4択 日本語 → 英語
+
+穴埋め形式:
+
+- 記述 穴埋め
+- 4択 穴埋め
 
 出題数は 10問、30問、50問、100問、全部、エンドレスから選べます。
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260514-12" />
+    <link rel="stylesheet" href="styles.css?v=20260519-41" />
   </head>
   <body>
     <main class="app-shell">
@@ -23,9 +23,12 @@
         <div class="import-panel">
           <div>
             <h2>CSVインポート</h2>
-            <p>列名は <code>lesson, english, japanese</code>。日本語訳が複数ある場合は <code>/</code> で区切ります。</p>
+            <p>単語帳は <code>lesson, english, japanese</code>。穴埋め問題は <code>stage, question_english, question_japanese, choices, answer</code> の列名で取り込めます。</p>
           </div>
-          <button id="load-sample-button" class="secondary-button">サンプルを追加</button>
+          <div class="import-actions">
+            <button id="load-sample-button" class="secondary-button">単語サンプル</button>
+            <button id="load-cloze-sample-button" class="secondary-button">穴埋めサンプル</button>
+          </div>
         </div>
 
         <div id="deck-list" class="deck-list"></div>
@@ -168,24 +171,38 @@
             <h2>学習後の動作</h2>
             <div class="preference-list">
               <label class="setting-toggle">
+                <input id="show-cloze-japanese-toggle" type="checkbox" />
+                <span>
+                  <strong>穴埋め問題で日本語訳を表示</strong>
+                  <small>オフにすると、学習中は英文穴埋めだけを表示します。</small>
+                </span>
+              </label>
+              <label class="setting-toggle">
+                <input id="cloze-initial-hint-toggle" type="checkbox" />
+                <span>
+                  <strong>記述穴埋めで頭文字ヒントを表示</strong>
+                  <small>答えの最初の文字だけをヒントとして表示します。</small>
+                </span>
+              </label>
+              <label class="setting-toggle">
                 <input id="auto-bookmark-wrong-toggle" type="checkbox" />
                 <span>
-                  <strong>間違えた単語を自動でしおりに追加</strong>
-                  <small>通常モードの結果表示時に、間違えた単語をまとめて登録します。</small>
+                  <strong>間違えた項目を自動でしおりに追加</strong>
+                  <small>通常モードの結果表示時に、間違えた単語や問題をまとめて登録します。</small>
                 </span>
               </label>
               <label class="setting-toggle">
                 <input id="auto-bookmark-challenge-toggle" type="checkbox" />
                 <span>
-                  <strong>チャレンジ失敗時の単語を自動でしおりに追加</strong>
-                  <small>失敗した1語だけを登録します。</small>
+                  <strong>チャレンジ失敗時の項目を自動でしおりに追加</strong>
+                  <small>失敗した1語または1問だけを登録します。</small>
                 </span>
               </label>
               <label class="setting-toggle">
                 <input id="include-timeout-recent-toggle" type="checkbox" />
                 <span>
                   <strong>時間切れを最近ミスに含める</strong>
-                  <small>オフにすると、時間切れだけの単語は最近ミスから外します。</small>
+                  <small>オフにすると、時間切れだけの項目は最近ミスから外します。</small>
                 </span>
               </label>
             </div>
@@ -268,6 +285,34 @@
         </div>
         <div id="word-search-filters" class="word-search-filters is-hidden"></div>
 
+        <div id="word-detail-panel" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="word-detail-title">
+          <div class="dialog-panel word-detail-panel">
+            <div class="word-detail-panel-head">
+              <div>
+                <p id="word-detail-deck-name" class="eyebrow"></p>
+                <h2 id="word-detail-title">問題詳細</h2>
+              </div>
+              <button class="secondary-button small" data-action="close-word-detail" type="button">閉じる</button>
+            </div>
+            <article class="word-detail-card">
+              <div id="word-detail-range" class="word-detail-range"></div>
+              <section class="word-detail-block">
+                <h2 id="word-detail-main-label">英文</h2>
+                <p id="word-detail-main" class="word-detail-main"></p>
+              </section>
+              <section class="word-detail-block">
+                <h2 id="word-detail-sub-label">日本語訳</h2>
+                <p id="word-detail-sub"></p>
+              </section>
+              <section id="word-detail-answer-block" class="word-detail-block">
+                <h2>正解</h2>
+                <p id="word-detail-answer"></p>
+              </section>
+              <button id="word-detail-bookmark-button" class="secondary-button word-detail-bookmark-button" type="button">しおりに追加</button>
+            </article>
+          </div>
+        </div>
+
         <div id="word-list-content" class="word-list-content"></div>
         <div id="word-search-results" class="word-search-results is-hidden"></div>
       </section>
@@ -289,6 +334,7 @@
         <div class="question-card">
           <p id="study-title" class="eyebrow">問題</p>
           <button id="bookmark-current-button" class="bookmark-current-button" type="button" aria-label="しおりを付ける"><span></span>しおり</button>
+          <button id="hint-current-button" class="study-hint-button is-hidden" type="button">ヒント</button>
           <div id="question-text" class="question-text"></div>
           <div id="feedback" class="feedback" aria-live="polite"></div>
           <div id="answer-note" class="answer-note"></div>
@@ -420,6 +466,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260514-12"></script>
+    <script src="app.js?v=20260519-41"></script>
   </body>
 </html>

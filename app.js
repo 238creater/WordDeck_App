@@ -4,8 +4,11 @@ const modes = [
   { id: "choice-en-ja", label: "4択 英語 → 日本語", type: "choice" },
   { id: "choice-ja-en", label: "4択 日本語 → 英語", type: "choice" },
   { id: "input-ja-en", label: "記述 日本語 → 英語", type: "input" },
+  { id: "cloze-choice", label: "4択 穴埋め", type: "choice", deckKind: "cloze" },
+  { id: "cloze-input", label: "記述 穴埋め", type: "input", deckKind: "cloze" },
 ];
 const DEFAULT_MODE_ID = "choice-en-ja";
+const DEFAULT_CLOZE_MODE_ID = "cloze-choice";
 
 const countOptions = [
   { id: "10", label: "10問", value: 10 },
@@ -52,6 +55,85 @@ const sampleDeck = {
     { lesson: "Stage2-動詞", english: "explain", japanese: ["説明する"] },
     { lesson: "Stage2-動詞", english: "include", japanese: ["含む"] },
     { lesson: "多義語", english: "notice", japanese: ["気づく", "通知"] },
+  ],
+};
+
+const sampleClozeDeck = {
+  id: "sample-cloze",
+  name: "サンプル穴埋め問題",
+  kind: "cloze",
+  createdAt: new Date().toISOString(),
+  words: [
+    {
+      lesson: "Stage1-前置詞",
+      english: "Jackets are required for club members in the main dining room _ casual dress is acceptable in all other areas of the club.",
+      japanese: ["クラブの他の場所では普段着が許される一方、主食堂内では、クラブ会員はジャケットが必要である。"],
+      choices: ["while", "during", "because", "unless"],
+      answer: "while",
+    },
+    {
+      lesson: "Stage1-前置詞",
+      english: "The completed application form must be submitted to the human resources department _ Friday to be considered for the training program.",
+      japanese: ["研修プログラムの対象となるためには、記入済みの申込書を金曜日までに人事部へ提出しなければならない。"],
+      choices: ["by", "on", "at", "with"],
+      answer: "by",
+    },
+    {
+      lesson: "Stage1-接続詞",
+      english: "The meeting was canceled _ the heavy rain.",
+      japanese: ["大雨のため会議は中止された。"],
+      choices: ["because of", "despite", "although", "while"],
+      answer: "because of",
+    },
+    {
+      lesson: "Stage2-句動詞",
+      english: "Please fill _ this form before noon.",
+      japanese: ["正午までにこの用紙に記入してください。"],
+      choices: ["out", "up", "off", "by"],
+      answer: "out",
+    },
+    {
+      lesson: "Stage2-句動詞",
+      english: "We need to look _ the proposal carefully.",
+      japanese: ["私たちはその提案を注意深く調べる必要がある。"],
+      choices: ["over", "down", "away", "between"],
+      answer: "over",
+    },
+    {
+      lesson: "Stage2-接続詞",
+      english: "Please contact our support team immediately _ you have any questions about the updated billing procedure.",
+      japanese: ["更新された請求手続きについて質問がある場合は、すぐにサポートチームへ連絡してください。"],
+      choices: ["if", "unless", "despite", "during"],
+      answer: "if",
+    },
+    {
+      lesson: "Stage3-前置詞",
+      english: "The invoice is attached _ this email.",
+      japanese: ["請求書はこのメールに添付されています。"],
+      choices: ["to", "for", "by", "at"],
+      answer: "to",
+    },
+    {
+      lesson: "Stage3-語法",
+      english: "The regional sales manager is responsible _ coordinating the launch schedule with several local distributors.",
+      japanese: ["地域営業部長は、複数の現地販売業者と発売スケジュールを調整する責任がある。"],
+      choices: ["for", "to", "with", "about"],
+      answer: "for",
+    },
+    {
+      lesson: "Stage3-接続詞",
+      english: "The office will remain open _ the renovation.",
+      japanese: ["改装中も事務所は営業を続けます。"],
+      choices: ["during", "while", "because", "although"],
+      answer: "during",
+    },
+    {
+      lesson: "Stage4-語法",
+      english: "Employees are required _ their ID cards.",
+      japanese: ["従業員はIDカードを着用することが求められている。"],
+      choices: ["to wear", "wearing", "wear", "worn"],
+      answer: "to wear",
+    },
   ],
 };
 
@@ -125,6 +207,17 @@ const closeWordSearchButton = document.querySelector("#close-word-search-button"
 const wordSearchFilters = document.querySelector("#word-search-filters");
 const wordListContent = document.querySelector("#word-list-content");
 const wordSearchResults = document.querySelector("#word-search-results");
+const wordDetailPanel = document.querySelector("#word-detail-panel");
+const wordDetailDeckName = document.querySelector("#word-detail-deck-name");
+const wordDetailRange = document.querySelector("#word-detail-range");
+const wordDetailMainLabel = document.querySelector("#word-detail-main-label");
+const wordDetailMain = document.querySelector("#word-detail-main");
+const wordDetailSubLabel = document.querySelector("#word-detail-sub-label");
+const wordDetailSub = document.querySelector("#word-detail-sub");
+const wordDetailAnswerBlock = document.querySelector("#word-detail-answer-block");
+const wordDetailAnswer = document.querySelector("#word-detail-answer");
+const wordDetailBookmarkButton = document.querySelector("#word-detail-bookmark-button");
+document.body.appendChild(wordDetailPanel);
 const bookmarkCount = document.querySelector("#bookmark-count");
 const bookmarkFilterButton = document.querySelector("#bookmark-filter-button");
 const recentMistakeFilterButton = document.querySelector("#recent-mistake-filter-button");
@@ -147,6 +240,8 @@ const challengeToggle = document.querySelector("#challenge-toggle");
 const autoBookmarkWrongToggle = document.querySelector("#auto-bookmark-wrong-toggle");
 const autoBookmarkChallengeToggle = document.querySelector("#auto-bookmark-challenge-toggle");
 const includeTimeoutRecentToggle = document.querySelector("#include-timeout-recent-toggle");
+const showClozeJapaneseToggle = document.querySelector("#show-cloze-japanese-toggle");
+const clozeInitialHintToggle = document.querySelector("#cloze-initial-hint-toggle");
 const startButton = document.querySelector("#start-button");
 const startNote = document.querySelector("#start-note");
 const startPanel = document.querySelector(".start-panel");
@@ -161,6 +256,7 @@ const timeBarFill = document.querySelector("#time-bar-fill");
 const timeBarText = document.querySelector("#time-bar-text");
 const questionText = document.querySelector("#question-text");
 const bookmarkCurrentButton = document.querySelector("#bookmark-current-button");
+const hintCurrentButton = document.querySelector("#hint-current-button");
 const feedback = document.querySelector("#feedback");
 const answerNote = document.querySelector("#answer-note");
 const answerArea = document.querySelector("#answer-area");
@@ -197,6 +293,7 @@ window.addEventListener("scroll", scheduleFloatingStartUpdate, { passive: true }
 window.addEventListener("resize", scheduleFloatingStartUpdate);
 csvInput.addEventListener("change", handleCsvImport);
 document.querySelector("#load-sample-button").addEventListener("click", addSampleDeck);
+document.querySelector("#load-cloze-sample-button").addEventListener("click", addSampleClozeDeck);
 saveFavoritePresetButton.addEventListener("click", saveFavoritePresetFromCurrentSetup);
 favoritePresetMenuButton.addEventListener("click", openFavoritePresetDialog);
 favoritePresetList.addEventListener("click", (event) => {
@@ -258,6 +355,9 @@ clearWordSearchButton.addEventListener("click", () => {
 closeWordSearchButton.addEventListener("click", () => {
   closeWordSearch();
 });
+wordListContent.addEventListener("click", handleWordListCardClick);
+wordSearchResults.addEventListener("click", handleWordListCardClick);
+wordDetailBookmarkButton.addEventListener("click", toggleWordDetailBookmark);
 wordSearchFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-search-filter]");
   if (!button) return;
@@ -283,6 +383,14 @@ includeTimeoutRecentToggle.addEventListener("change", () => {
   updateAppSetting("includeTimedOutInRecent", includeTimeoutRecentToggle.checked);
   renderSetup();
 });
+showClozeJapaneseToggle.addEventListener("change", () => {
+  updateAppSetting("showClozeJapanese", showClozeJapaneseToggle.checked);
+  renderSetup();
+});
+clozeInitialHintToggle.addEventListener("change", () => {
+  updateAppSetting("clozeInitialHint", clozeInitialHintToggle.checked);
+  renderSetup();
+});
 challengeToggle.addEventListener("change", () => {
   setup.challenge = challengeToggle.checked;
   if (setup.challenge && setup.count === "endless") setup.count = "10";
@@ -292,6 +400,7 @@ startButton.addEventListener("click", startStudy);
 floatingStartButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
+hintCurrentButton.addEventListener("click", showCurrentHint);
 toggleWrongBookmarksButton.addEventListener("click", toggleWrongBookmarks);
 clearBookmarksButton.addEventListener("click", confirmClearBookmarks);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
@@ -311,6 +420,9 @@ rangeDialog.addEventListener("click", (event) => {
 favoritePresetDialog.addEventListener("click", (event) => {
   if (event.target === favoritePresetDialog) closeFavoritePresetDialog();
 });
+wordDetailPanel.addEventListener("click", (event) => {
+  if (event.target === wordDetailPanel) closeWordDetailPanel();
+});
 window.addEventListener("pagehide", () => {
   if (session && screens.study.classList.contains("is-active")) saveCurrentStudyProgress();
 });
@@ -327,6 +439,7 @@ function loadState() {
     if (!Array.isArray(parsed.decks)) return createEmptyState();
     return {
       ...parsed,
+      decks: parsed.decks.map((deck) => normalizeDeck(deck)),
       bookmarks: parsed.bookmarks && typeof parsed.bookmarks === "object" ? parsed.bookmarks : {},
       learning: parsed.learning && typeof parsed.learning === "object" ? parsed.learning : {},
       progress: parsed.progress && typeof parsed.progress === "object" ? parsed.progress : {},
@@ -355,6 +468,8 @@ function createDefaultAppSettings() {
     autoBookmarkWrong: false,
     autoBookmarkChallenge: false,
     includeTimedOutInRecent: true,
+    showClozeJapanese: true,
+    clozeInitialHint: false,
     dailyGoal: 50,
   };
 }
@@ -470,6 +585,9 @@ function handleGlobalClick(event) {
     renderSetup();
     showScreen("setup");
   }
+  if (action === "close-word-detail") {
+    closeWordDetailPanel();
+  }
   if (action === "quit-study") {
     openConfirmDialog({
       title: "学習を終了しますか？",
@@ -512,6 +630,10 @@ function handleKeyboard(event) {
   }
   if (!favoritePresetDialog.classList.contains("is-hidden")) {
     if (event.key === "Escape") closeFavoritePresetDialog();
+    return;
+  }
+  if (!wordDetailPanel.classList.contains("is-hidden")) {
+    if (event.key === "Escape") closeWordDetailPanel();
     return;
   }
 
@@ -610,6 +732,7 @@ function lockPageScroll() {
   if (scrollLockCount === 1) {
     lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     document.body.style.top = `-${lockedScrollY}px`;
+    document.body.style.setProperty("--dialog-scroll-offset", `${lockedScrollY}px`);
   }
   document.body.classList.add("dialog-open");
 }
@@ -619,6 +742,7 @@ function unlockPageScroll() {
   if (scrollLockCount === 0) {
     document.body.classList.remove("dialog-open");
     document.body.style.top = "";
+    document.body.style.removeProperty("--dialog-scroll-offset");
     window.scrollTo(0, lockedScrollY);
     lockedScrollY = 0;
     requestAnimationFrame(updateFloatingStartVisibility);
@@ -652,14 +776,15 @@ function renderDecks() {
 
   const template = document.querySelector("#deck-card-template");
   state.decks.forEach((deck) => {
+    normalizeDeck(deck);
     const node = template.content.firstElementChild.cloneNode(true);
     const groups = getStudyGroups(deck.words);
     node.querySelector("h2").textContent = deck.name;
-    node.querySelector("p").textContent = getDeckSummary(deck.words, groups);
+    node.querySelector("p").textContent = getDeckSummary(deck.words, groups, deck);
     node.querySelector('[data-role="study"]').addEventListener("click", () => {
       selectedDeckId = deck.id;
       session = null;
-      setup.mode = DEFAULT_MODE_ID;
+      setup.mode = getDefaultModeId(deck);
       setup.groups = getStudyGroups(deck.words).map((group) => group.id);
       setup.questionOrder = "random";
       setup.challenge = false;
@@ -676,12 +801,15 @@ function renderDecks() {
 function renderSetup() {
   const deck = getSelectedDeck();
   if (!deck) return;
+  normalizeDeck(deck);
   if (!questionOrderOptions.some((option) => option.id === setup.questionOrder)) setup.questionOrder = "random";
+  if (!getAvailableModes(deck).some((mode) => mode.id === setup.mode)) setup.mode = getDefaultModeId(deck);
   normalizeReviewSources();
 
   activeDeckName.textContent = deck.name;
   if (detailDeckName) detailDeckName.textContent = deck.name;
   if (learningRecordDeckName) learningRecordDeckName.textContent = deck.name;
+  openWordListButton.textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
   refreshSetupControls(deck);
   challengeToggle.checked = setup.challenge;
   renderAppSettingControls();
@@ -758,10 +886,10 @@ function applySetupSnapshot(snapshot, deck = getSelectedDeck()) {
   const availableGroupIds = new Set(getStudyGroups(deck.words).map((group) => group.id));
   const countIds = new Set(countOptions.map((option) => option.id));
   const timeIds = new Set(timeLimitOptions.map((option) => option.id));
-  const modeIds = new Set(modes.map((mode) => mode.id));
+  const modeIds = new Set(getAvailableModes(deck).map((mode) => mode.id));
   const orderIds = new Set(questionOrderOptions.map((option) => option.id));
 
-  setup.mode = modeIds.has(snapshot.mode) ? snapshot.mode : DEFAULT_MODE_ID;
+  setup.mode = modeIds.has(snapshot.mode) ? snapshot.mode : getDefaultModeId(deck);
   setup.groups = Array.isArray(snapshot.groups)
     ? snapshot.groups.filter((id) => availableGroupIds.has(id))
     : setup.groups;
@@ -780,7 +908,7 @@ function refreshSetupControls(deck = getSelectedDeck()) {
   if (!deck) return;
   normalizeReviewSources();
 
-  renderOptionButtons(modeOptions, modes, setup.mode, (id) => {
+  renderOptionButtons(modeOptions, getAvailableModes(deck), setup.mode, (id) => {
     setup.mode = id;
     renderSetup();
   });
@@ -850,6 +978,11 @@ function renderAppSettingControls() {
   autoBookmarkWrongToggle.checked = settings.autoBookmarkWrong;
   autoBookmarkChallengeToggle.checked = settings.autoBookmarkChallenge;
   includeTimeoutRecentToggle.checked = settings.includeTimedOutInRecent;
+  showClozeJapaneseToggle.checked = settings.showClozeJapanese;
+  clozeInitialHintToggle.checked = settings.clozeInitialHint;
+  const isCloze = isClozeDeck(getSelectedDeck());
+  showClozeJapaneseToggle.closest(".setting-toggle").classList.toggle("is-hidden", !isCloze);
+  clozeInitialHintToggle.closest(".setting-toggle").classList.add("is-hidden");
   renderGoalOptions();
 }
 
@@ -992,12 +1125,13 @@ function renderGroupButtons(deck) {
   const allSelected = selectedIds.length === groups.length;
   const grouped = getGroupedStudyRanges(groups);
   const selectedWordCount = getRangeWordCount(deck.words, selectedIds);
+  const unit = getDeckUnit(deck);
 
   rangeToolbar.innerHTML = "";
   rangeToolbar.innerHTML = `
     <div>
       <span>選択中</span>
-      <strong>${selectedWordCount}語 / ${selectedIds.length}範囲</strong>
+      <strong>${selectedWordCount}${unit} / ${selectedIds.length}範囲</strong>
     </div>
   `;
   const allButton = document.createElement("button");
@@ -1077,8 +1211,9 @@ function renderRangeSummary(deck) {
   const selectedIds = getSelectedGroupIds(groups);
   const selectedWordCount = getRangeWordCount(deck.words, selectedIds);
   const allSelected = selectedIds.length === groups.length;
+  const unit = getDeckUnit(deck);
 
-  rangeSummaryTitle.textContent = `${selectedWordCount}語 / ${selectedIds.length}範囲`;
+  rangeSummaryTitle.textContent = `${selectedWordCount}${unit} / ${selectedIds.length}範囲`;
   if (selectedIds.length === 0) {
     rangeSummaryDetail.textContent = "出題範囲が未選択です。範囲を変更から選んでください。";
     return;
@@ -1109,6 +1244,8 @@ function renderBookmarkPanel(deck) {
   const counts = getReviewCounts(deck, reviewContext);
   const selectedCount = getReviewWords(deck, reviewContext).length;
   bookmarkCount.textContent = selectedCount;
+  const countLabel = bookmarkCount.closest("p");
+  if (countLabel) countLabel.lastChild.textContent = ` ${getDeckUnit(deck)}を選択中`;
 
   bookmarkFilterButton.classList.toggle("is-selected", setup.reviewSources.bookmarks);
   recentMistakeFilterButton.classList.toggle("is-selected", setup.reviewSources.recentMistakes);
@@ -1130,6 +1267,7 @@ function renderBookmarkPanel(deck) {
 function renderReviewList() {
   const deck = getSelectedDeck();
   if (!deck) return;
+  const itemName = isClozeDeck(deck) ? "問題" : "単語";
   const reviewContext = getReviewContext(deck);
   const words = reviewListTab === "recentMistakes"
     ? getRecentMistakeWords(deck, { rangeSet: reviewContext.rangeSet })
@@ -1142,8 +1280,8 @@ function renderReviewList() {
   bookmarkList.innerHTML = "";
   if (words.length === 0) {
     bookmarkList.innerHTML = reviewListTab === "recentMistakes"
-      ? '<div class="empty-state">選択中の範囲に最近間違えた単語はありません。</div>'
-      : '<div class="empty-state">選択中の範囲にしおり単語はありません。</div>';
+      ? `<div class="empty-state">選択中の範囲に最近間違えた${itemName}はありません。</div>`
+      : `<div class="empty-state">選択中の範囲にしおり${itemName}はありません。</div>`;
     return;
   }
 
@@ -1163,8 +1301,8 @@ function renderReviewList() {
       item.className = "bookmark-item";
       item.innerHTML = `
         <div>
-          <strong>${escapeHtml(word.english)}</strong>
-          <span>${escapeHtml(formatJapanese(word))}</span>
+          <strong>${escapeHtml(getItemMainLabel(word))}</strong>
+          <span>${escapeHtml(getItemSubLabel(word))}</span>
         </div>
         ${removeButton}
       `;
@@ -1178,8 +1316,11 @@ function renderWordListScreen() {
   const deck = getSelectedDeck();
   if (!deck) return;
   wordListDeckName.textContent = deck.name;
+  document.querySelector("#word-list-title").textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
+  wordSearchInput.placeholder = isClozeDeck(deck) ? "英文・日本語・正解で検索" : "英語・日本語で検索";
   wordSearchInput.value = "";
   wordSearchActive = false;
+  closeWordDetailPanel();
   resetWordSearchFilters();
   renderWordListContent(deck);
   renderWordSearchFilters(deck);
@@ -1192,7 +1333,7 @@ function renderWordListContent(deck = getSelectedDeck()) {
   wordListContent.innerHTML = "";
 
   if (grouped.length === 0) {
-    wordListContent.innerHTML = '<div class="empty-state">表示できる単語がありません。</div>';
+    wordListContent.innerHTML = `<div class="empty-state">表示できる${isClozeDeck(deck) ? "問題" : "単語"}がありません。</div>`;
     return;
   }
 
@@ -1202,7 +1343,7 @@ function renderWordListContent(deck = getSelectedDeck()) {
     stageDetails.innerHTML = `
       <button class="word-stage-summary" type="button" aria-expanded="false">
         <span>${escapeHtml(stage.parent)}</span>
-        <strong>${stage.wordCount}語</strong>
+        <strong>${stage.wordCount}${getDeckUnit(deck)}</strong>
       </button>
       <div class="word-stage-body" hidden></div>
     `;
@@ -1215,7 +1356,7 @@ function renderWordListContent(deck = getSelectedDeck()) {
       partDetails.innerHTML = `
         <button class="word-part-summary" type="button" aria-expanded="false">
           <span>${escapeHtml(part.childLabel)}</span>
-          <strong>${part.words.length}語</strong>
+          <strong>${part.words.length}${getDeckUnit(deck)}</strong>
         </button>
         <div class="word-card-grid" hidden></div>
       `;
@@ -1251,7 +1392,7 @@ function renderWordSearchResults() {
   if (!query) {
     wordSearchResults.innerHTML = hasFilters
       ? '<div class="empty-state">検索語を入力すると、この条件で絞り込みます。</div>'
-      : '<div class="empty-state">英語・日本語で検索できます。大分類や小分類はフィルターで絞り込めます。</div>';
+      : `<div class="empty-state">${isClozeDeck(deck) ? "英文・日本語・正解" : "英語・日本語"}で検索できます。大分類や小分類はフィルターで絞り込めます。</div>`;
     return;
   }
 
@@ -1259,9 +1400,7 @@ function renderWordSearchResults() {
   const matchedWords = deck.words.filter((word) => {
     if (!matchesWordSearchFilters(word)) return false;
     if (!normalizedQuery) return true;
-    const english = normalizeSearchText(word.english);
-    const japanese = normalizeSearchText(formatJapanese(word));
-    return english.startsWith(normalizedQuery) || japanese.includes(normalizedQuery);
+    return matchesItemSearch(word, normalizedQuery, deck);
   });
 
   wordSearchResults.innerHTML = "";
@@ -1273,7 +1412,7 @@ function renderWordSearchResults() {
   if (matchedWords.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "一致する単語がありません。";
+    empty.textContent = `一致する${isClozeDeck(deck) ? "問題" : "単語"}がありません。`;
     wordSearchResults.appendChild(empty);
     triggerAnimation(wordSearchResults, "is-refreshing", 220);
     return;
@@ -1332,6 +1471,18 @@ function renderWordSearchFilters(deck = getSelectedDeck()) {
 
 function renderSearchFilterButton(type, value, label, selected) {
   return `<button class="word-search-filter-button${selected ? " is-selected" : ""}" type="button" data-search-filter="${escapeAttribute(type)}" data-value="${escapeAttribute(value)}">${escapeHtml(label)}</button>`;
+}
+
+function matchesItemSearch(word, normalizedQuery, deck = getSelectedDeck()) {
+  const english = normalizeSearchText(word.english);
+  const japanese = normalizeSearchText(formatJapanese(word));
+  if (isClozeDeck(deck)) {
+    const answer = normalizeSearchText(word.answer);
+    return english.includes(normalizedQuery)
+      || japanese.includes(normalizedQuery)
+      || answer.includes(normalizedQuery);
+  }
+  return english.startsWith(normalizedQuery) || japanese.includes(normalizedQuery);
 }
 
 function getWordSearchScrollState() {
@@ -1603,19 +1754,101 @@ function closeNestedWordParts(stageDetails) {
 function createWordCard(word, deckId, showRange = false) {
   const card = document.createElement("article");
   const bookmarked = isBookmarked(word, deckId);
+  const deck = state.decks.find((item) => item.id === deckId);
   card.className = "word-list-card";
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.dataset.wordKey = encodeURIComponent(getWordKey(word));
+  card.setAttribute("aria-label", `${isClozeDeck(deck) ? "問題" : "単語"}の詳細を開く`);
   const rangeLabel = showRange ? `<span class="word-list-range">${escapeHtml(formatRangeSummaryLabel(word.lesson))}</span>` : "";
+  const answerLine = isClozeDeck(deck) ? `<span class="word-list-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
   card.innerHTML = `
     <div class="word-list-card-body">
       ${rangeLabel}
-      <strong>${escapeHtml(word.english)}</strong>
-      <span>${escapeHtml(formatJapanese(word))}</span>
+      <strong>${escapeHtml(getItemMainLabel(word))}</strong>
+      <span>${escapeHtml(getItemSubLabel(word))}</span>
+      ${answerLine}
     </div>
     <button class="secondary-button small word-list-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-list-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">
       ${bookmarked ? "しおり解除" : "しおりに追加"}
     </button>
   `;
   return card;
+}
+
+function handleWordListCardClick(event) {
+  if (event.target.closest("button")) return;
+  const card = event.target.closest(".word-list-card");
+  if (!card?.dataset.wordKey) return;
+  openWordDetail(decodeURIComponent(card.dataset.wordKey));
+}
+
+function handleWordListCardKeydown(event) {
+  if (event.target.closest("button")) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest(".word-list-card");
+  if (!card?.dataset.wordKey) return;
+  event.preventDefault();
+  openWordDetail(decodeURIComponent(card.dataset.wordKey));
+}
+
+wordListContent.addEventListener("keydown", handleWordListCardKeydown);
+wordSearchResults.addEventListener("keydown", handleWordListCardKeydown);
+
+function openWordDetail(key) {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const word = deck.words.find((item) => getWordKey(item) === key);
+  if (!word) return;
+  renderWordDetail(deck, word);
+  wordDetailPanel.classList.remove("is-hidden");
+  document.body.classList.add("word-detail-open");
+}
+
+function closeWordDetailPanel() {
+  if (!wordDetailPanel) return;
+  wordDetailPanel.classList.add("is-hidden");
+  wordDetailBookmarkButton.dataset.bookmarkKey = "";
+  document.body.classList.remove("word-detail-open");
+}
+
+function renderWordDetail(deck, word) {
+  const isCloze = isClozeDeck(deck);
+  const key = getWordKey(word);
+  wordDetailDeckName.textContent = deck.name;
+  wordDetailRange.textContent = formatRangeSummaryLabel(word.lesson);
+  wordDetailMainLabel.textContent = isCloze ? "英文" : "英単語";
+  wordDetailMain.textContent = getItemMainLabel(word);
+  wordDetailSubLabel.textContent = isCloze ? "日本語訳" : "日本語";
+  wordDetailSub.textContent = getItemSubLabel(word);
+  wordDetailAnswerBlock.classList.toggle("is-hidden", !isCloze);
+  wordDetailAnswer.textContent = isCloze ? word.answer : "";
+  wordDetailBookmarkButton.dataset.bookmarkKey = encodeURIComponent(key);
+  updateWordDetailBookmarkButton(isBookmarked(word, deck.id));
+}
+
+function toggleWordDetailBookmark() {
+  const key = wordDetailBookmarkButton.dataset.bookmarkKey;
+  if (!key) return;
+  toggleWordListBookmarkByKey(decodeURIComponent(key));
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const word = deck.words.find((item) => getWordKey(item) === decodeURIComponent(key));
+  if (!word) return;
+  updateWordDetailBookmarkButton(isBookmarked(word, deck.id));
+}
+
+function updateWordDetailBookmarkButton(bookmarked) {
+  wordDetailBookmarkButton.classList.toggle("is-bookmarked", bookmarked);
+  wordDetailBookmarkButton.textContent = bookmarked ? "しおり解除" : "しおりに追加";
+}
+
+function getItemMainLabel(word) {
+  return word.english;
+}
+
+function getItemSubLabel(word) {
+  return formatJapanese(word);
 }
 
 function toggleWordListBookmarkByKey(key) {
@@ -1644,6 +1877,25 @@ function updateWordListBookmarkButtons(key, isBookmarkedNow) {
       button.classList.toggle("is-bookmarked", isBookmarkedNow);
       button.textContent = isBookmarkedNow ? "しおり解除" : "しおりに追加";
     });
+  if (wordDetailBookmarkButton.dataset.bookmarkKey === encodeURIComponent(key)) {
+    updateWordDetailBookmarkButton(isBookmarkedNow);
+  }
+}
+
+function renderStudyHintButton() {
+  const canShowHint = Boolean(session?.current?.initialHint && session.mode === "cloze-input" && !session.locked);
+  hintCurrentButton.classList.toggle("is-hidden", !canShowHint);
+  hintCurrentButton.disabled = !canShowHint;
+  hintCurrentButton.classList.toggle("is-active", Boolean(canShowHint && session.current.hint === session.current.initialHint));
+  hintCurrentButton.textContent = session.current.hint === session.current.initialHint ? "ヒント非表示" : "ヒント";
+}
+
+function showCurrentHint() {
+  if (!session?.current?.initialHint || session.locked) return;
+  const willHide = session.current.hint === session.current.initialHint;
+  session.current.hint = willHide ? "" : session.current.initialHint;
+  answerNote.textContent = session.current.hint;
+  renderStudyHintButton();
 }
 
 function getGroupedWordsByRange(words) {
@@ -1755,6 +2007,7 @@ function startStudy() {
     questions,
     index: 0,
     correct: 0,
+    correctStreak: 0,
     answered: 0,
     wrongWords: [],
     wrongItems: [],
@@ -1775,6 +2028,7 @@ function updateStartState(deck) {
   const canStart = canStartStudy(pool, count, mode);
   const selectedCount = pool.length;
   const choiceReady = mode.type !== "choice" || canBuildChoicesForPool(pool, mode);
+  const unit = getDeckUnit(deck);
   const timeLimit = timeLimitOptions.find((option) => option.id === setup.timeLimit)?.value ?? null;
   const timeText = timeLimit ? ` 制限時間は1問${timeLimit}秒です。` : "";
   const orderText = setup.questionOrder === "smart" ? "おまかせ出題で" : "ランダムに";
@@ -1790,42 +2044,45 @@ function updateStartState(deck) {
 
   if (selectedCount === 0) {
     startNote.textContent = hasReviewSourceSelected()
-      ? "選択中の範囲に復習セットの単語がありません。範囲を広げるか、復習セットを切り替えてください。"
+      ? `選択中の範囲に復習セットの${unit === "問" ? "問題" : "単語"}がありません。範囲を広げるか、復習セットを切り替えてください。`
       : "出題範囲が未選択です。範囲を変更から選んでください。";
     startNote.className = "start-note is-warning";
-  } else if (mode.type === "choice" && selectedCount < 4) {
+  } else if (mode.type === "choice" && mode.id !== "cloze-choice" && selectedCount < 4) {
     startNote.textContent = hasReviewSourceSelected()
       ? `復習セットの4択は4語以上必要です。現在は${selectedCount}語です。`
       : `4択モードは選択範囲に4語以上必要です。現在は${selectedCount}語です。`;
     startNote.className = "start-note is-warning";
   } else if (!choiceReady) {
-    startNote.textContent = "4択を作れる候補が足りません。範囲を広げるか、別のモードを選んでください。";
+    startNote.textContent = isClozeDeck(deck)
+      ? "4択候補に不備がある問題があります。CSVの choices と answer を確認してください。"
+      : "4択を作れる候補が足りません。範囲を広げるか、別のモードを選んでください。";
     startNote.className = "start-note is-warning";
   } else if (count === "endless") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語を一周ずつ${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
-      : `${selectedCount}語を一周ずつ${orderText}出題します。${timeText}`;
+      ? `${selectedCount}${unit}を一周ずつ${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${selectedCount}${unit}を一周ずつ${orderText}出題します。${timeText}`;
     startNote.className = "start-note";
   } else if (count === "all") {
     startNote.textContent = setup.challenge
-      ? `${selectedCount}語をすべて${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
-      : `${selectedCount}語をすべて${orderText}出題します。${timeText}`;
+      ? `${selectedCount}${unit}をすべて${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${selectedCount}${unit}をすべて${orderText}出題します。${timeText}`;
     startNote.className = "start-note";
   } else if (!canStart) {
     startNote.textContent = hasReviewSourceSelected()
-      ? `復習セットは${selectedCount}語です。${count}問にするにはあと${count - selectedCount}語必要です。`
-      : `選択範囲は${selectedCount}語です。${count}問にするにはあと${count - selectedCount}語必要です。`;
+      ? `復習セットは${selectedCount}${unit}です。${count}問にするにはあと${count - selectedCount}${unit}必要です。`
+      : `選択範囲は${selectedCount}${unit}です。${count}問にするにはあと${count - selectedCount}${unit}必要です。`;
     startNote.className = "start-note is-warning";
   } else {
     startNote.textContent = setup.challenge
-      ? `${sourceText}${selectedCount}語から重複なしで${count}問、${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
-      : `${sourceText}${selectedCount}語から重複なしで${count}問、${orderText}出題します。${timeText}`;
+      ? `${sourceText}${selectedCount}${unit}から重複なしで${count}問、${orderText}出題します。チャレンジモードは間違えたら終了です。${timeText}`
+      : `${sourceText}${selectedCount}${unit}から重複なしで${count}問、${orderText}出題します。${timeText}`;
     startNote.className = "start-note";
   }
   updateFloatingStartVisibility();
 }
 
 function getFloatingStartDetail(selectedCount, count) {
+  const unit = getDeckUnit();
   const countLabel = count === "endless"
     ? "エンドレス"
     : count === "all"
@@ -1835,7 +2092,7 @@ function getFloatingStartDetail(selectedCount, count) {
   const orderLabel = hasReviewSourceSelected()
     ? "復習"
     : setup.questionOrder === "smart" ? "おまかせ" : "ランダム";
-  return `${sourceLabel} ${selectedCount}語 / ${countLabel} / ${orderLabel}`;
+  return `${sourceLabel} ${selectedCount}${unit} / ${countLabel} / ${orderLabel}`;
 }
 
 function getActiveSourceLabel() {
@@ -1843,7 +2100,7 @@ function getActiveSourceLabel() {
 }
 
 function canStartStudy(pool, count, mode = getSelectedMode()) {
-  if (mode.type === "choice" && pool.length < 4) return false;
+  if (mode.type === "choice" && mode.id !== "cloze-choice" && pool.length < 4) return false;
   if (mode.type === "choice" && !canBuildChoicesForPool(pool, mode)) return false;
   if (setup.challenge && count === "endless") return false;
   if (count === "endless" || count === "all") return pool.length > 0;
@@ -1851,17 +2108,24 @@ function canStartStudy(pool, count, mode = getSelectedMode()) {
 }
 
 function canBuildChoicesForPool(pool, mode) {
+  if (mode.id === "cloze-choice") {
+    return pool.every((word) => Array.isArray(word.choices)
+      && word.choices.length === 4
+      && new Set(word.choices.map(normalizeEnglish)).size === 4
+      && word.choices.some((choice) => normalizeEnglish(choice) === normalizeEnglish(word.answer)));
+  }
   const labels = new Set(pool.map((word) => getChoiceLabel(word, mode)));
   return labels.size >= 4;
 }
 
 function getChoiceLabel(word, mode) {
+  if (mode.id === "cloze-choice") return word.answer;
   return mode.id === "choice-en-ja" ? formatJapanese(word) : word.english;
 }
 
 function renderQuestion() {
   stopQuestionTimer({ resetState: true });
-  const mode = modes.find((item) => item.id === session.mode);
+  const mode = getAvailableModes(session.deck).find((item) => item.id === session.mode) || getSelectedMode();
   const word = session.count === "endless" ? getEndlessWord() : session.questions[session.index];
   session.current = buildQuestion(word, mode);
   session.locked = false;
@@ -1871,8 +2135,13 @@ function renderQuestion() {
   feedback.className = "feedback";
   answerNote.textContent = session.current.hint || "";
   nextButton.classList.add("is-hidden");
-  setQuestionText(session.current.prompt);
+  if (session.current.kind === "cloze") {
+    setClozeQuestion(session.current.prompt, session.current.promptJa);
+  } else {
+    setQuestionText(session.current.prompt);
+  }
   renderBookmarkButton();
+  renderStudyHintButton();
   updateStudyStatus();
 
   if (mode.type === "input") {
@@ -1884,6 +2153,8 @@ function renderQuestion() {
 }
 
 function setQuestionText(text) {
+  questionText.closest(".question-card")?.classList.remove("is-cloze-question");
+  questionText.innerHTML = "";
   const value = String(text);
   questionText.textContent = value;
   questionText.classList.remove(
@@ -1892,6 +2163,7 @@ function setQuestionText(text) {
     "is-long",
     "is-very-long",
     "is-extra-long",
+    "is-cloze",
   );
 
   const compactLength = value.replace(/\s+/g, "").length;
@@ -1910,6 +2182,48 @@ function setQuestionText(text) {
   if (compactLength >= 11) questionText.classList.add("is-long");
   if (compactLength >= 14) questionText.classList.add("is-very-long");
   if (compactLength >= 18) questionText.classList.add("is-extra-long");
+}
+
+function setClozeQuestion(english, japanese) {
+  const settings = getAppSettings();
+  questionText.closest(".question-card")?.classList.add("is-cloze-question");
+  questionText.classList.remove(
+    "is-single-token",
+    "is-japanese",
+    "is-long",
+    "is-very-long",
+    "is-extra-long",
+    "is-cloze",
+  );
+  questionText.classList.add("is-cloze");
+  const englishHtml = escapeHtml(english).replace("_", '<span class="cloze-blank" aria-label="空欄"></span>');
+  const englishClass = `cloze-english${getClozeTextLengthClass(english)}`;
+  const japaneseClass = `cloze-japanese${getClozeJapaneseLengthClass(japanese)}`;
+  const hasJapanese = Boolean(settings.showClozeJapanese && japanese);
+  const japaneseHtml = hasJapanese
+    ? `<div class="cloze-japanese-scroll"><span class="${japaneseClass}">${escapeHtml(japanese)}</span></div>`
+    : "";
+  questionText.innerHTML = `
+    <div class="cloze-layout${hasJapanese ? "" : " without-japanese"}">
+      <div class="cloze-english-scroll"><span class="${englishClass}">${englishHtml}</span></div>
+      ${japaneseHtml}
+    </div>
+  `;
+}
+
+function getClozeTextLengthClass(text) {
+  const length = getCompactLength(text);
+  if (length >= 120) return " is-extra-long";
+  if (length >= 92) return " is-very-long";
+  if (length >= 68) return " is-long";
+  return "";
+}
+
+function getClozeJapaneseLengthClass(text) {
+  const length = getCompactLength(text);
+  if (length >= 56) return " is-very-long";
+  if (length >= 36) return " is-long";
+  return "";
 }
 
 function getCompactLength(text) {
@@ -2170,15 +2484,17 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
   });
   if (isCorrect) {
     session.correct += 1;
+    session.correctStreak = Number(session.correctStreak || 0) + 1;
     feedback.textContent = "○";
     feedback.classList.add("correct");
   } else {
+    session.correctStreak = 0;
     addWrongWord(session.current.word);
     addWrongItem(session.current, userAnswer);
     feedback.textContent = "×";
     feedback.classList.add("wrong");
   }
-  answerNote.textContent = note;
+  answerNote.textContent = isCorrect ? getCorrectStreakMessage(session.correctStreak) : note;
   if (session.challenge && !isCorrect) {
     deleteSavedProgress(session.deck.id);
     showResultScreen();
@@ -2187,7 +2503,18 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
   nextButton.textContent = isLastQuestion() ? "結果を見る" : "次へ";
   if (session.count === "endless") nextButton.textContent = "次へ";
   if (!options.inlineNext) nextButton.classList.remove("is-hidden");
+  renderStudyHintButton();
   updateStudyStatus();
+}
+
+function getCorrectStreakMessage(streak) {
+  const count = Number(streak || 0);
+  if (count >= 50 && count % 50 === 0) return `${count}連続正解！完全にゾーン入ってる`;
+  if (count === 10) return "10連続正解！すごい集中力";
+  if (count >= 10) return `${count}連続正解！`;
+  if (count === 5) return "5連続正解！いい調子";
+  if (count >= 3) return `${count}連続正解！`;
+  return "正解！";
 }
 
 function nextQuestion() {
@@ -2318,6 +2645,11 @@ function renderResult() {
   renderResultGoal();
 
   const wrongList = document.querySelector("#wrong-list");
+  const itemName = isClozeDeck(session.deck) ? "問題" : "単語";
+  document.querySelector(".wrong-section-head h2").textContent = `間違えた${itemName}`;
+  document.querySelectorAll('[data-result-action="retry-wrong"]').forEach((button) => {
+    button.textContent = `間違えた${itemName}だけ`;
+  });
   setRetryButtonsHidden(session.challenge || session.wrongWords.length === 0);
   updateWrongBookmarkBulkButton();
   wrongList.innerHTML = "";
@@ -2328,8 +2660,8 @@ function renderResult() {
 
   const wrongItems = session.wrongItems?.length ? session.wrongItems : session.wrongWords.map((word) => ({
     word,
-    prompt: formatJapanese(word),
-    answer: word.english,
+    prompt: isClozeDeck(session.deck) ? word.english : formatJapanese(word),
+    answer: isClozeDeck(session.deck) ? word.answer : word.english,
     userAnswer: "",
   }));
 
@@ -2341,6 +2673,7 @@ function renderResult() {
     element.innerHTML = `
       <div>
         <strong>${escapeHtml(wrongItem.prompt)}</strong>
+        ${isClozeDeck(session.deck) ? `<span>${escapeHtml(formatJapanese(wrongItem.word))}</span>` : ""}
       </div>
       <div class="wrong-detail">
         <dl>
@@ -2434,6 +2767,7 @@ function retryWrongWords() {
     questions: shuffle(wrongWords),
     index: 0,
     correct: 0,
+    correctStreak: 0,
     answered: 0,
     wrongWords: [],
     wrongItems: [],
@@ -2483,7 +2817,8 @@ function toggleWrongBookmarks() {
   });
   setBookmarkSet(session.deck.id, bookmarks);
   renderResult();
-  showToast(allBookmarked ? "間違えた単語のしおりを解除しました。" : "間違えた単語をしおりに追加しました。");
+  const itemName = isClozeDeck(session.deck) ? "問題" : "単語";
+  showToast(allBookmarked ? `間違えた${itemName}のしおりを解除しました。` : `間違えた${itemName}をしおりに追加しました。`);
 }
 
 function updateStudyStatus() {
@@ -2494,10 +2829,61 @@ function updateStudyStatus() {
 }
 
 function getSelectedMode() {
-  return modes.find((item) => item.id === setup.mode) || modes[0];
+  const deck = getSelectedDeck();
+  return getAvailableModes(deck).find((item) => item.id === setup.mode) || getAvailableModes(deck)[0];
+}
+
+function getAvailableModes(deck = getSelectedDeck()) {
+  const kind = getDeckKind(deck);
+  return modes.filter((mode) => {
+    if (kind === "cloze") return mode.deckKind === "cloze";
+    return !mode.deckKind;
+  });
+}
+
+function getDefaultModeId(deck = getSelectedDeck()) {
+  return isClozeDeck(deck) ? DEFAULT_CLOZE_MODE_ID : DEFAULT_MODE_ID;
+}
+
+function getDeckKind(deck) {
+  return deck?.kind === "cloze" ? "cloze" : "word";
+}
+
+function isClozeDeck(deck) {
+  return getDeckKind(deck) === "cloze";
+}
+
+function normalizeDeck(deck) {
+  if (!deck) return null;
+  if (!deck.kind) deck.kind = "word";
+  return deck;
 }
 
 function buildQuestion(word, mode) {
+  if (mode.id === "cloze-input") {
+    return {
+      kind: "cloze",
+      word,
+      prompt: word.english,
+      promptJa: formatJapanese(word),
+      answer: word.answer,
+      hint: "",
+      initialHint: getInitialAnswerHint(word.answer),
+    };
+  }
+
+  if (mode.id === "cloze-choice") {
+    const answerLabel = word.answer;
+    return {
+      kind: "cloze",
+      word,
+      prompt: word.english,
+      promptJa: formatJapanese(word),
+      answerLabel,
+      choices: makeClozeChoices(word),
+    };
+  }
+
   if (mode.id === "input-ja-en") {
     const prompt = pickRandom(word.japanese);
     return {
@@ -2525,6 +2911,20 @@ function buildQuestion(word, mode) {
     answerLabel: word.english,
     choices: makeChoices(word, (item) => item.english, word.english),
   };
+}
+
+function makeClozeChoices(word) {
+  const answer = normalizeEnglish(word.answer);
+  return shuffle(word.choices).map((choice) => ({
+    id: createId(),
+    label: choice,
+    isCorrect: normalizeEnglish(choice) === answer,
+  }));
+}
+
+function getInitialAnswerHint(answer) {
+  const firstLetter = String(answer || "").trim().charAt(0).toLowerCase();
+  return firstLetter ? `ヒント: ${firstLetter} から始まります` : "";
 }
 
 function getDuplicateJapaneseHint(answerWord, prompt) {
@@ -2623,7 +3023,7 @@ function confirmResetLearning() {
   if (!deck || Object.keys(state.learning?.[deck.id] || {}).length === 0) return;
   openConfirmDialog({
     title: "おまかせデータをリセットしますか？",
-    message: `${deck.name} の内部学習データを削除します。しおりやCSVの単語は残ります。`,
+    message: `${deck.name} の内部学習データを削除します。しおりやCSVのデータは残ります。`,
     confirmLabel: "リセットする",
     cancelLabel: "やめる",
     onConfirm: () => resetLearningData(deck.id),
@@ -2803,7 +3203,9 @@ function setBookmarkSet(deckId, bookmarkSet) {
 }
 
 function getWordKey(word) {
-  return [word.lesson, word.english, formatJapanese(word)]
+  const parts = [word.lesson, word.english, formatJapanese(word)];
+  if (word.answer) parts.push(word.answer);
+  return parts
     .map((value) => String(value).trim().toLowerCase())
     .join("::");
 }
@@ -3101,6 +3503,7 @@ function saveCurrentStudyProgress() {
       pool: session.pool.map(getWordKey),
       index,
       correct: session.correct,
+      correctStreak: session.correctStreak || 0,
       answered: session.answered,
       wrongWords: session.wrongWords.map(getWordKey),
       wrongItems: session.wrongItems.map((item) => ({
@@ -3142,7 +3545,7 @@ function continueSavedStudy() {
   if (questions.length !== progress.questions.length || pool.length === 0) {
     deleteSavedProgress(deck.id);
     renderSetup();
-    showToast("前回の続きは単語データが変わったため破棄しました。", "error");
+    showToast("前回の続きはCSVデータが変わったため破棄しました。", "error");
     return;
   }
 
@@ -3170,6 +3573,7 @@ function continueSavedStudy() {
     questions,
     index,
     correct: Number(progress.correct || 0),
+    correctStreak: Number(progress.correctStreak || 0),
     answered: Number(progress.answered || 0),
     wrongWords: (progress.wrongWords || []).map((key) => wordMap.get(key)).filter(Boolean),
     wrongItems: (progress.wrongItems || [])
@@ -3195,7 +3599,7 @@ function confirmDiscardProgress() {
   if (!deck || !getSavedProgress(deck.id)) return;
   openConfirmDialog({
     title: "前回の続きを破棄しますか？",
-    message: "保存されている途中経過を削除します。単語帳やしおりは残ります。",
+    message: "保存されている途中経過を削除します。CSVデータやしおりは残ります。",
     confirmLabel: "破棄する",
     cancelLabel: "やめる",
     onConfirm: () => {
@@ -3216,7 +3620,8 @@ function getAccuracy() {
 }
 
 function addWrongWord(word) {
-  if (!session.wrongWords.some((item) => item.english === word.english && item.lesson === word.lesson)) {
+  const key = getWordKey(word);
+  if (!session.wrongWords.some((item) => getWordKey(item) === key)) {
     session.wrongWords.push(word);
   }
 }
@@ -3310,13 +3715,18 @@ function getSelectedGroupIds(groups) {
   return setup.groups.filter((id) => availableIds.has(id));
 }
 
-function getDeckSummary(words, groups = getStudyGroups(words)) {
+function getDeckSummary(words, groups = getStudyGroups(words), deck = getSelectedDeck()) {
+  const unit = getDeckUnit(deck);
   const lessonCount = groups.filter((group) => group.type === "lesson").length;
   const specialCount = groups.length - lessonCount;
-  const parts = [`${words.length}語`];
+  const parts = [`${words.length}${unit}`];
   if (lessonCount > 0) parts.push(`${lessonCount} Lesson`);
   if (specialCount > 0) parts.push(`${specialCount} 別枠`);
   return parts.join("・");
+}
+
+function getDeckUnit(deck = getSelectedDeck()) {
+  return isClozeDeck(deck) ? "問" : "語";
 }
 
 function isLessonNumber(value) {
@@ -3332,7 +3742,7 @@ function normalizeEnglish(value) {
     .toLowerCase()
     .trim()
     .replace(/[.,!?;:'"`()[\]{}、。！？・]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, "");
 }
 
 function shuffle(items) {
@@ -3354,14 +3764,16 @@ async function handleCsvImport(event) {
 
   try {
     const text = await file.text();
-    const words = parseWordsCsv(text);
-    if (words.length < 4) {
+    const parsed = parseDeckCsv(text);
+    const { kind, words } = parsed;
+    if (kind === "word" && words.length < 4) {
       showToast("4択を作るため、少なくとも4語以上のCSVを取り込んでください。", "error");
       return;
     }
     const deck = {
       id: createId(),
       name: file.name.replace(/\.csv$/i, ""),
+      kind,
       createdAt: new Date().toISOString(),
       words,
     };
@@ -3385,13 +3797,15 @@ async function handleCsvImport(event) {
 }
 
 function addDeck(deck) {
+  normalizeDeck(deck);
   state.decks.unshift(deck);
   saveState();
   renderDecks();
-  showToast(`${deck.name} を${deck.words.length}語で取り込みました。`);
+  showToast(`${deck.name} を${deck.words.length}${getDeckUnit(deck)}で取り込みました。`);
 }
 
 function replaceDeck(existingDeckId, deck) {
+  normalizeDeck(deck);
   state.decks = state.decks.map((item) => (item.id === existingDeckId ? { ...deck, id: existingDeckId } : item));
   if (state.learning) delete state.learning[existingDeckId];
   if (state.progress) delete state.progress[existingDeckId];
@@ -3399,20 +3813,31 @@ function replaceDeck(existingDeckId, deck) {
   if (state.presets) delete state.presets[existingDeckId];
   saveState();
   renderDecks();
-  showToast(`${deck.name} を${deck.words.length}語で置き換えました。`);
+  showToast(`${deck.name} を${deck.words.length}${getDeckUnit(deck)}で置き換えました。`);
 }
 
-function parseWordsCsv(text) {
+function parseDeckCsv(text) {
   const rows = parseCsv(text.replace(/^\uFEFF/, "")).filter((row) => row.some((cell) => cell.trim()));
   if (rows.length < 2) throw new Error("CSVにデータがありません。");
 
   const headers = rows[0].map((cell) => cell.trim().toLowerCase());
+  if (hasHeaders(headers, ["stage", "question_english", "question_japanese", "choices", "answer"])) {
+    return { kind: "cloze", words: parseClozeRows(rows, headers) };
+  }
+  if (hasHeaders(headers, ["lesson", "english", "japanese"])) {
+    return { kind: "word", words: parseWordRows(rows, headers) };
+  }
+  throw new Error("CSVの1行目に lesson, english, japanese または stage, question_english, question_japanese, choices, answer の列名が必要です。");
+}
+
+function hasHeaders(headers, required) {
+  return required.every((name) => headers.includes(name));
+}
+
+function parseWordRows(rows, headers) {
   const lessonIndex = headers.indexOf("lesson");
   const englishIndex = headers.indexOf("english");
   const japaneseIndex = headers.indexOf("japanese");
-  if ([lessonIndex, englishIndex, japaneseIndex].some((index) => index === -1)) {
-    throw new Error("CSVの1行目に lesson, english, japanese の列名が必要です。");
-  }
 
   return rows.slice(1).map((row, index) => {
     const lesson = row[lessonIndex]?.trim();
@@ -3427,6 +3852,53 @@ function parseWordsCsv(text) {
     }
 
     return { lesson, english, japanese };
+  });
+}
+
+function parseClozeRows(rows, headers) {
+  const stageIndex = headers.indexOf("stage");
+  const englishIndex = headers.indexOf("question_english");
+  const japaneseIndex = headers.indexOf("question_japanese");
+  const choicesIndex = headers.indexOf("choices");
+  const answerIndex = headers.indexOf("answer");
+
+  return rows.slice(1).map((row, index) => {
+    const rowNumber = index + 2;
+    const lesson = row[stageIndex]?.trim();
+    const english = row[englishIndex]?.trim();
+    const japaneseText = row[japaneseIndex]?.trim();
+    const choices = row[choicesIndex]
+      ?.split("/")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const answer = row[answerIndex]?.trim();
+
+    if (!lesson || !english || !japaneseText || !choices?.length || !answer) {
+      throw new Error(`${rowNumber}行目に空の項目があります。`);
+    }
+    const blankCount = (english.match(/_/g) || []).length;
+    if (blankCount !== 1) {
+      throw new Error(`${rowNumber}行目の question_english には _ を1つだけ入れてください。`);
+    }
+    if (choices.length !== 4) {
+      throw new Error(`${rowNumber}行目の choices は / 区切りで4つにしてください。`);
+    }
+    const normalizedChoices = choices.map(normalizeEnglish);
+    if (new Set(normalizedChoices).size !== choices.length) {
+      throw new Error(`${rowNumber}行目の choices に重複があります。`);
+    }
+    if (!normalizedChoices.includes(normalizeEnglish(answer))) {
+      throw new Error(`${rowNumber}行目の answer は choices のいずれかと一致させてください。`);
+    }
+
+    return {
+      lesson,
+      english,
+      japanese: [japaneseText],
+      choices,
+      answer,
+      kind: "cloze",
+    };
   });
 }
 
@@ -3479,6 +3951,23 @@ function addSampleDeck() {
   saveState();
   renderDecks();
   showToast("サンプル単語帳を追加しました。");
+}
+
+function addSampleClozeDeck() {
+  if (state.decks.some((deck) => deck.name === sampleClozeDeck.name)) {
+    showToast("穴埋めサンプルはすでに追加されています。");
+    return;
+  }
+
+  const sample = {
+    ...sampleClozeDeck,
+    id: createId(),
+    createdAt: new Date().toISOString(),
+  };
+  state.decks.unshift(sample);
+  saveState();
+  renderDecks();
+  showToast("穴埋めサンプルを追加しました。");
 }
 
 function deleteDeck(id) {

@@ -607,6 +607,17 @@ body.challenge-active .answer-display.is-wrong {
   line-height: 1.7;
 }
 
+.import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.import-actions .secondary-button {
+  min-width: 132px;
+}
+
 code {
   padding: 2px 5px;
   border-radius: 4px;
@@ -1438,7 +1449,7 @@ body.challenge-active .word-part-summary {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
-  height: 136px;
+  height: 146px;
   min-width: 0;
   padding: 10px;
   border: 1px solid rgba(212, 220, 216, 0.9);
@@ -1447,7 +1458,7 @@ body.challenge-active .word-part-summary {
   box-shadow: 0 6px 16px rgba(32, 44, 38, 0.055);
   contain: content;
   content-visibility: auto;
-  contain-intrinsic-size: 136px;
+  contain-intrinsic-size: 146px;
   transition:
     border-color 150ms ease,
     box-shadow 150ms ease,
@@ -1476,20 +1487,32 @@ body.challenge-active .word-list-card {
 }
 
 .word-list-card strong {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.2;
+  font-size: 0.94rem;
+  line-height: 1.22;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .word-list-card span {
   display: -webkit-box;
-  margin-top: 5px;
+  margin-top: 6px;
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   line-height: 1.32;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
+}
+
+.word-list-card .word-list-answer {
+  margin-top: 6px;
+  color: var(--blue);
+  font-size: 0.76rem;
+  font-weight: 900;
+  -webkit-line-clamp: 1;
 }
 
 .word-list-card .word-list-range {
@@ -1511,6 +1534,109 @@ body.challenge-active .word-list-card .word-list-range {
   min-height: 36px;
   padding: 7px 10px;
   white-space: nowrap;
+}
+
+.word-detail-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.word-detail-panel-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.dialog-panel.word-detail-panel {
+  align-self: center;
+  justify-self: center;
+  width: min(620px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 36px));
+  display: grid;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+#word-detail-panel {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  align-items: center;
+  justify-items: center;
+  background: rgba(18, 27, 23, 0.18);
+}
+
+.word-detail-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(217, 223, 216, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow);
+}
+
+body.challenge-active .word-detail-card {
+  border-color: rgba(176, 132, 56, 0.28);
+  background: rgba(255, 252, 244, 0.94);
+  box-shadow: 0 12px 28px rgba(91, 63, 28, 0.12);
+}
+
+.word-detail-range {
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--blue);
+  background: rgba(229, 241, 238, 0.9);
+  font-size: 0.78rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+body.challenge-active .word-detail-range {
+  color: #7b432d;
+  background: rgba(244, 234, 214, 0.9);
+}
+
+.word-detail-block {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(247, 250, 248, 0.78);
+}
+
+body.challenge-active .word-detail-block {
+  background: rgba(252, 244, 226, 0.68);
+}
+
+.word-detail-block h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.word-detail-block p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.98rem;
+  font-weight: 850;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.word-detail-main {
+  font-size: 1.04rem;
+}
+
+.word-detail-bookmark-button {
+  width: 100%;
+  min-height: 46px;
 }
 
 .word-list-bookmark-button.is-bookmarked {
@@ -2463,6 +2589,10 @@ body.challenge-active .time-bar.is-critical {
   overflow: hidden;
 }
 
+.question-card.is-cloze-question {
+  height: clamp(390px, 50vh, 470px);
+}
+
 .question-card .eyebrow {
   position: absolute;
   top: 26px;
@@ -2527,6 +2657,48 @@ body.challenge-active .time-bar.is-critical {
   animation: bookmark-bounce 420ms cubic-bezier(0.2, 0.9, 0.2, 1.2);
 }
 
+.study-hint-button {
+  position: absolute;
+  top: 18px;
+  right: 122px;
+  z-index: 1;
+  height: 46px;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid rgba(217, 223, 216, 0.95);
+  border-radius: 8px;
+  color: #2d7188;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.study-hint-button:disabled {
+  opacity: 1;
+  color: var(--muted);
+  background: rgba(245, 247, 246, 0.9);
+}
+
+.study-hint-button.is-active {
+  color: #0d5f42;
+  background: linear-gradient(180deg, #eefaf4, #dff4ea);
+  box-shadow: 0 10px 24px rgba(23, 130, 91, 0.12);
+}
+
+body.challenge-active .study-hint-button {
+  border-color: rgba(146, 104, 42, 0.42);
+  color: #7b432d;
+  background: rgba(255, 250, 240, 0.9);
+  box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
+}
+
+body.challenge-active .study-hint-button.is-active {
+  color: #5a2f22;
+  background: linear-gradient(180deg, #f8dcc8, #efc0aa);
+  box-shadow: 0 10px 24px rgba(91, 63, 28, 0.18);
+}
+
 .question-text {
   width: 100%;
   min-width: 0;
@@ -2588,6 +2760,130 @@ body.challenge-active .time-bar.is-critical {
   line-height: 1.28;
 }
 
+.question-text.is-cloze {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  justify-items: stretch;
+  padding: 54px 4px 50px;
+  overflow: hidden;
+  font-size: clamp(1.45rem, 3.2vw, 2.45rem);
+  line-height: 1.35;
+  text-align: center;
+}
+
+.cloze-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  display: block;
+  padding: 4px 10px 8px;
+  overflow: hidden;
+}
+
+.cloze-layout.without-japanese {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.cloze-layout.without-japanese .cloze-english-scroll {
+  bottom: 8px;
+}
+
+.cloze-english-scroll,
+.cloze-japanese-scroll {
+  min-height: 0;
+  display: grid;
+  align-content: center;
+  align-content: safe center;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.cloze-english-scroll {
+  position: absolute;
+  top: 4px;
+  left: 10px;
+  right: 10px;
+  bottom: 62px;
+  min-height: calc(2.7em + 12px);
+  padding: 8px 10px;
+}
+
+.cloze-japanese-scroll {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -8px;
+  height: 52px;
+  padding: 5px 10px;
+}
+
+.cloze-english,
+.cloze-japanese {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.cloze-english {
+  color: var(--ink);
+  font-weight: 950;
+  text-align: center;
+}
+
+.cloze-english.is-long {
+  font-size: 0.82em;
+  line-height: 1.28;
+}
+
+.cloze-english.is-very-long {
+  font-size: 0.68em;
+  line-height: 1.24;
+}
+
+.cloze-english.is-extra-long {
+  font-size: 0.58em;
+  line-height: 1.2;
+}
+
+.cloze-japanese {
+  color: var(--muted);
+  font-size: 0.54em;
+  font-weight: 850;
+  line-height: 1.5;
+  line-break: strict;
+  text-align: center;
+}
+
+.cloze-japanese.is-long {
+  font-size: 0.48em;
+  line-height: 1.36;
+}
+
+.cloze-japanese.is-very-long {
+  font-size: 0.42em;
+  line-height: 1.32;
+}
+
+.cloze-blank {
+  display: inline-block;
+  min-width: 3.2em;
+  height: 0.9em;
+  margin: 0 0.12em;
+  padding: 0 0.18em;
+  border-bottom: 0.16em solid currentColor;
+  color: var(--blue);
+  line-height: 1;
+  text-align: center;
+  vertical-align: -0.02em;
+}
+
 .feedback {
   position: absolute;
   left: 22px;
@@ -2604,6 +2900,8 @@ body.challenge-active .time-bar.is-critical {
 
 .feedback.correct {
   color: var(--green);
+  -webkit-text-stroke: 1.4px currentColor;
+  paint-order: stroke fill;
   transform: scale(1);
 }
 
@@ -2612,21 +2910,32 @@ body.challenge-active .time-bar.is-critical {
   transform: scale(1);
 }
 
+.question-card.is-cloze-question .feedback {
+  bottom: 54px;
+  height: 32px;
+  font-size: 1.9rem;
+}
+
+.question-card.is-cloze-question .answer-note {
+  bottom: 16px;
+  min-height: 30px;
+}
+
 .answer-note {
   position: absolute;
   left: 22px;
   right: 22px;
   bottom: 18px;
-  height: 38px;
+  min-height: 38px;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
   line-height: 1.35;
   display: grid;
   place-items: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
   max-width: 100%;
 }
 
@@ -2724,6 +3033,23 @@ body.study-active .answer-area {
   font-size: 1.2rem;
   font-weight: 750;
   box-shadow: var(--shadow-soft);
+}
+
+.answer-input:focus,
+.answer-input:focus-visible {
+  outline: none;
+  border-color: rgba(45, 113, 136, 0.46);
+  box-shadow:
+    0 0 0 3px rgba(45, 113, 136, 0.12),
+    var(--shadow-soft);
+}
+
+body.challenge-active .answer-input:focus,
+body.challenge-active .answer-input:focus-visible {
+  border-color: rgba(123, 67, 45, 0.5);
+  box-shadow:
+    0 0 0 3px rgba(123, 67, 45, 0.12),
+    0 8px 20px rgba(91, 63, 28, 0.12);
 }
 
 .answer-input:disabled {
@@ -3327,6 +3653,14 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     flex-direction: column;
   }
 
+  .import-actions {
+    justify-content: stretch;
+  }
+
+  .import-actions .secondary-button {
+    flex: 1 1 130px;
+  }
+
   .deck-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3527,16 +3861,37 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .word-list-card {
-    height: 142px;
+    height: 148px;
     padding: 9px;
   }
 
   .word-list-card strong {
-    font-size: 0.94rem;
+    font-size: 0.9rem;
   }
 
   .word-list-card span {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
+  }
+
+  .word-list-card .word-list-answer {
+    font-size: 0.72rem;
+  }
+
+  .word-detail-card {
+    padding: 12px;
+  }
+
+  .word-detail-block {
+    padding: 10px;
+  }
+
+  .word-detail-block p {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .word-detail-main {
+    font-size: 0.98rem;
   }
 
   .word-list-bookmark-button {
@@ -3845,6 +4200,11 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     grid-template-rows: 1fr;
   }
 
+  body.study-active .question-card.is-cloze-question {
+    height: clamp(366px, 52dvh, 414px);
+    min-height: 366px;
+  }
+
   body.study-active .question-card .eyebrow {
     top: 14px;
     left: 14px;
@@ -3859,6 +4219,15 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     min-height: 40px;
     padding-inline: 10px;
     font-size: 0.82rem;
+  }
+
+  body.study-active .study-hint-button {
+    top: 10px;
+    right: 104px;
+    height: 40px;
+    min-height: 40px;
+    padding-inline: 10px;
+    font-size: 0.8rem;
   }
 
   body.study-active .question-text {
@@ -3904,6 +4273,58 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     line-height: 1.28;
   }
 
+  body.study-active .question-text.is-cloze {
+    padding: 42px 0 42px;
+    font-size: clamp(1.04rem, 4.5vw, 1.42rem);
+    line-height: 1.38;
+  }
+
+  body.study-active .cloze-layout {
+    padding: 2px 8px 8px;
+  }
+
+  body.study-active .cloze-layout.without-japanese {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  body.study-active .cloze-english-scroll,
+  body.study-active .cloze-japanese-scroll {
+    align-content: center;
+    align-content: safe center;
+  }
+
+  body.study-active .cloze-english-scroll {
+    top: 2px;
+    left: 8px;
+    right: 8px;
+    bottom: 58px;
+    min-height: calc(2.76em + 10px);
+    padding: 7px 6px;
+  }
+
+  body.study-active .cloze-japanese-scroll {
+    left: 8px;
+    right: 8px;
+    bottom: -8px;
+    height: 48px;
+    padding: 5px 6px 3px;
+  }
+
+  body.study-active .cloze-japanese {
+    font-size: 0.68em;
+    line-height: 1.48;
+  }
+
+  body.study-active .cloze-japanese.is-long {
+    font-size: 0.58em;
+    line-height: 1.34;
+  }
+
+  body.study-active .cloze-japanese.is-very-long {
+    font-size: 0.52em;
+    line-height: 1.3;
+  }
+
   body.study-active .feedback {
     left: 14px;
     right: 14px;
@@ -3912,12 +4333,25 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     font-size: 2.25rem;
   }
 
+  body.study-active .question-card.is-cloze-question .feedback {
+    bottom: 44px;
+    height: 30px;
+    font-size: 1.62rem;
+  }
+
   body.study-active .answer-note {
     left: 14px;
     right: 14px;
-    bottom: 12px;
-    height: 34px;
-    font-size: 0.82rem;
+    bottom: 10px;
+    min-height: 38px;
+    font-size: 0.78rem;
+  }
+
+  body.study-active .question-card.is-cloze-question .answer-note {
+    bottom: 8px;
+    min-height: 28px;
+    font-size: 0.72rem;
+    line-height: 1.25;
   }
 
   body.study-active .answer-area {
