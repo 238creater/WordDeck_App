@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260519-42" />
+    <link rel="stylesheet" href="styles.css?v=20260519-43" />
   </head>
   <body>
     <main class="app-shell">
@@ -323,6 +323,7 @@
           <div class="study-metrics">
             <span id="question-count">1 / 10</span>
             <strong id="accuracy">正答率 0%</strong>
+            <button id="hint-current-button" class="study-hint-button is-hidden" type="button">ヒント</button>
           </div>
         </header>
 
@@ -334,7 +335,6 @@
         <div class="question-card">
           <p id="study-title" class="eyebrow">問題</p>
           <button id="bookmark-current-button" class="bookmark-current-button" type="button" aria-label="しおりを付ける"><span></span>しおり</button>
-          <button id="hint-current-button" class="study-hint-button is-hidden" type="button">ヒント</button>
           <div id="question-text" class="question-text"></div>
           <div id="feedback" class="feedback" aria-live="polite"></div>
           <div id="answer-note" class="answer-note"></div>
@@ -466,6 +466,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260519-42"></script>
+    <script src="app.js?v=20260519-43"></script>
   </body>
 </html>
