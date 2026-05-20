@@ -501,7 +501,7 @@ function showScreen(name) {
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
   if (name !== "study") {
-    document.body.classList.remove("study-input-active", "study-choice-active", "study-writing-active");
+    document.body.classList.remove("study-input-active", "study-cloze-active", "study-choice-active", "study-writing-active");
   }
   syncChallengeTheme(name);
   updateFloatingStartVisibility();
@@ -2166,6 +2166,7 @@ function renderQuestion() {
   session.current = buildQuestion(word, mode);
   session.locked = false;
   document.body.classList.remove("study-input-active");
+  document.body.classList.toggle("study-cloze-active", session.current.kind === "cloze");
   document.body.classList.toggle("study-choice-active", mode.type === "choice");
   document.body.classList.toggle("study-writing-active", mode.type === "input");
 
