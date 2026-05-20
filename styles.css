@@ -2871,14 +2871,7 @@ body.challenge-active .study-hint-button.is-active {
 .cloze-english {
   color: var(--ink);
   font-weight: 950;
-  text-align: center;
-}
-
-.cloze-english.is-long,
-.cloze-english.is-very-long,
-.cloze-english.is-extra-long {
   width: min(100%, 34ch);
-  max-width: 100%;
   margin-inline: auto;
   text-align: left;
 }
