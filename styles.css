@@ -4367,8 +4367,8 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   body.study-active .question-text.is-cloze {
     padding: 42px 0 32px;
-    font-size: clamp(1.12rem, 4.85vw, 1.54rem);
-    line-height: 1.38;
+    font-size: clamp(1.2rem, 5.18vw, 1.68rem);
+    line-height: 1.34;
   }
 
   body.study-active.study-writing-active .question-text.is-cloze {
@@ -4404,18 +4404,18 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .cloze-japanese {
-    font-size: 0.74em;
-    line-height: 1.42;
+    font-size: 0.78em;
+    line-height: 1.38;
   }
 
   body.study-active .cloze-japanese.is-long {
-    font-size: 0.63em;
-    line-height: 1.32;
+    font-size: 0.67em;
+    line-height: 1.3;
   }
 
   body.study-active .cloze-japanese.is-very-long {
-    font-size: 0.56em;
-    line-height: 1.28;
+    font-size: 0.6em;
+    line-height: 1.26;
   }
 
   body.study-active .feedback {
