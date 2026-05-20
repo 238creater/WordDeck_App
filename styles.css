@@ -149,6 +149,8 @@ body:not(.study-active) .text-button:active:not(:disabled) {
 }
 
 body.study-active .app-shell {
+  display: flex;
+  flex-direction: column;
   padding-top: 10px;
 }
 
@@ -219,6 +221,12 @@ body.study-active.study-input-active .app-shell {
   height: auto;
   min-height: 100dvh;
   overflow: visible;
+}
+
+body.study-active.study-cloze-active.study-input-active .app-shell {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
 }
 
 .topbar,
@@ -4218,6 +4226,8 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   body.study-active .app-shell {
     width: min(100% - 18px, 980px);
+    display: flex;
+    flex-direction: column;
     height: 100dvh;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -4226,6 +4236,12 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   body.study-active.study-input-active .app-shell {
     height: auto;
     min-height: 100dvh;
+  }
+
+  body.study-active.study-cloze-active.study-input-active .app-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
   }
 
   body.study-active #study-screen.is-active {
@@ -4237,7 +4253,16 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active.study-cloze-active.study-input-active #study-screen.is-active {
-    display: flex;
+    display: grid;
+    overflow: hidden;
+  }
+
+  body.study-active.study-cloze-active #study-screen.is-active {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    gap: 6px;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
   }
 
@@ -4259,9 +4284,10 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active.study-cloze-active .question-card.is-cloze-question {
-    flex: 1 1 auto;
+    align-self: stretch;
     height: auto;
     min-height: 0;
+    margin: 0;
   }
 
   body.study-active .question-card .eyebrow {
@@ -4420,7 +4446,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   body.study-active.study-cloze-active .answer-area {
     flex: 0 0 auto;
-    margin-top: 8px;
+    margin-top: 0;
     padding: 10px;
     border: 1px solid rgba(217, 223, 216, 0.82);
     border-radius: 8px;
@@ -4477,7 +4503,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   body.study-active.study-cloze-active #next-button {
     flex: 0 0 auto;
-    margin-top: 6px;
+    margin-top: 0;
   }
 
   body.study-active .input-row.is-answered {
