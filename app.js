@@ -1307,10 +1307,12 @@ function renderReviewList() {
         : "";
       const item = document.createElement("div");
       item.className = "bookmark-item";
+      const answerLine = isClozeDeck(deck) ? `<span class="bookmark-item-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
       item.innerHTML = `
         <div>
           <strong>${escapeHtml(getItemMainLabel(word))}</strong>
           <span>${escapeHtml(getItemSubLabel(word))}</span>
+          ${answerLine}
         </div>
         ${removeButton}
       `;

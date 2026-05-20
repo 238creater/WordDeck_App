@@ -984,8 +984,8 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
-  height: 112px;
-  min-height: 112px;
+  height: 132px;
+  min-height: 132px;
   padding: 10px;
   border: 1px solid rgba(217, 223, 216, 0.86);
   border-radius: 8px;
@@ -1017,6 +1017,17 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   font-size: 0.82rem;
   line-height: 1.32;
   -webkit-line-clamp: 1;
+}
+
+.bookmark-item .bookmark-item-answer {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  -webkit-line-clamp: 1;
+}
+
+body.challenge-active .bookmark-item .bookmark-item-answer {
+  color: #7b432d;
 }
 
 .bookmark-item .secondary-button {
