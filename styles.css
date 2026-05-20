@@ -4376,13 +4376,14 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .cloze-layout {
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: 2px;
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 7px;
     padding: 2px 8px 4px;
   }
 
   body.study-active .cloze-layout.without-japanese {
-    grid-template-rows: minmax(0, 1fr);
+    grid-template-rows: auto;
   }
 
   body.study-active .cloze-english-scroll,
