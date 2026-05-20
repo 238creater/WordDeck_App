@@ -1006,6 +1006,22 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   min-height: 148px;
 }
 
+.bookmark-item.is-pending-remove {
+  border-color: rgba(200, 62, 67, 0.28);
+  background: rgba(250, 227, 228, 0.34);
+}
+
+.bookmark-item.is-pending-remove strong,
+.bookmark-item.is-pending-remove span {
+  opacity: 0.68;
+}
+
+.bookmark-item.is-pending-remove .secondary-button {
+  border-color: rgba(23, 130, 91, 0.34);
+  color: #0d5f42;
+  background: linear-gradient(180deg, #eefaf4, #dff4ea);
+}
+
 .bookmark-item > div {
   min-width: 0;
   overflow: hidden;
@@ -2828,15 +2844,15 @@ body.challenge-active .study-hint-button.is-active {
   min-height: 0;
   max-height: 100%;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  align-content: stretch;
-  gap: 8px;
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 14px;
   padding: 4px 10px 8px;
   overflow: hidden;
 }
 
 .cloze-layout.without-japanese {
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto;
 }
 
 .cloze-english-scroll,

@@ -154,6 +154,7 @@ let setup = {
   },
 };
 let session = null;
+let reviewListSnapshot = null;
 
 const screens = {
   decks: document.querySelector("#deck-screen"),
@@ -559,8 +560,7 @@ function getActiveScreenName() {
 }
 
 function getChallengeThemeState(screenName) {
-  if (screenName === "setup" || screenName === "detailSettings") return setup.challenge;
-  if (screenName === "study" || screenName === "result") return Boolean(session?.challenge);
+  if (screenName === "setup") return setup.challenge;
   return false;
 }
 
@@ -607,7 +607,7 @@ function handleGlobalClick(event) {
   }
   if (action === "remove-bookmark") {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
-    if (key) removeBookmarkByKey(decodeURIComponent(key));
+    if (key) toggleReviewBookmarkByKey(decodeURIComponent(key));
   }
   if (action === "toggle-result-bookmark") {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
@@ -692,6 +692,7 @@ function runConfirmDialogAction() {
 function openBookmarkDialog() {
   const deck = getSelectedDeck();
   if (deck) renderBookmarkPanel(deck);
+  reviewListSnapshot = null;
   bookmarkDialog.classList.remove("is-hidden");
   renderReviewList();
   lockPageScroll();
@@ -701,6 +702,7 @@ function openBookmarkDialog() {
 function closeBookmarkDialog() {
   if (!bookmarkDialog.classList.contains("is-hidden")) {
     bookmarkDialog.classList.add("is-hidden");
+    reviewListSnapshot = null;
     unlockPageScroll();
   }
 }
@@ -1277,9 +1279,20 @@ function renderReviewList() {
   if (!deck) return;
   const itemName = isClozeDeck(deck) ? "問題" : "単語";
   const reviewContext = getReviewContext(deck);
+  const currentBookmarks = getBookmarkSet(deck.id);
+  const bookmarkedWords = getBookmarkedWords(deck).filter((word) => reviewContext.rangeSet.has(word.lesson));
+  const shouldUseBookmarkSnapshot = reviewListTab === "bookmarks";
+  if (shouldUseBookmarkSnapshot && (!reviewListSnapshot || reviewListSnapshot.deckId !== deck.id)) {
+    reviewListSnapshot = {
+      deckId: deck.id,
+      keys: bookmarkedWords.map(getWordKey),
+    };
+  }
   const words = reviewListTab === "recentMistakes"
     ? getRecentMistakeWords(deck, { rangeSet: reviewContext.rangeSet })
-    : getBookmarkedWords(deck).filter((word) => reviewContext.rangeSet.has(word.lesson));
+    : (reviewListSnapshot?.keys || [])
+      .map((key) => deck.words.find((word) => getWordKey(word) === key))
+      .filter((word) => word && reviewContext.rangeSet.has(word.lesson));
 
   bookmarkTabButton.classList.toggle("is-selected", reviewListTab === "bookmarks");
   recentMistakeTabButton.classList.toggle("is-selected", reviewListTab === "recentMistakes");
@@ -1302,11 +1315,14 @@ function renderReviewList() {
     `;
     const grid = group.querySelector(".bookmark-group-grid");
     groupWords.forEach((word) => {
+      const key = getWordKey(word);
+      const isBookmarked = currentBookmarks.has(key);
       const removeButton = reviewListTab === "bookmarks"
-        ? `<button class="secondary-button small" type="button" data-action="remove-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">解除</button>`
+        ? `<button class="secondary-button small" type="button" data-action="remove-bookmark" data-bookmark-key="${encodeURIComponent(key)}">${isBookmarked ? "解除" : "再登録"}</button>`
         : "";
       const item = document.createElement("div");
-      item.className = `bookmark-item${isClozeDeck(deck) ? " has-answer" : ""}`;
+      const pendingRemoveClass = reviewListTab === "bookmarks" && !isBookmarked ? " is-pending-remove" : "";
+      item.className = `bookmark-item${isClozeDeck(deck) ? " has-answer" : ""}${pendingRemoveClass}`;
       const answerLine = isClozeDeck(deck) ? `<span class="bookmark-item-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
       item.innerHTML = `
         <div>
@@ -3277,6 +3293,24 @@ function removeBookmarkByKey(key, deckId = selectedDeckId) {
   if (!deckId) return;
   const bookmarks = getBookmarkSet(deckId);
   bookmarks.delete(key);
+  setBookmarkSet(deckId, bookmarks);
+  const deck = getSelectedDeck();
+  if (deck) {
+    renderBookmarkPanel(deck);
+    renderDataManagementState(deck);
+    updateStartState(deck);
+  }
+  if (session?.current) renderBookmarkButton();
+}
+
+function toggleReviewBookmarkByKey(key, deckId = selectedDeckId) {
+  if (!deckId) return;
+  const bookmarks = getBookmarkSet(deckId);
+  if (bookmarks.has(key)) {
+    bookmarks.delete(key);
+  } else {
+    bookmarks.add(key);
+  }
   setBookmarkSet(deckId, bookmarks);
   const deck = getSelectedDeck();
   if (deck) {
