@@ -1306,7 +1306,7 @@ function renderReviewList() {
         ? `<button class="secondary-button small" type="button" data-action="remove-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">解除</button>`
         : "";
       const item = document.createElement("div");
-      item.className = "bookmark-item";
+      item.className = `bookmark-item${isClozeDeck(deck) ? " has-answer" : ""}`;
       const answerLine = isClozeDeck(deck) ? `<span class="bookmark-item-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
       item.innerHTML = `
         <div>
