@@ -2874,6 +2874,15 @@ body.challenge-active .study-hint-button.is-active {
   text-align: center;
 }
 
+.cloze-english.is-long,
+.cloze-english.is-very-long,
+.cloze-english.is-extra-long {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  text-align: left;
+}
+
 .cloze-english.is-long {
   font-size: 0.82em;
   line-height: 1.28;
