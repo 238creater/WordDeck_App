@@ -3344,6 +3344,7 @@ function clearBookmarks(deckId = selectedDeckId) {
   const deck = getSelectedDeck();
   if (deck) {
     renderBookmarkPanel(deck);
+    renderDataManagementState(deck);
     updateStartState(deck);
   }
   if (session?.current) renderBookmarkButton();
