@@ -984,17 +984,31 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
+  height: 112px;
   min-height: 112px;
   padding: 10px;
   border: 1px solid rgba(217, 223, 216, 0.86);
   border-radius: 8px;
   background: #fbfcfc;
+  overflow: hidden;
+}
+
+.bookmark-item > div {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .bookmark-item strong,
 .bookmark-item span {
-  display: block;
+  display: -webkit-box;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+}
+
+.bookmark-item strong {
+  line-height: 1.25;
+  -webkit-line-clamp: 2;
 }
 
 .bookmark-item span {
@@ -1002,6 +1016,7 @@ body.challenge-active .bookmark-list::-webkit-scrollbar-thumb {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.32;
+  -webkit-line-clamp: 1;
 }
 
 .bookmark-item .secondary-button {
@@ -3247,23 +3262,38 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(230px, 1.35fr);
   gap: 12px;
+  min-height: 96px;
   padding: 8px 0;
   border-top: 1px solid var(--line);
   font-size: 0.94rem;
   line-height: 1.35;
 }
 
+.wrong-item > div:first-child {
+  min-width: 0;
+  overflow: hidden;
+}
+
 .wrong-item strong {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 1rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .wrong-item span {
-  display: block;
+  display: -webkit-box;
   margin-top: 2px;
+  overflow: hidden;
   color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .wrong-item dl {
@@ -3296,8 +3326,12 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
 .wrong-item dd {
   margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
   overflow-wrap: anywhere;
   line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .wrong-bookmark-button {
@@ -4481,6 +4515,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   .wrong-item {
     grid-template-columns: 1fr;
     gap: 3px;
+    min-height: 132px;
     padding: 7px 0;
   }
 
