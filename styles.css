@@ -1,18 +1,22 @@
 :root {
-  --bg: #f4f6f8;
-  --surface: #ffffff;
+  --bg: #eef3f1;
+  --surface: #fbfcfa;
+  --surface-soft: #f4f8f6;
+  --surface-warm: #fffaf0;
   --ink: #17201b;
   --muted: #637066;
-  --line: #dce3e1;
+  --line: #c9d4d0;
+  --line-strong: #9fb0a8;
   --green: #17825b;
   --green-soft: #dff4ea;
   --red: #c83e43;
   --red-soft: #fae3e4;
   --blue: #2d7188;
+  --blue-strong: #245f74;
   --blue-soft: #e3f1f5;
   --yellow: #f4c95d;
-  --shadow: 0 18px 40px rgba(32, 44, 38, 0.09);
-  --shadow-soft: 0 7px 20px rgba(32, 44, 38, 0.07);
+  --shadow: 0 18px 40px rgba(32, 44, 38, 0.12);
+  --shadow-soft: 0 8px 22px rgba(32, 44, 38, 0.09);
 }
 
 * {
@@ -29,8 +33,9 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    radial-gradient(circle at 12% 0%, rgba(45, 113, 136, 0.1), transparent 34%),
-    radial-gradient(circle at 86% 8%, rgba(244, 201, 93, 0.13), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(232, 239, 235, 0.42)),
+    radial-gradient(circle at 12% 0%, rgba(45, 113, 136, 0.14), transparent 34%),
+    radial-gradient(circle at 86% 8%, rgba(244, 201, 93, 0.17), transparent 28%),
     var(--bg);
   font-family: "Segoe UI", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
 }
@@ -302,6 +307,8 @@ h2 {
   border: 0;
   border-radius: 8px;
   min-height: 44px;
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
 }
 
 .icon-button {
@@ -330,18 +337,25 @@ h2 {
 
 .primary-button {
   color: white;
-  background: linear-gradient(180deg, #233129, var(--ink));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02) 42%),
+    linear-gradient(180deg, rgba(35, 49, 41, 0.96), rgba(23, 32, 27, 0.92));
+  border: 1px solid rgba(12, 22, 17, 0.46);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 10px 24px rgba(23, 32, 27, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 12px 28px rgba(23, 32, 27, 0.22);
 }
 
 .deck-actions .primary-button {
   border: 1px solid rgba(23, 130, 91, 0.26);
-  background: linear-gradient(180deg, #1f8b65, #146d4e);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 45%),
+    linear-gradient(180deg, rgba(31, 139, 101, 0.96), rgba(20, 109, 78, 0.94));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 11px 24px rgba(23, 130, 91, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 12px 28px rgba(23, 130, 91, 0.22);
 }
 
 .deck-actions .primary-button:hover:not(:disabled) {
@@ -359,17 +373,34 @@ h2 {
 }
 
 .secondary-button {
-  border: 1px solid rgba(181, 193, 187, 0.9);
+  border: 1.5px solid rgba(119, 143, 132, 0.62);
   color: var(--ink);
-  background: linear-gradient(180deg, #fbfdfc, #e4ebe8);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.24) 44%, rgba(222, 235, 229, 0.64)),
+    rgba(241, 248, 245, 0.72);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    0 8px 18px rgba(32, 44, 38, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(73, 94, 84, 0.12),
+    0 9px 20px rgba(32, 44, 38, 0.12);
 }
 
 .secondary-button:hover:not(:disabled) {
-  border-color: rgba(126, 143, 134, 0.85);
-  background: linear-gradient(180deg, #ffffff, #dce6e2);
+  border-color: rgba(71, 95, 84, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.3) 44%, rgba(213, 228, 222, 0.7)),
+    rgba(241, 248, 245, 0.82);
+}
+
+.secondary-button.is-selected {
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.05) 42%),
+    linear-gradient(180deg, rgba(66, 167, 179, 0.96), rgba(45, 113, 136, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 11px 26px rgba(45, 113, 136, 0.28);
 }
 
 .secondary-button:disabled {
@@ -380,8 +411,14 @@ h2 {
 
 .danger-button {
   color: white;
-  background: linear-gradient(180deg, #d14c51, var(--red));
-  box-shadow: 0 10px 24px rgba(200, 62, 67, 0.2);
+  border: 1px solid rgba(151, 33, 38, 0.44);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 44%),
+    linear-gradient(180deg, rgba(209, 76, 81, 0.96), rgba(200, 62, 67, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 11px 26px rgba(200, 62, 67, 0.22);
 }
 
 .danger-button:disabled {
@@ -436,8 +473,8 @@ h2 {
 .question-card,
 .result-summary,
 .wrong-section {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(212, 220, 216, 0.92);
+  background: linear-gradient(180deg, rgba(253, 255, 252, 0.94), rgba(241, 247, 244, 0.9));
+  border: 1px solid rgba(190, 204, 198, 0.95);
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
   -webkit-backdrop-filter: blur(12px);
@@ -726,15 +763,15 @@ code {
 }
 
 #setup-screen .settings-block {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(212, 220, 216, 0.92);
+  background: linear-gradient(180deg, rgba(253, 255, 252, 0.94), rgba(241, 247, 244, 0.9));
+  border-color: rgba(190, 204, 198, 0.95);
   box-shadow: var(--shadow-soft);
 }
 
 body.challenge-active #setup-screen .settings-block {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(212, 220, 216, 0.92);
-  box-shadow: var(--shadow-soft);
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.95), rgba(248, 238, 216, 0.86));
+  border-color: rgba(176, 132, 56, 0.34);
+  box-shadow: 0 12px 30px rgba(91, 63, 28, 0.12);
 }
 
 .settings-block:nth-child(2) {
@@ -775,9 +812,9 @@ body.challenge-active #setup-screen .settings-block {
   justify-content: space-between;
   gap: 14px;
   padding: 14px;
-  border: 1px solid rgba(212, 220, 216, 0.92);
+  border: 1px solid rgba(190, 204, 198, 0.95);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.78);
+  background: linear-gradient(180deg, rgba(253, 255, 252, 0.9), rgba(235, 244, 240, 0.82));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
 }
 
@@ -844,9 +881,9 @@ body.challenge-active #setup-screen .settings-block {
   min-width: 0;
   min-height: 50px;
   padding: 10px 12px;
-  border-color: rgba(181, 193, 187, 0.9);
+  border-color: var(--line-strong);
   color: var(--ink);
-  background: linear-gradient(180deg, #fbfdfc, #e4ebe8);
+  background: linear-gradient(180deg, #ffffff, #dce7e2);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
     0 8px 18px rgba(32, 44, 38, 0.08);
@@ -885,10 +922,12 @@ body.challenge-active #setup-screen .settings-block {
 }
 
 .bookmark-panel.is-filtered .bookmark-panel-actions .secondary-button.is-selected {
-  color: #9f2f34;
-  border-color: rgba(200, 62, 67, 0.38);
-  background: rgba(250, 227, 228, 0.9);
-  box-shadow: inset 0 0 0 1px rgba(200, 62, 67, 0.12), var(--shadow-soft);
+  color: #ffffff;
+  border-color: #c35b58;
+  background: linear-gradient(180deg, #e47b70, #b64845);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 10px 24px rgba(200, 62, 67, 0.22);
 }
 
 body.challenge-active .bookmark-panel-actions .secondary-button {
@@ -918,12 +957,12 @@ body.challenge-active .bookmark-panel.is-filtered .bookmark-panel-actions .secon
 }
 
 .review-list-tabs .secondary-button.is-selected {
-  border-color: var(--blue);
-  color: #163846;
-  background: linear-gradient(180deg, #eff9fb, var(--blue-soft));
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #42a7b3, #2d7188);
   box-shadow:
-    inset 0 0 0 1px rgba(45, 113, 136, 0.18),
-    0 8px 18px rgba(45, 113, 136, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 10px 24px rgba(45, 113, 136, 0.22);
 }
 
 body.challenge-active .review-list-tabs .secondary-button.is-selected {
@@ -951,12 +990,12 @@ body.challenge-active .review-list-tabs .secondary-button.is-selected {
 }
 
 .weakness-summary-tabs .secondary-button.is-selected {
-  border-color: var(--blue);
-  color: #163846;
-  background: linear-gradient(180deg, #eff9fb, var(--blue-soft));
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #42a7b3, #2d7188);
   box-shadow:
-    inset 0 0 0 1px rgba(45, 113, 136, 0.18),
-    0 8px 18px rgba(45, 113, 136, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 10px 24px rgba(45, 113, 136, 0.22);
 }
 
 body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
@@ -1273,7 +1312,8 @@ body.challenge-active .word-search-filter-group {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 4px 1px 6px;
+  margin: -4px -1px -4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(99, 112, 102, 0.5) transparent;
 }
@@ -1313,9 +1353,9 @@ body.challenge-active .word-search-filter-options::-webkit-scrollbar-thumb {
 }
 
 .word-search-filter-button.is-selected {
-  border-color: var(--blue);
+  border-color: #2a8aa0;
   color: #ffffff;
-  background: linear-gradient(180deg, #327f98, #25677d);
+  background: linear-gradient(180deg, #42a7b3, #2d7188);
   box-shadow: 0 8px 18px rgba(45, 113, 136, 0.18);
 }
 
@@ -1842,9 +1882,9 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
   justify-content: space-between;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(217, 223, 216, 0.9);
+  border: 1px solid rgba(190, 204, 198, 0.95);
   border-radius: 8px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+  background: linear-gradient(180deg, rgba(253, 255, 252, 0.92), rgba(235, 244, 240, 0.78));
   box-shadow: var(--shadow-soft);
 }
 
@@ -1867,7 +1907,7 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
 .range-all-button {
   min-height: 42px;
   padding: 8px 14px;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line-strong);
   border-radius: 999px;
   color: var(--ink);
   background: linear-gradient(180deg, #fbfcfc, #e7eeeb);
@@ -1876,17 +1916,18 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
 }
 
 .range-all-button.is-selected {
-  border-color: rgba(200, 62, 67, 0.28);
-  color: #9f2f34;
-  background: rgba(250, 227, 228, 0.72);
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #42a7b3, #2d7188);
+  box-shadow: 0 10px 24px rgba(45, 113, 136, 0.22);
 }
 
 .range-group {
   flex: 0 0 320px;
   max-width: calc(100% - 4px);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(190, 204, 198, 0.95);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
+  background: linear-gradient(180deg, rgba(253, 255, 252, 0.9), rgba(236, 245, 241, 0.82));
   box-shadow: var(--shadow-soft);
   overflow: hidden;
   scroll-snap-align: start;
@@ -1992,9 +2033,10 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
 }
 
 .range-toggle.is-selected {
-  border-color: rgba(200, 62, 67, 0.28);
-  color: #9f2f34;
-  background: rgba(250, 227, 228, 0.72);
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #42a7b3, #2d7188);
+  box-shadow: 0 9px 22px rgba(45, 113, 136, 0.2);
 }
 
 .range-options {
@@ -2025,13 +2067,11 @@ body.challenge-active .word-list-bookmark-button.is-bookmarked {
   width: 100%;
   min-height: 50px;
   border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff, #eef3f1);
+  background: linear-gradient(180deg, #ffffff, #dfeae6);
 }
 
 .range-options .mode-button::before {
-  width: 10px;
-  height: 10px;
-  left: 14px;
+  display: none;
 }
 
 #count-options.count-grid {
@@ -2541,22 +2581,28 @@ body.challenge-active .goal-progress-fill {
 .mode-button {
   min-height: 70px;
   padding: 12px;
-  border: 1px solid rgba(212, 220, 216, 0.95);
+  border: 1.5px solid rgba(119, 143, 132, 0.62);
   color: var(--ink);
-  background: linear-gradient(180deg, #ffffff, #edf4f1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.24) 44%, rgba(222, 235, 229, 0.64)),
+    rgba(241, 248, 245, 0.72);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 7px 18px rgba(32, 44, 38, 0.07);
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(73, 94, 84, 0.12),
+    0 9px 20px rgba(32, 44, 38, 0.12);
   font-weight: 800;
 }
 
 .mode-button.is-selected {
-  border-color: var(--blue);
-  color: #163846;
-  background: linear-gradient(180deg, #eff9fb, var(--blue-soft));
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.05) 42%),
+    linear-gradient(180deg, rgba(66, 167, 179, 0.96), rgba(45, 113, 136, 0.94));
   box-shadow:
-    inset 0 0 0 1px rgba(45, 113, 136, 0.18),
-    0 8px 18px rgba(45, 113, 136, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 11px 26px rgba(45, 113, 136, 0.28);
 }
 
 .challenge-toggle {
@@ -3281,12 +3327,17 @@ body.study-active:not(.study-cloze-active) .answer-area {
 .choice-button {
   min-height: 82px;
   padding: 14px;
-  border: 2px solid var(--line);
-  background: linear-gradient(180deg, #ffffff, #f1f5f3);
+  border: 2px solid rgba(119, 143, 132, 0.64);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.22) 46%, rgba(226, 237, 232, 0.7)),
+    rgba(244, 250, 247, 0.74);
   color: var(--ink);
   font-weight: 850;
   line-height: 1.45;
-  box-shadow: 0 9px 22px rgba(32, 44, 38, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -1px 0 rgba(73, 94, 84, 0.13),
+    0 10px 24px rgba(32, 44, 38, 0.13);
   overflow-wrap: anywhere;
 }
 
@@ -3467,9 +3518,9 @@ body.challenge-active .answer-input:focus-visible {
 }
 
 .result-actions .secondary-button {
-  border-color: rgba(181, 193, 187, 0.9);
+  border-color: var(--line-strong);
   color: var(--ink);
-  background: linear-gradient(180deg, #fbfdfc, #e4ebe8);
+  background: linear-gradient(180deg, #ffffff, #dce7e2);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
     var(--shadow-soft);
@@ -3874,35 +3925,29 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   width: 100%;
   height: 56px;
   min-height: 56px;
-  display: -webkit-box;
-  padding: 12px 14px 12px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
   border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff, #eef3f1);
-  box-shadow: 0 7px 18px rgba(32, 44, 38, 0.08);
+  background: linear-gradient(180deg, #ffffff, #dfeae6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 20px rgba(32, 44, 38, 0.1);
   line-height: 1.18;
   text-align: center;
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .range-stage-options .mode-button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  left: 14px;
-  border: 2px solid #aebbb5;
-  border-radius: 999px;
-  background: white;
-  box-shadow: inset 0 0 0 2px white;
-  transform: translateY(-50%);
+  display: none;
 }
 
 .range-stage-options .mode-button.is-selected::before {
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: #ffffff;
+  background: #ffffff;
 }
 
 .range-stage-options .mode-button {
@@ -3911,6 +3956,47 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     background 160ms ease,
     box-shadow 160ms ease,
     filter 160ms ease;
+}
+
+.bookmark-panel-actions .secondary-button,
+.result-actions .secondary-button,
+.range-options .mode-button,
+.range-stage-options .mode-button,
+.word-search-filter-button {
+  border-color: rgba(119, 143, 132, 0.62);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.24) 44%, rgba(222, 235, 229, 0.64)),
+    rgba(241, 248, 245, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(73, 94, 84, 0.12),
+    0 9px 20px rgba(32, 44, 38, 0.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+}
+
+.bookmark-panel.is-filtered .bookmark-panel-actions .secondary-button.is-selected {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 42%),
+    linear-gradient(180deg, rgba(228, 123, 112, 0.96), rgba(182, 72, 69, 0.94));
+}
+
+.review-list-tabs .secondary-button.is-selected,
+.weakness-summary-tabs .secondary-button.is-selected,
+.word-search-filter-button.is-selected,
+.range-all-button.is-selected,
+.range-toggle.is-selected,
+.range-options .mode-button.is-selected,
+.range-stage-options .mode-button.is-selected {
+  color: #ffffff;
+  border-color: #2a8aa0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.05) 42%),
+    linear-gradient(180deg, rgba(66, 167, 179, 0.96), rgba(45, 113, 136, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 11px 26px rgba(45, 113, 136, 0.28);
 }
 
 .range-stage-options .mode-button:active:not(:disabled) {
