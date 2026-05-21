@@ -2651,7 +2651,7 @@ function nextQuestion() {
 
 function showResultScreen() {
   applyAfterStudyActions();
-  renderResult();
+  renderResult({ prepareAnimation: true });
   showScreen("result");
   playResultAnimations();
 }
@@ -2763,9 +2763,9 @@ function getWeaknessSummaries(deck) {
     .slice(0, 5);
 }
 
-function renderResult() {
+function renderResult(options = {}) {
   renderResultSummary();
-  renderResultGoal();
+  renderResultGoal({ prepareAnimation: Boolean(options.prepareAnimation) });
 
   const wrongList = document.querySelector("#wrong-list");
   const itemName = isClozeDeck(session.deck) ? "問題" : "単語";
@@ -2839,6 +2839,7 @@ function getResultWrongWords() {
 
 function renderResultSummary() {
   const summary = document.querySelector(".result-summary");
+  summary.classList.remove("is-presenting");
   summary.classList.toggle("is-challenge-result", Boolean(session.challenge));
 
   if (session.challenge) {
@@ -2854,6 +2855,8 @@ function renderResultSummary() {
   }
 
   document.querySelector("#result-correct").parentElement.classList.remove("is-failed", "is-cleared");
+  document.querySelector("#result-wrong").parentElement.classList.remove("is-failed", "is-cleared");
+  document.querySelector("#result-accuracy").parentElement.classList.remove("is-failed", "is-cleared");
   document.querySelector("#result-correct").textContent = session.correct;
   document.querySelector("#result-correct").nextElementSibling.textContent = "正解";
   document.querySelector("#result-wrong").textContent = session.answered - session.correct;
@@ -2862,17 +2865,19 @@ function renderResultSummary() {
   document.querySelector("#result-accuracy").nextElementSibling.textContent = "正答率";
 }
 
-function renderResultGoal() {
+function renderResultGoal(options = {}) {
   const goal = Number(getAppSettings().dailyGoal || 0);
   if (!session?.deck || goal <= 0) {
     resultGoalPanel.classList.add("is-hidden");
+    resultGoalProgress.dataset.targetWidth = "0%";
+    resultGoalProgress.style.width = "0%";
     return;
   }
   const todayStats = getDeckStats(session.deck.id).days?.[getTodayKey()] || createEmptyDayStats();
   resultGoalPanel.classList.remove("is-hidden");
   renderGoalProgress(todayStats.answered, goal, null, resultGoalDetail, resultGoalProgress);
   resultGoalProgress.dataset.targetWidth = resultGoalProgress.style.width || "0%";
-  resultGoalProgress.style.width = "0%";
+  if (options.prepareAnimation) resultGoalProgress.style.width = "0%";
   resultGoalPanel.classList.toggle("is-complete", todayStats.answered >= goal);
 }
 

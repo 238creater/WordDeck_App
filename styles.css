@@ -3416,7 +3416,7 @@ body.challenge-active .result-summary div {
   display: block;
   font-size: 3.4rem;
   font-weight: 900;
-  opacity: 0;
+  opacity: 1;
 }
 
 .result-summary.is-presenting span {
