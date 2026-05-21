@@ -2823,6 +2823,9 @@ function renderWeaknessSummary(deck) {
     const card = document.createElement("div");
     if (weaknessSummaryView === "problem") {
       const bookmarked = isBookmarked(item.word, deck.id);
+      const answerLine = isClozeDeck(deck)
+        ? `<small>${escapeHtml(item.answerLabel)}</small>`
+        : "";
       card.className = `weakness-card weakness-card-problem${bookmarked ? " is-bookmarked" : ""}`;
       card.innerHTML = `
         <div class="weakness-problem-main">
@@ -2830,7 +2833,7 @@ function renderWeaknessSummary(deck) {
           <div class="weakness-problem-lines">
             <strong>${escapeHtml(item.label)}</strong>
             <p>${escapeHtml(getItemSubLabel(item.word))}</p>
-            <small>${escapeHtml(item.answerLabel)}</small>
+            ${answerLine}
           </div>
         </div>
         <div class="weakness-problem-side">
