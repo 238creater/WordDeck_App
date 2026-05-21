@@ -4403,23 +4403,38 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   .weakness-card-problem {
     grid-template-columns: 1fr;
+    position: relative;
   }
 
-  .weakness-problem-side {
+  .weakness-card > .weakness-problem-side {
     display: grid;
     grid-template-columns: 1fr;
     align-items: stretch;
-    justify-items: stretch;
+    justify-items: center;
     gap: 6px;
     min-width: 0;
+    text-align: center;
   }
 
   .weakness-problem-main {
+    display: grid;
+    grid-template-columns: 1fr;
     align-items: start;
+    gap: 6px;
   }
 
   .weakness-problem-lines {
     gap: 5px;
+    width: 100%;
+  }
+
+  .weakness-card-problem .weakness-rank {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.74rem;
   }
 
   .weakness-problem-lines strong,
