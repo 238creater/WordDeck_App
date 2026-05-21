@@ -2612,7 +2612,8 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
 function renderClozeAnswerSummary(isCorrect, note, userAnswer = "", options = {}) {
   if (session.current.kind !== "cloze") return;
   const explanation = String(session.current.explanation || "").trim();
-  clozeExplanationButton.classList.toggle("is-hidden", !explanation);
+  const canShowExplanation = session.mode === "cloze-choice" && Boolean(explanation);
+  clozeExplanationButton.classList.toggle("is-hidden", !canShowExplanation);
 }
 
 function getCorrectStreakMessage(streak) {

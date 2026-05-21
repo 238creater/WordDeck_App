@@ -2893,18 +2893,18 @@ body.challenge-active .study-hint-button.is-active {
 }
 
 .cloze-english.is-long {
-  font-size: 0.78em;
-  line-height: 1.24;
+  font-size: 0.86em;
+  line-height: 1.26;
 }
 
 .cloze-english.is-very-long {
-  font-size: 0.62em;
-  line-height: 1.2;
+  font-size: 0.7em;
+  line-height: 1.22;
 }
 
 .cloze-english.is-extra-long {
-  font-size: 0.52em;
-  line-height: 1.16;
+  font-size: 0.6em;
+  line-height: 1.18;
 }
 
 .cloze-japanese {
@@ -2929,7 +2929,8 @@ body.challenge-active .study-hint-button.is-active {
 .cloze-explanation-button {
   height: 42px;
   min-height: 42px;
-  padding-inline: 16px;
+  min-width: 86px;
+  padding-inline: 14px;
   border-color: rgba(45, 113, 136, 0.24);
   color: #163846;
   background: linear-gradient(180deg, #eff9fb, var(--blue-soft));
@@ -4471,7 +4472,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   body.study-active .question-text.is-cloze {
     padding: 40px 0 36px;
-    font-size: clamp(1.28rem, 5.5vw, 1.8rem);
+    font-size: clamp(1.36rem, 5.85vw, 1.94rem);
     line-height: 1.32;
   }
 
@@ -4508,18 +4509,18 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .cloze-japanese {
-    font-size: 0.82em;
+    font-size: 0.86em;
     line-height: 1.34;
   }
 
   body.study-active .cloze-japanese.is-long {
-    font-size: 0.71em;
+    font-size: 0.76em;
     line-height: 1.28;
   }
 
   body.study-active .cloze-japanese.is-very-long {
-    font-size: 0.64em;
-    line-height: 1.24;
+    font-size: 0.68em;
+    line-height: 1.25;
   }
 
   body.study-active .feedback {
@@ -4703,12 +4704,12 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active.study-cloze-active #accuracy {
-    grid-column: 1;
+    grid-column: 2;
     justify-self: end;
   }
 
   body.study-active.study-cloze-active #cloze-explanation-button {
-    grid-column: 2;
+    grid-column: 1;
     justify-self: end;
   }
 
@@ -4725,8 +4726,10 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .study-metrics .cloze-explanation-button {
-    min-height: 36px;
-    padding: 7px 12px;
+    width: 78px;
+    min-width: 78px;
+    min-height: 40px;
+    padding: 8px 10px;
     font-size: 0.82rem;
   }
 
