@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-17" />
+    <link rel="stylesheet" href="styles.css?v=20260521-10" />
   </head>
   <body>
     <main class="app-shell">
@@ -23,7 +23,7 @@
         <div class="import-panel">
           <div>
             <h2>CSVインポート</h2>
-            <p>単語帳は <code>lesson, english, japanese</code>。穴埋め問題は <code>stage, question_english, question_japanese, choices, answer</code> の列名で取り込めます。</p>
+            <p>単語帳は <code>lesson, english, japanese</code>。穴埋め問題は <code>stage, question_english, question_japanese, choices, answer, explanation</code> の列名で取り込めます。</p>
           </div>
           <div class="import-actions">
             <button id="load-sample-button" class="secondary-button">単語サンプル</button>
@@ -322,6 +322,7 @@
           <button class="quit-button" data-action="quit-study" title="学習を終了">× 終了</button>
           <div class="study-metrics">
             <span id="question-count">1 / 10</span>
+            <button id="cloze-explanation-button" class="study-hint-button cloze-explanation-button is-hidden" type="button" data-action="open-cloze-explanation">解説</button>
             <strong id="accuracy">正答率 0%</strong>
             <button id="hint-current-button" class="study-hint-button is-hidden" type="button">ヒント</button>
           </div>
@@ -423,6 +424,28 @@
         </div>
       </div>
 
+      <div id="cloze-explanation-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="cloze-explanation-title">
+        <div class="dialog-panel cloze-explanation-dialog-panel">
+          <div class="cloze-explanation-dialog-head">
+            <div>
+              <p class="eyebrow">Explanation</p>
+              <h2 id="cloze-explanation-title">解説</h2>
+            </div>
+            <button id="close-cloze-explanation-button" class="secondary-button small" type="button">閉じる</button>
+          </div>
+          <div class="cloze-explanation-dialog-body">
+            <section>
+              <h3>正解</h3>
+              <p id="cloze-explanation-answer"></p>
+            </section>
+            <section>
+              <h3>解説</h3>
+              <p id="cloze-explanation-text"></p>
+            </section>
+          </div>
+        </div>
+      </div>
+
       <div id="range-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="range-dialog-title">
         <div class="dialog-panel range-dialog-panel">
           <div class="range-dialog-head">
@@ -466,6 +489,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260520-17"></script>
+    <script src="app.js?v=20260521-10"></script>
   </body>
 </html>

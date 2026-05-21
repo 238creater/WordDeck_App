@@ -19,12 +19,12 @@ Stage1-名詞,water,水
 TOEICなどの文法・例文穴埋め用CSVも取り込めます。
 
 ```csv
-stage,question_english,question_japanese,choices,answer
-Stage1-接続詞,Jackets are required for club members in the main dining room _ casual dress is acceptable in all other areas of the club.,クラブの他の場所では普段着が許される一方、主食堂内では、クラブ会員はジャケットが必要である。,while/during/because/unless,while
-Stage1-接続詞,The meeting was canceled _ the heavy rain.,大雨のため会議は中止された。,because of/despite/although/while,because of
+stage,question_english,question_japanese,choices,answer,explanation
+Stage1-接続詞,Jackets are required for club members in the main dining room _ casual dress is acceptable in all other areas of the club.,クラブの他の場所では普段着が許される一方、主食堂内では、クラブ会員はジャケットが必要である。,while/during/because/unless,while,while は「一方で」を表し、前後の内容を対比します。
+Stage1-接続詞,The meeting was canceled _ the heavy rain.,大雨のため会議は中止された。,because of/despite/although/while,because of,because of の後ろには名詞句を置きます。
 ```
 
-穴埋め形式では `question_english` に `_` を1つだけ入れます。`choices` は `/` 区切りで4つ、`answer` はその中の正解を書きます。
+穴埋め形式では `question_english` に `_` を1つだけ入れます。`choices` は `/` 区切りで4つ、`answer` はその中の正解を書きます。`explanation` は任意で、短い解説を書いておくと回答後に表示できます。
 
 取り込んだ単語帳はブラウザのLocalStorageに保存されます。
 

@@ -70,6 +70,7 @@ const sampleClozeDeck = {
       japanese: ["クラブの他の場所では普段着が許される一方、主食堂内では、クラブ会員はジャケットが必要である。"],
       choices: ["while", "during", "because", "unless"],
       answer: "while",
+      explanation: "空所後には「他の場所では普段着が許される」という内容が続き、空所前の「主食堂ではジャケットが必要」と対比されています。このように前後の内容を比べて「一方で」とつなぐ場合は while が適切です。during は期間を表す名詞の前に置く前置詞なので、この文のように節をつなぐことはできません。",
     },
     {
       lesson: "Stage1-前置詞",
@@ -77,6 +78,7 @@ const sampleClozeDeck = {
       japanese: ["研修プログラムの対象となるためには、記入済みの申込書を金曜日までに人事部へ提出しなければならない。"],
       choices: ["by", "on", "at", "with"],
       answer: "by",
+      explanation: "Friday は提出の期限を表しているため、期限を示す前置詞 by を使います。by Friday は「金曜日までに」という意味で、その時点より前に完了している必要があります。on Friday は単に「金曜日に」という意味なので、締め切りを表すこの文では不自然です。",
     },
     {
       lesson: "Stage1-接続詞",
@@ -84,6 +86,7 @@ const sampleClozeDeck = {
       japanese: ["大雨のため会議は中止された。"],
       choices: ["because of", "despite", "although", "while"],
       answer: "because of",
+      explanation: "空所後の the heavy rain は名詞句なので、理由を表す because of が入ります。because は後ろに主語と動詞を含む節を置く語ですが、because of は名詞句を続ける形です。despite は「にもかかわらず」という逆接を表すため、会議が中止された理由を示すこの文には合いません。",
     },
     {
       lesson: "Stage2-句動詞",
@@ -91,6 +94,7 @@ const sampleClozeDeck = {
       japanese: ["正午までにこの用紙に記入してください。"],
       choices: ["out", "up", "off", "by"],
       answer: "out",
+      explanation: "fill out this form で「この用紙に記入する」という意味になります。書類や申込書などの空欄を埋める場合によく使われる表現です。fill up は容器などを満たす意味、fill in も記入する意味で使われますが、この選択肢では out が最も自然です。",
     },
     {
       lesson: "Stage2-句動詞",
@@ -98,6 +102,7 @@ const sampleClozeDeck = {
       japanese: ["私たちはその提案を注意深く調べる必要がある。"],
       choices: ["over", "down", "away", "between"],
       answer: "over",
+      explanation: "look over は「ざっと目を通す」「確認する」という意味の句動詞です。proposal の内容を注意深く確認するという文脈なので over が適切です。look down は「見下ろす」「軽蔑する」、look away は「目をそらす」という意味になり、文意に合いません。",
     },
     {
       lesson: "Stage2-接続詞",
@@ -105,6 +110,7 @@ const sampleClozeDeck = {
       japanese: ["更新された請求手続きについて質問がある場合は、すぐにサポートチームへ連絡してください。"],
       choices: ["if", "unless", "despite", "during"],
       answer: "if",
+      explanation: "空所後には you have any questions という節が続いており、「もし質問がある場合は」という条件を表しています。そのため if が適切です。unless は「もし〜でないなら」という否定条件を表すため、この文では意味が逆になります。despite や during は前置詞なので、このような節を直接つなげません。",
     },
     {
       lesson: "Stage3-前置詞",
@@ -112,6 +118,7 @@ const sampleClozeDeck = {
       japanese: ["請求書はこのメールに添付されています。"],
       choices: ["to", "for", "by", "at"],
       answer: "to",
+      explanation: "be attached to ... で「...に添付されている」という意味になります。メールにファイルや請求書が添付されている場合は attached to this email が自然な形です。for は目的、by は行為者や期限、at は場所や時点を表すことが多く、この表現では to を使います。",
     },
     {
       lesson: "Stage3-語法",
@@ -119,6 +126,7 @@ const sampleClozeDeck = {
       japanese: ["地域営業部長は、複数の現地販売業者と発売スケジュールを調整する責任がある。"],
       choices: ["for", "to", "with", "about"],
       answer: "for",
+      explanation: "be responsible for ... は「...に責任がある」「...を担当している」という意味の定型表現です。空所後には coordinating the launch schedule という動名詞句が続いており、担当内容を表しています。responsible to は「誰に対して責任を負うか」を表す場合に使われます。",
     },
     {
       lesson: "Stage3-接続詞",
@@ -126,6 +134,7 @@ const sampleClozeDeck = {
       japanese: ["改装中も事務所は営業を続けます。"],
       choices: ["during", "while", "because", "although"],
       answer: "during",
+      explanation: "the renovation は期間を表す名詞句なので、前置詞 during を使います。during the renovation で「改装中に」という意味です。while は後ろに主語と動詞を含む節を置く接続詞なので、名詞句だけが続くこの文では使えません。",
     },
     {
       lesson: "Stage4-語法",
@@ -133,6 +142,7 @@ const sampleClozeDeck = {
       japanese: ["従業員はIDカードを着用することが求められている。"],
       choices: ["to wear", "wearing", "wear", "worn"],
       answer: "to wear",
+      explanation: "be required to do は「...することを求められる」という意味の受動態の表現です。この文では従業員がIDカードを着用することを求められているため、to wear が正解です。required の後ろに動詞を続ける場合は to 不定詞にするのが基本です。",
     },
   ],
 };
@@ -184,6 +194,10 @@ const favoritePresetMenuButton = document.querySelector("#favorite-preset-menu-b
 const favoritePresetDialog = document.querySelector("#favorite-preset-dialog");
 const favoritePresetMenu = document.querySelector("#favorite-preset-menu");
 const closeFavoritePresetDialogButton = document.querySelector("#close-favorite-preset-dialog-button");
+const clozeExplanationDialog = document.querySelector("#cloze-explanation-dialog");
+const closeClozeExplanationButton = document.querySelector("#close-cloze-explanation-button");
+const clozeExplanationAnswer = document.querySelector("#cloze-explanation-answer");
+const clozeExplanationText = document.querySelector("#cloze-explanation-text");
 const favoritePresetName = document.querySelector("#favorite-preset-name");
 const saveFavoritePresetButton = document.querySelector("#save-favorite-preset-button");
 const favoritePresetList = document.querySelector("#favorite-preset-list");
@@ -258,6 +272,7 @@ const timeBarText = document.querySelector("#time-bar-text");
 const questionText = document.querySelector("#question-text");
 const bookmarkCurrentButton = document.querySelector("#bookmark-current-button");
 const hintCurrentButton = document.querySelector("#hint-current-button");
+const clozeExplanationButton = document.querySelector("#cloze-explanation-button");
 const feedback = document.querySelector("#feedback");
 const answerNote = document.querySelector("#answer-note");
 const answerArea = document.querySelector("#answer-area");
@@ -408,6 +423,7 @@ clearBookmarksButton.addEventListener("click", confirmClearBookmarks);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
 closeRangeDialogButton.addEventListener("click", closeRangeDialog);
 closeFavoritePresetDialogButton.addEventListener("click", closeFavoritePresetDialog);
+closeClozeExplanationButton.addEventListener("click", closeClozeExplanationDialog);
 cancelQuitButton.addEventListener("click", closeConfirmDialog);
 confirmQuitButton.addEventListener("click", runConfirmDialogAction);
 quitDialog.addEventListener("click", (event) => {
@@ -421,6 +437,9 @@ rangeDialog.addEventListener("click", (event) => {
 });
 favoritePresetDialog.addEventListener("click", (event) => {
   if (event.target === favoritePresetDialog) closeFavoritePresetDialog();
+});
+clozeExplanationDialog.addEventListener("click", (event) => {
+  if (event.target === clozeExplanationDialog) closeClozeExplanationDialog();
 });
 wordDetailPanel.addEventListener("click", (event) => {
   if (event.target === wordDetailPanel) closeWordDetailPanel();
@@ -596,6 +615,9 @@ function handleGlobalClick(event) {
   if (action === "close-word-detail") {
     closeWordDetailPanel();
   }
+  if (action === "open-cloze-explanation") {
+    openClozeExplanationDialog();
+  }
   if (action === "quit-study") {
     openConfirmDialog({
       title: "学習を終了しますか？",
@@ -638,6 +660,10 @@ function handleKeyboard(event) {
   }
   if (!favoritePresetDialog.classList.contains("is-hidden")) {
     if (event.key === "Escape") closeFavoritePresetDialog();
+    return;
+  }
+  if (!clozeExplanationDialog.classList.contains("is-hidden")) {
+    if (event.key === "Escape") closeClozeExplanationDialog();
     return;
   }
   if (!wordDetailPanel.classList.contains("is-hidden")) {
@@ -733,6 +759,25 @@ function openFavoritePresetDialog() {
 function closeFavoritePresetDialog() {
   if (!favoritePresetDialog.classList.contains("is-hidden")) {
     favoritePresetDialog.classList.add("is-hidden");
+    unlockPageScroll();
+  }
+}
+
+function openClozeExplanationDialog() {
+  if (!session?.current || session.current.kind !== "cloze") return;
+  const explanation = String(session.current.explanation || "").trim();
+  if (!explanation) return;
+  const answerLabel = session.current.answerLabel || session.current.answer;
+  clozeExplanationAnswer.textContent = answerLabel || "";
+  clozeExplanationText.textContent = explanation;
+  clozeExplanationDialog.classList.remove("is-hidden");
+  lockPageScroll();
+  closeClozeExplanationButton.focus();
+}
+
+function closeClozeExplanationDialog() {
+  if (!clozeExplanationDialog.classList.contains("is-hidden")) {
+    clozeExplanationDialog.classList.add("is-hidden");
     unlockPageScroll();
   }
 }
@@ -2189,6 +2234,7 @@ function renderQuestion() {
   feedback.textContent = "";
   feedback.className = "feedback";
   answerNote.textContent = session.current.hint || "";
+  clozeExplanationButton.classList.add("is-hidden");
   nextButton.classList.add("is-hidden");
   if (session.current.kind === "cloze") {
     setClozeQuestion(session.current.prompt, session.current.promptJa);
@@ -2550,6 +2596,7 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
     feedback.classList.add("wrong");
   }
   answerNote.textContent = isCorrect ? getCorrectStreakMessage(session.correctStreak) : note;
+  renderClozeAnswerSummary(isCorrect, note, userAnswer, options);
   if (session.challenge && !isCorrect) {
     deleteSavedProgress(session.deck.id);
     showResultScreen();
@@ -2560,6 +2607,12 @@ function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
   if (!options.inlineNext) nextButton.classList.remove("is-hidden");
   renderStudyHintButton();
   updateStudyStatus();
+}
+
+function renderClozeAnswerSummary(isCorrect, note, userAnswer = "", options = {}) {
+  if (session.current.kind !== "cloze") return;
+  const explanation = String(session.current.explanation || "").trim();
+  clozeExplanationButton.classList.toggle("is-hidden", !explanation);
 }
 
 function getCorrectStreakMessage(streak) {
@@ -2922,6 +2975,7 @@ function buildQuestion(word, mode) {
       prompt: word.english,
       promptJa: formatJapanese(word),
       answer: word.answer,
+      explanation: word.explanation || "",
       hint: "",
       initialHint: getInitialAnswerHint(word.answer),
     };
@@ -2935,6 +2989,7 @@ function buildQuestion(word, mode) {
       prompt: word.english,
       promptJa: formatJapanese(word),
       answerLabel,
+      explanation: word.explanation || "",
       choices: makeClozeChoices(word),
     };
   }
@@ -3901,7 +3956,7 @@ function parseDeckCsv(text) {
   if (hasHeaders(headers, ["lesson", "english", "japanese"])) {
     return { kind: "word", words: parseWordRows(rows, headers) };
   }
-  throw new Error("CSVの1行目に lesson, english, japanese または stage, question_english, question_japanese, choices, answer の列名が必要です。");
+  throw new Error("CSVの1行目に lesson, english, japanese または stage, question_english, question_japanese, choices, answer の列名が必要です。穴埋めの explanation は任意です。");
 }
 
 function hasHeaders(headers, required) {
@@ -3935,6 +3990,7 @@ function parseClozeRows(rows, headers) {
   const japaneseIndex = headers.indexOf("question_japanese");
   const choicesIndex = headers.indexOf("choices");
   const answerIndex = headers.indexOf("answer");
+  const explanationIndex = headers.indexOf("explanation");
 
   return rows.slice(1).map((row, index) => {
     const rowNumber = index + 2;
@@ -3946,6 +4002,7 @@ function parseClozeRows(rows, headers) {
       .map((item) => item.trim())
       .filter(Boolean);
     const answer = row[answerIndex]?.trim();
+    const explanation = explanationIndex >= 0 ? row[explanationIndex]?.trim() || "" : "";
 
     if (!lesson || !english || !japaneseText || !choices?.length || !answer) {
       throw new Error(`${rowNumber}行目に空の項目があります。`);
@@ -3971,6 +4028,7 @@ function parseClozeRows(rows, headers) {
       japanese: [japaneseText],
       choices,
       answer,
+      explanation,
       kind: "cloze",
     };
   });

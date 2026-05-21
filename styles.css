@@ -2656,7 +2656,7 @@ body.challenge-active .time-bar.is-critical {
 }
 
 .question-card.is-cloze-question {
-  height: clamp(390px, 50vh, 470px);
+  height: clamp(430px, 54vh, 520px);
 }
 
 .question-card .eyebrow {
@@ -2831,7 +2831,7 @@ body.challenge-active .study-hint-button.is-active {
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
   justify-items: stretch;
-  padding: 54px 4px 50px;
+  padding: 48px 4px 42px;
   overflow: hidden;
   font-size: clamp(1.52rem, 3.35vw, 2.58rem);
   line-height: 1.35;
@@ -2846,8 +2846,8 @@ body.challenge-active .study-hint-button.is-active {
   display: grid;
   grid-template-rows: auto auto;
   align-content: center;
-  gap: 14px;
-  padding: 4px 10px 8px;
+  gap: 10px;
+  padding: 8px 10px 4px;
   overflow: hidden;
 }
 
@@ -2866,14 +2866,14 @@ body.challenge-active .study-hint-button.is-active {
 }
 
 .cloze-english-scroll {
-  min-height: calc(2.7em + 12px);
-  padding: 4px 10px;
+  min-height: 0;
+  padding: 2px 10px;
 }
 
 .cloze-japanese-scroll {
-  min-height: 42px;
-  max-height: 64px;
-  padding: 0 10px 4px;
+  min-height: 34px;
+  max-height: 86px;
+  padding: 0 10px 2px;
 }
 
 .cloze-english,
@@ -2893,18 +2893,18 @@ body.challenge-active .study-hint-button.is-active {
 }
 
 .cloze-english.is-long {
-  font-size: 0.82em;
-  line-height: 1.28;
-}
-
-.cloze-english.is-very-long {
-  font-size: 0.68em;
+  font-size: 0.78em;
   line-height: 1.24;
 }
 
-.cloze-english.is-extra-long {
-  font-size: 0.58em;
+.cloze-english.is-very-long {
+  font-size: 0.62em;
   line-height: 1.2;
+}
+
+.cloze-english.is-extra-long {
+  font-size: 0.52em;
+  line-height: 1.16;
 }
 
 .cloze-japanese {
@@ -2924,6 +2924,78 @@ body.challenge-active .study-hint-button.is-active {
 .cloze-japanese.is-very-long {
   font-size: 0.45em;
   line-height: 1.32;
+}
+
+.cloze-explanation-button {
+  height: 42px;
+  min-height: 42px;
+  padding-inline: 16px;
+  border-color: rgba(45, 113, 136, 0.24);
+  color: #163846;
+  background: linear-gradient(180deg, #eff9fb, var(--blue-soft));
+  box-shadow: 0 8px 18px rgba(45, 113, 136, 0.1);
+  font-size: 0.86rem;
+}
+
+.cloze-explanation-dialog-panel {
+  width: min(820px, calc(100% - 24px));
+  max-height: min(90dvh, 820px);
+  display: flex;
+  flex-direction: column;
+}
+
+.cloze-explanation-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cloze-explanation-dialog-head h2 {
+  font-size: 1.35rem;
+}
+
+.cloze-explanation-dialog-body {
+  display: grid;
+  gap: 18px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.cloze-explanation-dialog-body section {
+  padding: 18px 20px;
+  border: 1px solid rgba(217, 223, 216, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.cloze-explanation-dialog-body h3 {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.cloze-explanation-dialog-body p {
+  margin: 0;
+  font-weight: 850;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.cloze-explanation-dialog-body section + section {
+  border-top: 2px solid rgba(217, 223, 216, 0.9);
+}
+
+#cloze-explanation-answer {
+  color: var(--blue);
+  font-size: 1.34rem;
+  font-weight: 950;
+}
+
+#cloze-explanation-text {
+  font-size: 1.12rem;
 }
 
 .cloze-blank {
@@ -3008,6 +3080,10 @@ body.study-active .answer-area {
   flex: 1 1 auto;
   overflow: hidden;
   gap: 16px;
+}
+
+body.study-active:not(.study-cloze-active) .answer-area {
+  flex: 0 0 auto;
 }
 
 .choice-grid {
@@ -4402,7 +4478,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     grid-template-rows: auto auto;
     align-content: center;
     gap: 7px;
-    padding: 2px 8px 4px;
+    padding: 10px 8px 4px;
   }
 
   body.study-active .cloze-layout.without-japanese {
@@ -4525,6 +4601,13 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     font-size: 0.78rem;
   }
 
+  body.study-active .cloze-explanation-button {
+    height: 36px;
+    min-height: 36px;
+    padding-inline: 12px;
+    font-size: 0.78rem;
+  }
+
   body.study-active .input-row {
     min-height: 124px;
   }
@@ -4606,6 +4689,12 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     min-height: 34px;
     padding: 6px 10px;
     font-size: 0.88rem;
+  }
+
+  .study-metrics .cloze-explanation-button {
+    min-height: 36px;
+    padding: 7px 12px;
+    font-size: 0.82rem;
   }
 
   .result-actions {
