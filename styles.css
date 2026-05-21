@@ -4418,9 +4418,10 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 
   .weakness-problem-main {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: start;
-    gap: 6px;
+    column-gap: 8px;
+    row-gap: 5px;
   }
 
   .weakness-problem-lines {
@@ -4429,9 +4430,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .weakness-card-problem .weakness-rank {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    position: static;
     width: 24px;
     height: 24px;
     font-size: 0.74rem;
