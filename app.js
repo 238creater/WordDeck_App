@@ -9,6 +9,7 @@ const modes = [
 ];
 const DEFAULT_MODE_ID = "choice-en-ja";
 const DEFAULT_CLOZE_MODE_ID = "cloze-choice";
+const WEAKNESS_SUMMARY_LIMIT = 10;
 
 const countOptions = [
   { id: "10", label: "10問", value: 10 },
@@ -167,6 +168,7 @@ let setup = {
 };
 let session = null;
 let reviewListSnapshot = null;
+let weaknessSummaryView = "category";
 
 const screens = {
   decks: document.querySelector("#deck-screen"),
@@ -212,6 +214,8 @@ const recordTodayAnswered = document.querySelector("#record-today-answered");
 const recordTodayCorrect = document.querySelector("#record-today-correct");
 const recordTodayAccuracy = document.querySelector("#record-today-accuracy");
 const recordStreakDays = document.querySelector("#record-streak-days");
+const weaknessCategoryTab = document.querySelector("#weakness-category-tab");
+const weaknessProblemTab = document.querySelector("#weakness-problem-tab");
 const weaknessSummaryList = document.querySelector("#weakness-summary-list");
 const resultGoalPanel = document.querySelector("#result-goal-panel");
 const resultGoalDetail = document.querySelector("#result-goal-detail");
@@ -342,6 +346,16 @@ recentMistakeTabButton.addEventListener("click", () => {
   reviewListTab = "recentMistakes";
   renderReviewList();
 });
+weaknessCategoryTab.addEventListener("click", () => {
+  weaknessSummaryView = "category";
+  const deck = getSelectedDeck();
+  if (deck) renderWeaknessSummary(deck);
+});
+weaknessProblemTab.addEventListener("click", () => {
+  weaknessSummaryView = "problem";
+  const deck = getSelectedDeck();
+  if (deck) renderWeaknessSummary(deck);
+});
 openRangeDialogButton.addEventListener("click", () => {
   openRangeDialog();
 });
@@ -421,7 +435,7 @@ nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
 hintCurrentButton.addEventListener("click", showCurrentHint);
 toggleWrongBookmarksButton.addEventListener("click", toggleWrongBookmarks);
-clearBookmarksButton.addEventListener("click", confirmClearBookmarks);
+clearBookmarksButton.addEventListener("click", handleReviewListBulkAction);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
 closeRangeDialogButton.addEventListener("click", closeRangeDialog);
 closeFavoritePresetDialogButton.addEventListener("click", closeFavoritePresetDialog);
@@ -645,6 +659,10 @@ function handleGlobalClick(event) {
   if (action === "toggle-list-bookmark") {
     const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
     if (key) toggleWordListBookmarkByKey(decodeURIComponent(key));
+  }
+  if (action === "toggle-review-bookmark") {
+    const key = event.target.closest("[data-bookmark-key]")?.dataset.bookmarkKey;
+    if (key) toggleReviewSummaryBookmarkByKey(decodeURIComponent(key));
   }
 
   const resultAction = event.target.closest("[data-result-action]")?.dataset.resultAction;
@@ -1348,7 +1366,7 @@ function renderReviewList() {
 
   bookmarkTabButton.classList.toggle("is-selected", reviewListTab === "bookmarks");
   recentMistakeTabButton.classList.toggle("is-selected", reviewListTab === "recentMistakes");
-  clearBookmarksButton.classList.toggle("is-hidden", reviewListTab !== "bookmarks");
+  updateReviewListBulkButton(deck, words, currentBookmarks);
 
   bookmarkList.innerHTML = "";
   if (words.length === 0) {
@@ -1371,10 +1389,11 @@ function renderReviewList() {
       const isBookmarked = currentBookmarks.has(key);
       const removeButton = reviewListTab === "bookmarks"
         ? `<button class="secondary-button small" type="button" data-action="remove-bookmark" data-bookmark-key="${encodeURIComponent(key)}">${isBookmarked ? "解除" : "再登録"}</button>`
-        : "";
+        : `<button class="secondary-button small bookmark-item-toggle${isBookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-review-bookmark" data-bookmark-key="${encodeURIComponent(key)}">${isBookmarked ? "しおり解除" : "しおりに追加"}</button>`;
       const item = document.createElement("div");
       const pendingRemoveClass = reviewListTab === "bookmarks" && !isBookmarked ? " is-pending-remove" : "";
-      item.className = `bookmark-item${isClozeDeck(deck) ? " has-answer" : ""}${pendingRemoveClass}`;
+      const bookmarkedClass = reviewListTab === "recentMistakes" && isBookmarked ? " is-bookmarked" : "";
+      item.className = `bookmark-item${isClozeDeck(deck) ? " has-answer" : ""}${pendingRemoveClass}${bookmarkedClass}`;
       const answerLine = isClozeDeck(deck) ? `<span class="bookmark-item-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
       item.innerHTML = `
         <div>
@@ -1388,6 +1407,24 @@ function renderReviewList() {
     });
     bookmarkList.appendChild(group);
   });
+}
+
+function updateReviewListBulkButton(deck, words, currentBookmarks = getBookmarkSet(deck.id)) {
+  if (reviewListTab === "bookmarks") {
+    clearBookmarksButton.classList.remove("is-hidden", "secondary-button");
+    clearBookmarksButton.classList.add("danger-button");
+    clearBookmarksButton.textContent = "一括解除";
+    clearBookmarksButton.disabled = getBookmarkedWords(deck).length === 0;
+    return;
+  }
+
+  clearBookmarksButton.classList.remove("is-hidden");
+  const missingCount = words.filter((word) => !currentBookmarks.has(getWordKey(word))).length;
+  const shouldAdd = missingCount > 0;
+  clearBookmarksButton.classList.toggle("danger-button", !shouldAdd);
+  clearBookmarksButton.classList.toggle("secondary-button", shouldAdd);
+  clearBookmarksButton.textContent = shouldAdd ? "まとめてしおり" : "一括解除";
+  clearBookmarksButton.disabled = words.length === 0;
 }
 
 function renderWordListScreen() {
@@ -1971,6 +2008,42 @@ function toggleWordListBookmarkByKey(key) {
   renderBookmarkPanel(deck);
   updateWordListBookmarkButtons(key, !willRemove);
   showToast(willRemove ? "しおりを外しました。" : "しおりを付けました。");
+}
+
+function toggleReviewSummaryBookmarkByKey(key) {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const word = deck.words.find((item) => getWordKey(item) === key);
+  if (!word) return;
+  const bookmarks = getBookmarkSet(deck.id);
+  const willRemove = bookmarks.has(key);
+  if (willRemove) {
+    bookmarks.delete(key);
+  } else {
+    bookmarks.add(key);
+  }
+  setBookmarkSet(deck.id, bookmarks);
+  syncReviewListSnapshotBookmark(deck.id, key, !willRemove);
+  renderBookmarkPanel(deck);
+  renderDataManagementState(deck);
+  updateStartState(deck);
+  if (screens.learningRecord.classList.contains("is-active")) renderWeaknessSummary(deck);
+  if (session?.current) renderBookmarkButton();
+  showToast(willRemove ? "しおりを外しました。" : "しおりを付けました。");
+}
+
+function syncReviewListSnapshotBookmark(deckId, key, isBookmarkedNow) {
+  if (!reviewListSnapshot || reviewListSnapshot.deckId !== deckId) return;
+  const keys = new Set(reviewListSnapshot.keys || []);
+  if (isBookmarkedNow) {
+    keys.add(key);
+  } else {
+    keys.delete(key);
+  }
+  reviewListSnapshot = {
+    ...reviewListSnapshot,
+    keys: [...keys],
+  };
 }
 
 function updateWordListBookmarkButtons(key, isBookmarkedNow) {
@@ -2735,7 +2808,11 @@ function renderGoalOptions() {
 }
 
 function renderWeaknessSummary(deck) {
-  const summaries = getWeaknessSummaries(deck);
+  weaknessCategoryTab.classList.toggle("is-selected", weaknessSummaryView === "category");
+  weaknessProblemTab.classList.toggle("is-selected", weaknessSummaryView === "problem");
+  const summaries = weaknessSummaryView === "problem"
+    ? getWeaknessProblemSummaries(deck)
+    : getWeaknessSummaries(deck);
   weaknessSummaryList.innerHTML = "";
   if (summaries.length === 0) {
     weaknessSummaryList.innerHTML = '<p class="empty-state compact">まだ弱点データがありません。学習するとここに表示されます。</p>';
@@ -2744,15 +2821,35 @@ function renderWeaknessSummary(deck) {
 
   summaries.forEach((item, index) => {
     const card = document.createElement("div");
-    card.className = "weakness-card";
-    card.innerHTML = `
-      <div>
-        <span>${index + 1}</span>
-        <strong>${escapeHtml(item.label)}</strong>
-      </div>
-      <p>${item.wrong}ミス / ${item.answered}回答</p>
-      <small>ミス率 ${item.rate}%</small>
-    `;
+    if (weaknessSummaryView === "problem") {
+      const bookmarked = isBookmarked(item.word, deck.id);
+      card.className = `weakness-card weakness-card-problem${bookmarked ? " is-bookmarked" : ""}`;
+      card.innerHTML = `
+        <div class="weakness-problem-main">
+          <span class="weakness-rank">${index + 1}</span>
+          <div class="weakness-problem-lines">
+            <strong>${escapeHtml(item.label)}</strong>
+            <p>${escapeHtml(getItemSubLabel(item.word))}</p>
+            <small>${escapeHtml(item.answerLabel)}</small>
+          </div>
+        </div>
+        <div class="weakness-problem-side">
+          <p><strong>${item.wrong}</strong>ミス ${item.answered}回答</p>
+          <small>ミス率 ${item.rate}%</small>
+          <button class="secondary-button small weakness-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-review-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(item.word))}">${bookmarked ? "しおり解除" : "しおりに追加"}</button>
+        </div>
+      `;
+    } else {
+      card.className = "weakness-card";
+      card.innerHTML = `
+        <div>
+          <span class="weakness-rank">${index + 1}</span>
+          <strong>${escapeHtml(item.label)}</strong>
+        </div>
+        <p>${item.wrong}ミス / ${item.answered}回答</p>
+        <small>ミス率 ${item.rate}%</small>
+      `;
+    }
     weaknessSummaryList.appendChild(card);
   });
 }
@@ -2777,7 +2874,29 @@ function getWeaknessSummaries(deck) {
       rate: Math.round((item.wrong / Math.max(1, item.answered)) * 100),
     }))
     .sort((a, b) => b.rate - a.rate || b.wrong - a.wrong || b.answered - a.answered)
-    .slice(0, 5);
+    .slice(0, WEAKNESS_SUMMARY_LIMIT);
+}
+
+function getWeaknessProblemSummaries(deck) {
+  const records = state.learning?.[deck.id] || {};
+  return deck.words
+    .map((word) => {
+      const record = records[getWordKey(word)];
+      if (!record || !record.wrong) return null;
+      const answered = Number(record.seen || 0);
+      const wrong = Number(record.wrong || 0);
+      return {
+        word,
+        label: getItemMainLabel(word),
+        answerLabel: isClozeDeck(deck) ? `正解: ${word.answer}` : getItemSubLabel(word),
+        answered,
+        wrong,
+        rate: Math.round((wrong / Math.max(1, answered)) * 100),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.wrong - a.wrong || b.rate - a.rate || b.answered - a.answered)
+    .slice(0, WEAKNESS_SUMMARY_LIMIT);
 }
 
 function renderResult(options = {}) {
@@ -3429,6 +3548,67 @@ function toggleReviewBookmarkByKey(key, deckId = selectedDeckId) {
     updateStartState(deck);
   }
   if (session?.current) renderBookmarkButton();
+}
+
+function handleReviewListBulkAction() {
+  if (reviewListTab === "bookmarks") {
+    confirmClearBookmarks();
+    return;
+  }
+  toggleRecentMistakeBookmarksBulk();
+}
+
+function getVisibleRecentMistakeWords(deck) {
+  const reviewContext = getReviewContext(deck);
+  return getRecentMistakeWords(deck, { rangeSet: reviewContext.rangeSet });
+}
+
+function toggleRecentMistakeBookmarksBulk() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const words = getVisibleRecentMistakeWords(deck);
+  if (words.length === 0) return;
+
+  const bookmarks = getBookmarkSet(deck.id);
+  const missingWords = words.filter((word) => !bookmarks.has(getWordKey(word)));
+  if (missingWords.length > 0) {
+    missingWords.forEach((word) => bookmarks.add(getWordKey(word)));
+    setBookmarkSet(deck.id, bookmarks);
+    missingWords.forEach((word) => syncReviewListSnapshotBookmark(deck.id, getWordKey(word), true));
+    renderBookmarkPanel(deck);
+    renderDataManagementState(deck);
+    updateStartState(deck);
+    if (screens.learningRecord.classList.contains("is-active")) renderWeaknessSummary(deck);
+    showToast(`最近ミス ${missingWords.length}件をしおりに追加しました。`);
+    return;
+  }
+
+  openConfirmDialog({
+    title: "最近ミスのしおりを解除しますか？",
+    message: `表示中の最近ミス ${words.length}件のしおりを解除します。最近ミスの記録自体は残ります。`,
+    confirmLabel: "解除する",
+    cancelLabel: "やめる",
+    onConfirm: () => clearRecentMistakeBookmarks(deck.id, words.map(getWordKey)),
+  });
+}
+
+function clearRecentMistakeBookmarks(deckId, keys) {
+  if (!deckId || keys.length === 0) return;
+  const bookmarks = getBookmarkSet(deckId);
+  keys.forEach((key) => {
+    bookmarks.delete(key);
+    syncReviewListSnapshotBookmark(deckId, key, false);
+  });
+  setBookmarkSet(deckId, bookmarks);
+  normalizeReviewSources();
+  const deck = getSelectedDeck();
+  if (deck) {
+    renderBookmarkPanel(deck);
+    renderDataManagementState(deck);
+    updateStartState(deck);
+  }
+  if (session?.current) renderBookmarkButton();
+  showToast("表示中の最近ミスのしおりを解除しました。");
 }
 
 function confirmClearBookmarks() {
