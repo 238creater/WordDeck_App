@@ -2233,6 +2233,7 @@ function renderQuestion() {
 
   feedback.textContent = "";
   feedback.className = "feedback";
+  questionText.closest(".question-card")?.classList.remove("is-answered");
   answerNote.textContent = session.current.hint || "";
   clozeExplanationButton.classList.add("is-hidden");
   nextButton.classList.add("is-hidden");
@@ -2574,6 +2575,7 @@ function submitChoiceAnswer(choice) {
 function finishAnswer(isCorrect, note, userAnswer = "", options = {}) {
   stopQuestionTimer();
   session.locked = true;
+  questionText.closest(".question-card")?.classList.add("is-answered");
   session.answered += 1;
   recordLearningResult(session.current.word, {
     correct: isCorrect,

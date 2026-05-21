@@ -2831,11 +2831,15 @@ body.challenge-active .study-hint-button.is-active {
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
   justify-items: stretch;
-  padding: 48px 4px 42px;
+  padding: 46px 4px 24px;
   overflow: hidden;
   font-size: clamp(1.52rem, 3.35vw, 2.58rem);
   line-height: 1.35;
   text-align: center;
+}
+
+.question-card.is-cloze-question.is-answered .question-text.is-cloze {
+  padding-bottom: 52px;
 }
 
 .cloze-layout {
@@ -2846,8 +2850,8 @@ body.challenge-active .study-hint-button.is-active {
   display: grid;
   grid-template-rows: auto auto;
   align-content: center;
-  gap: 10px;
-  padding: 8px 10px 4px;
+  gap: 7px;
+  padding: 2px 10px 0;
   overflow: hidden;
 }
 
@@ -4465,9 +4469,13 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   body.study-active .question-text.is-cloze {
-    padding: 42px 0 32px;
+    padding: 40px 0 14px;
     font-size: clamp(1.28rem, 5.5vw, 1.8rem);
     line-height: 1.32;
+  }
+
+  body.study-active .question-card.is-cloze-question.is-answered .question-text.is-cloze {
+    padding-bottom: 46px;
   }
 
   body.study-active.study-writing-active .question-text.is-cloze {
@@ -4477,8 +4485,8 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   body.study-active .cloze-layout {
     grid-template-rows: auto auto;
     align-content: center;
-    gap: 7px;
-    padding: 10px 8px 4px;
+    gap: 5px;
+    padding: 2px 8px 0;
   }
 
   body.study-active .cloze-layout.without-japanese {
@@ -4682,6 +4690,34 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
+  }
+
+  body.study-active.study-cloze-active .study-metrics {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: end;
+    align-items: center;
+    gap: 3px 6px;
+  }
+
+  body.study-active.study-cloze-active #question-count {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  body.study-active.study-cloze-active #accuracy {
+    grid-column: 1;
+    justify-self: end;
+  }
+
+  body.study-active.study-cloze-active #cloze-explanation-button {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  body.study-active.study-cloze-active #hint-current-button {
+    grid-column: 1 / -1;
+    justify-self: end;
   }
 
   .study-metrics span,
