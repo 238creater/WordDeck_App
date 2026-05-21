@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260521-21" />
+    <link rel="stylesheet" href="styles.css?v=20260521-23" />
   </head>
   <body>
     <main class="app-shell">
@@ -320,10 +320,12 @@
       <section id="study-screen" class="screen study-screen" aria-labelledby="study-title">
         <header class="study-status">
           <button class="quit-button" data-action="quit-study" title="学習を終了">× 終了</button>
-          <button id="cloze-explanation-button" class="study-hint-button cloze-explanation-button is-hidden" type="button" data-action="open-cloze-explanation">解説</button>
           <div class="study-metrics">
             <span id="question-count">1 / 10</span>
-            <strong id="accuracy">正答率 0%</strong>
+            <div class="study-metric-row">
+              <button id="cloze-explanation-button" class="study-hint-button cloze-explanation-button is-hidden" type="button" data-action="open-cloze-explanation">解説</button>
+              <strong id="accuracy">正答率 0%</strong>
+            </div>
             <button id="hint-current-button" class="study-hint-button is-hidden" type="button">ヒント</button>
           </div>
         </header>
@@ -489,6 +491,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260521-21"></script>
+    <script src="app.js?v=20260521-23"></script>
   </body>
 </html>
