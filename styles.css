@@ -2967,6 +2967,37 @@ body.challenge-active .study-hint-button.is-active {
   line-height: 1.32;
 }
 
+.cloze-layout.has-long .cloze-japanese {
+  font-size: 0.54em;
+  line-height: 1.42;
+}
+
+.cloze-layout.has-very-long .cloze-japanese,
+.cloze-layout.has-wordy .cloze-japanese {
+  font-size: 0.5em;
+  line-height: 1.36;
+}
+
+.cloze-layout.has-extra-long .cloze-japanese,
+.cloze-layout.has-very-wordy .cloze-japanese {
+  font-size: 0.46em;
+  line-height: 1.32;
+}
+
+.cloze-layout.has-long .cloze-japanese.is-long,
+.cloze-layout.has-very-long .cloze-japanese.is-long,
+.cloze-layout.has-wordy .cloze-japanese.is-long {
+  font-size: 0.48em;
+}
+
+.cloze-layout.has-extra-long .cloze-japanese.is-long,
+.cloze-layout.has-very-wordy .cloze-japanese.is-long,
+.cloze-layout.has-long .cloze-japanese.is-very-long,
+.cloze-layout.has-very-long .cloze-japanese.is-very-long,
+.cloze-layout.has-wordy .cloze-japanese.is-very-long {
+  font-size: 0.43em;
+}
+
 .cloze-explanation-button {
   height: 42px;
   min-height: 42px;
@@ -4626,6 +4657,37 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   body.study-active .cloze-japanese.is-very-long {
     font-size: 0.68em;
     line-height: 1.25;
+  }
+
+  body.study-active .cloze-layout.has-long .cloze-japanese {
+    font-size: 0.8em;
+    line-height: 1.3;
+  }
+
+  body.study-active .cloze-layout.has-very-long .cloze-japanese,
+  body.study-active .cloze-layout.has-wordy .cloze-japanese {
+    font-size: 0.74em;
+    line-height: 1.27;
+  }
+
+  body.study-active .cloze-layout.has-extra-long .cloze-japanese,
+  body.study-active .cloze-layout.has-very-wordy .cloze-japanese {
+    font-size: 0.68em;
+    line-height: 1.24;
+  }
+
+  body.study-active .cloze-layout.has-long .cloze-japanese.is-long,
+  body.study-active .cloze-layout.has-very-long .cloze-japanese.is-long,
+  body.study-active .cloze-layout.has-wordy .cloze-japanese.is-long {
+    font-size: 0.7em;
+  }
+
+  body.study-active .cloze-layout.has-extra-long .cloze-japanese.is-long,
+  body.study-active .cloze-layout.has-very-wordy .cloze-japanese.is-long,
+  body.study-active .cloze-layout.has-long .cloze-japanese.is-very-long,
+  body.study-active .cloze-layout.has-very-long .cloze-japanese.is-very-long,
+  body.study-active .cloze-layout.has-wordy .cloze-japanese.is-very-long {
+    font-size: 0.64em;
   }
 
   body.study-active .feedback {

@@ -2305,18 +2305,29 @@ function setClozeQuestion(english, japanese) {
   );
   questionText.classList.add("is-cloze");
   const englishHtml = escapeHtml(english).replace("_", '<span class="cloze-blank" aria-label="空欄"></span>');
-  const englishClass = `cloze-english${getClozeTextLengthClass(english)}`;
+  const englishLengthClass = getClozeTextLengthClass(english);
+  const englishClass = `cloze-english${englishLengthClass}`;
+  const layoutEnglishClass = getClozeLayoutLengthClass(englishLengthClass);
   const japaneseClass = `cloze-japanese${getClozeJapaneseLengthClass(japanese)}`;
   const hasJapanese = Boolean(settings.showClozeJapanese && japanese);
   const japaneseHtml = hasJapanese
     ? `<div class="cloze-japanese-scroll"><span class="${japaneseClass}">${escapeHtml(japanese)}</span></div>`
     : "";
   questionText.innerHTML = `
-    <div class="cloze-layout${hasJapanese ? "" : " without-japanese"}">
+    <div class="cloze-layout${hasJapanese ? "" : " without-japanese"}${layoutEnglishClass}">
       <div class="cloze-english-scroll"><span class="${englishClass}">${englishHtml}</span></div>
       ${japaneseHtml}
     </div>
   `;
+}
+
+function getClozeLayoutLengthClass(className) {
+  return String(className)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((name) => ` has-${name.replace(/^is-/, "")}`)
+    .join("");
 }
 
 function getClozeTextLengthClass(text) {
