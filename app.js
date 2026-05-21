@@ -2314,10 +2314,14 @@ function setClozeQuestion(english, japanese) {
 
 function getClozeTextLengthClass(text) {
   const length = getCompactLength(text);
-  if (length >= 120) return " is-extra-long";
-  if (length >= 92) return " is-very-long";
-  if (length >= 68) return " is-long";
-  return "";
+  const wordCount = getEnglishWordCount(text);
+  let className = "";
+  if (length >= 120) className += " is-extra-long";
+  else if (length >= 92) className += " is-very-long";
+  else if (length >= 68) className += " is-long";
+  if (wordCount >= 16) className += " is-very-wordy";
+  else if (wordCount >= 10) className += " is-wordy";
+  return className;
 }
 
 function getClozeJapaneseLengthClass(text) {
@@ -2329,6 +2333,14 @@ function getClozeJapaneseLengthClass(text) {
 
 function getCompactLength(text) {
   return String(text).replace(/\s+/g, "").length;
+}
+
+function getEnglishWordCount(text) {
+  return String(text)
+    .replace(/_/g, " blank ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 function hasJapaneseText(text) {
