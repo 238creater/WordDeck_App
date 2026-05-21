@@ -2489,6 +2489,10 @@ body.challenge-active .setting-toggle small {
   font-size: 1.16rem;
 }
 
+.weakness-rate-inline {
+  display: none;
+}
+
 .weakness-bookmark-button {
   min-height: 34px;
   padding: 6px 10px;
@@ -4402,15 +4406,48 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .weakness-problem-side {
-    grid-template-columns: auto auto minmax(8.5rem, 1fr);
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
     justify-items: stretch;
+    gap: 6px;
     min-width: 0;
+  }
+
+  .weakness-problem-main {
+    align-items: start;
+  }
+
+  .weakness-problem-lines {
+    gap: 5px;
+  }
+
+  .weakness-problem-lines strong,
+  .weakness-problem-lines p,
+  .weakness-problem-lines small {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .weakness-problem-side p,
   .weakness-problem-side small {
     white-space: nowrap;
+  }
+
+  .weakness-problem-side p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .weakness-rate-inline {
+    display: inline;
+  }
+
+  .weakness-rate-block {
+    display: none;
   }
 
   .weakness-bookmark-button {

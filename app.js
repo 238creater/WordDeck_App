@@ -2834,8 +2834,8 @@ function renderWeaknessSummary(deck) {
           </div>
         </div>
         <div class="weakness-problem-side">
-          <p><strong>${item.wrong}</strong>ミス ${item.answered}回答</p>
-          <small>ミス率 ${item.rate}%</small>
+          <p><strong>${item.wrong}</strong>ミス ${item.answered}回答 <span class="weakness-rate-inline">ミス率 ${item.rate}%</span></p>
+          <small class="weakness-rate-block">ミス率 ${item.rate}%</small>
           <button class="secondary-button small weakness-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-review-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(item.word))}">${bookmarked ? "しおり解除" : "しおりに追加"}</button>
         </div>
       `;
