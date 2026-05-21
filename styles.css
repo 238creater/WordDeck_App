@@ -198,6 +198,12 @@ body.study-active.study-input-active #study-screen.is-active {
   button {
     transition: none;
   }
+
+  .result-summary span {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
 }
 
 body.study-active {
@@ -2267,6 +2273,10 @@ body.challenge-active .setting-toggle small {
   transition: width 220ms ease;
 }
 
+.result-goal-panel .goal-progress-fill {
+  transition: width 820ms cubic-bezier(0.22, 0.72, 0.18, 1);
+}
+
 .goal-options {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3335,6 +3345,55 @@ body.challenge-active .result-actions {
   background: rgba(241, 236, 225, 0.94);
 }
 
+@media (min-width: 721px) {
+  body.study-active.study-cloze-active.study-choice-active #study-screen.is-active {
+    display: grid;
+    grid-template-rows: auto auto minmax(360px, 1fr) auto auto;
+    gap: 10px;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .study-status {
+    grid-row: 1;
+    margin-bottom: 0;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .time-bar {
+    grid-row: 2;
+    margin-bottom: 0;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .question-card.is-cloze-question {
+    grid-row: 3;
+    height: 100%;
+    min-height: 360px;
+    max-height: 520px;
+    margin: 0;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .answer-area {
+    grid-row: 4;
+    min-height: 0;
+    margin-top: 0;
+    overflow: visible;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .choice-grid {
+    min-height: 0;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active .choice-button {
+    min-height: 68px;
+  }
+
+  body.study-active.study-cloze-active.study-choice-active #next-button {
+    grid-row: 5;
+    margin-top: 0;
+  }
+}
+
 .result-summary div {
   padding: 24px 12px;
   text-align: center;
@@ -3349,14 +3408,18 @@ body.challenge-active .result-summary div {
   display: block;
   font-size: 3.4rem;
   font-weight: 900;
-  animation: result-number-pop 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  opacity: 0;
 }
 
-.result-summary div:nth-child(2) span {
+.result-summary.is-presenting span {
+  animation: result-number-pop 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.result-summary.is-presenting div:nth-child(2) span {
   animation-delay: 70ms;
 }
 
-.result-summary div:nth-child(3) span {
+.result-summary.is-presenting div:nth-child(3) span {
   animation-delay: 140ms;
 }
 
@@ -3771,11 +3834,19 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
 @keyframes result-number-pop {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    filter: blur(2px);
+    transform: translateY(10px) scale(0.965);
+  }
+
+  70% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(-1px) scale(1.01);
   }
 
   to {
     opacity: 1;
+    filter: blur(0);
     transform: translateY(0) scale(1);
   }
 }

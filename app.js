@@ -2652,6 +2652,7 @@ function showResultScreen() {
   applyAfterStudyActions();
   renderResult();
   showScreen("result");
+  playResultAnimations();
 }
 
 function applyAfterStudyActions() {
@@ -2869,7 +2870,25 @@ function renderResultGoal() {
   const todayStats = getDeckStats(session.deck.id).days?.[getTodayKey()] || createEmptyDayStats();
   resultGoalPanel.classList.remove("is-hidden");
   renderGoalProgress(todayStats.answered, goal, null, resultGoalDetail, resultGoalProgress);
+  resultGoalProgress.dataset.targetWidth = resultGoalProgress.style.width || "0%";
+  resultGoalProgress.style.width = "0%";
   resultGoalPanel.classList.toggle("is-complete", todayStats.answered >= goal);
+}
+
+function playResultAnimations() {
+  const summary = document.querySelector(".result-summary");
+  summary.classList.remove("is-presenting");
+  void summary.offsetWidth;
+  summary.classList.add("is-presenting");
+
+  if (resultGoalPanel.classList.contains("is-hidden")) return;
+  const targetWidth = resultGoalProgress.dataset.targetWidth || resultGoalProgress.style.width || "0%";
+  resultGoalProgress.style.width = "0%";
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      resultGoalProgress.style.width = targetWidth;
+    });
+  });
 }
 
 function setRetryButtonsHidden(isHidden) {
