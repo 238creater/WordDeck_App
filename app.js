@@ -580,6 +580,7 @@ function getActiveScreenName() {
 
 function getChallengeThemeState(screenName) {
   if (screenName === "setup") return setup.challenge;
+  if (screenName === "study" || screenName === "result") return Boolean(session?.challenge);
   return false;
 }
 
@@ -2842,7 +2843,7 @@ function renderResultSummary() {
 
   if (session.challenge) {
     const failed = session.answered > session.correct;
-    document.querySelector("#result-correct").textContent = failed ? "失敗" : "成功";
+    document.querySelector("#result-correct").textContent = failed ? "× 失敗" : "○ 成功";
     document.querySelector("#result-correct").parentElement.classList.toggle("is-failed", failed);
     document.querySelector("#result-correct").parentElement.classList.toggle("is-cleared", !failed);
     document.querySelector("#result-correct").nextElementSibling.textContent = "";

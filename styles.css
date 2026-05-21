@@ -199,6 +199,11 @@ body.study-active.study-input-active #study-screen.is-active {
     transition: none;
   }
 
+  .goal-progress-fill,
+  .result-goal-panel .goal-progress-fill {
+    transition: none;
+  }
+
   .result-summary span {
     opacity: 1;
     filter: none;
@@ -3273,8 +3278,11 @@ body.challenge-active .answer-input:focus-visible {
 
 .result-summary.is-challenge-result div {
   display: grid;
+  grid-template-rows: auto auto;
   min-height: 132px;
-  place-items: center;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
 }
 
 .result-summary.is-challenge-result div p:empty {
