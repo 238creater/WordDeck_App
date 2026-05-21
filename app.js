@@ -40,6 +40,8 @@ const goalOptions = [
   { id: "none", label: "なし", value: 0 },
 ];
 
+document.body.classList.toggle("standalone-display", isStandaloneDisplay());
+
 const sampleDeck = {
   id: "sample-basic",
   name: "サンプル単語帳",
@@ -582,6 +584,10 @@ function getChallengeThemeState(screenName) {
   if (screenName === "setup") return setup.challenge;
   if (screenName === "study" || screenName === "result") return Boolean(session?.challenge);
   return false;
+}
+
+function isStandaloneDisplay() {
+  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
 }
 
 function forceScrollToTop() {

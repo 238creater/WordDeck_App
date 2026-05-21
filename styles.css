@@ -4897,6 +4897,40 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 }
 
+@media (max-width: 720px) {
+  body.standalone-display.study-active .app-shell {
+    height: 100svh;
+    min-height: 100svh;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body.standalone-display.study-active.study-cloze-active #study-screen.is-active {
+    align-content: start;
+  }
+
+  body.standalone-display.study-active.study-cloze-active .answer-area,
+  body.standalone-display.study-active.study-cloze-active #next-button {
+    align-self: start;
+  }
+}
+
+@media (display-mode: standalone) and (max-width: 720px) {
+  body.study-active .app-shell {
+    height: 100svh;
+    min-height: 100svh;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body.study-active.study-cloze-active #study-screen.is-active {
+    align-content: start;
+  }
+
+  body.study-active.study-cloze-active .answer-area,
+  body.study-active.study-cloze-active #next-button {
+    align-self: start;
+  }
+}
+
 @media (hover: none) and (pointer: coarse) {
   button:hover:not(:disabled),
   .deck-card:hover {
