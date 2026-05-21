@@ -4417,11 +4417,10 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .weakness-problem-main {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    column-gap: 8px;
-    row-gap: 5px;
+    display: block;
+    position: relative;
+    min-height: 28px;
+    padding-left: 32px;
   }
 
   .weakness-problem-lines {
@@ -4430,9 +4429,14 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   }
 
   .weakness-card-problem .weakness-rank {
-    position: static;
+    position: absolute;
+    top: 0;
+    left: 0;
+    flex: 0 0 24px;
     width: 24px;
+    min-width: 24px;
     height: 24px;
+    min-height: 24px;
     font-size: 0.74rem;
   }
 
