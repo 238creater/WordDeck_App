@@ -4244,7 +4244,7 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   .range-stage-options .mode-button {
     height: 60px;
     min-height: 60px;
-    padding: 10px 12px 10px 34px;
+    padding: 10px 12px;
     font-size: 0.92rem;
   }
 
