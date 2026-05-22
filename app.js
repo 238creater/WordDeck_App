@@ -2810,6 +2810,8 @@ function renderGoalOptions() {
 function renderWeaknessSummary(deck) {
   weaknessCategoryTab.classList.toggle("is-selected", weaknessSummaryView === "category");
   weaknessProblemTab.classList.toggle("is-selected", weaknessSummaryView === "problem");
+  weaknessCategoryTab.setAttribute("aria-pressed", String(weaknessSummaryView === "category"));
+  weaknessProblemTab.setAttribute("aria-pressed", String(weaknessSummaryView === "problem"));
   const summaries = weaknessSummaryView === "problem"
     ? getWeaknessProblemSummaries(deck)
     : getWeaknessSummaries(deck);
@@ -2942,7 +2944,7 @@ function renderResult(options = {}) {
           ${wrongItem.userAnswer ? `<div><dt>回答</dt><dd>${escapeHtml(wrongItem.userAnswer)}</dd></div>` : ""}
           <div><dt>正解</dt><dd>${escapeHtml(wrongItem.answer)}</dd></div>
         </dl>
-        <button class="secondary-button small wrong-bookmark-button" type="button" data-action="toggle-result-bookmark" data-bookmark-key="${encodeURIComponent(wordKey)}">${bookmarked ? "しおり解除" : "しおりに追加"}</button>
+        <button class="secondary-button small wrong-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-result-bookmark" data-bookmark-key="${encodeURIComponent(wordKey)}">${bookmarked ? "しおり解除" : "しおりに追加"}</button>
       </div>
     `;
     wrongList.appendChild(element);

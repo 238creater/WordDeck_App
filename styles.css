@@ -3750,6 +3750,80 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
   white-space: nowrap;
 }
 
+.bookmark-item .secondary-button,
+.word-list-bookmark-button,
+.weakness-bookmark-button,
+.wrong-bookmark-button {
+  border-color: rgba(151, 166, 159, 0.5);
+  color: #53635b;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(239, 246, 242, 0.48)),
+    rgba(244, 248, 246, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 10px rgba(32, 44, 38, 0.06);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.bookmark-item .secondary-button:hover:not(:disabled),
+.word-list-bookmark-button:hover:not(:disabled),
+.weakness-bookmark-button:hover:not(:disabled),
+.wrong-bookmark-button:hover:not(:disabled) {
+  border-color: rgba(84, 111, 99, 0.56);
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(231, 241, 236, 0.58)),
+    rgba(244, 248, 246, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 6px 14px rgba(32, 44, 38, 0.08);
+}
+
+.bookmark-item .secondary-button.is-bookmarked,
+.bookmark-item .bookmark-item-toggle.is-bookmarked,
+.word-list-bookmark-button.is-bookmarked,
+.weakness-bookmark-button.is-bookmarked,
+.wrong-bookmark-button.is-bookmarked {
+  border-color: rgba(23, 130, 91, 0.26);
+  color: #17644a;
+  background:
+    linear-gradient(180deg, rgba(238, 250, 244, 0.74), rgba(223, 244, 234, 0.5)),
+    rgba(238, 250, 244, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 10px rgba(23, 130, 91, 0.07);
+}
+
+body.challenge-active .bookmark-item .secondary-button,
+body.challenge-active .word-list-bookmark-button,
+body.challenge-active .weakness-bookmark-button,
+body.challenge-active .wrong-bookmark-button {
+  border-color: rgba(146, 104, 42, 0.28);
+  color: #6f665b;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(244, 234, 214, 0.48)),
+    rgba(255, 250, 240, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    0 4px 10px rgba(91, 63, 28, 0.06);
+}
+
+body.challenge-active .bookmark-item .secondary-button.is-bookmarked,
+body.challenge-active .bookmark-item .bookmark-item-toggle.is-bookmarked,
+body.challenge-active .word-list-bookmark-button.is-bookmarked,
+body.challenge-active .weakness-bookmark-button.is-bookmarked,
+body.challenge-active .wrong-bookmark-button.is-bookmarked {
+  border-color: rgba(180, 100, 56, 0.34);
+  color: #7b432d;
+  background:
+    linear-gradient(180deg, rgba(248, 220, 200, 0.72), rgba(239, 192, 170, 0.52)),
+    rgba(248, 220, 200, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.66),
+    0 4px 10px rgba(91, 63, 28, 0.07);
+}
+
 .is-hidden {
   display: none;
 }
@@ -3997,6 +4071,50 @@ body.challenge-active .wrong-section-head .secondary-button.is-removing {
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
     inset 0 -1px 0 rgba(0, 0, 0, 0.14),
     0 11px 26px rgba(45, 113, 136, 0.28);
+}
+
+.weakness-summary-tabs .secondary-button {
+  border-color: rgba(119, 143, 132, 0.62);
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.24) 44%, rgba(222, 235, 229, 0.64)),
+    rgba(241, 248, 245, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(73, 94, 84, 0.12),
+    0 9px 20px rgba(32, 44, 38, 0.12);
+}
+
+.weakness-summary-tabs .secondary-button.is-selected {
+  border-color: #2a8aa0;
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.05) 42%),
+    linear-gradient(180deg, rgba(66, 167, 179, 0.96), rgba(45, 113, 136, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 11px 26px rgba(45, 113, 136, 0.28);
+}
+
+body.challenge-active .weakness-summary-tabs .secondary-button {
+  border-color: rgba(146, 104, 42, 0.42);
+  color: #26312d;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.9), rgba(255, 255, 255, 0.22) 44%, rgba(244, 234, 214, 0.72)),
+    rgba(255, 250, 240, 0.74);
+  box-shadow: 0 8px 20px rgba(91, 63, 28, 0.12);
+}
+
+body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
+  border-color: rgba(123, 67, 45, 0.72);
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.04) 42%),
+    linear-gradient(180deg, rgba(168, 105, 66, 0.96), rgba(123, 67, 45, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 10px 24px rgba(91, 63, 28, 0.22);
 }
 
 .range-stage-options .mode-button:active:not(:disabled) {
