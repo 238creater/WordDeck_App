@@ -169,6 +169,7 @@ let setup = {
 let session = null;
 let reviewListSnapshot = null;
 let weaknessSummaryView = "category";
+let wordListSelectedParent = "";
 
 const screens = {
   decks: document.querySelector("#deck-screen"),
@@ -1430,61 +1431,80 @@ function updateReviewListBulkButton(deck, words, currentBookmarks = getBookmarkS
 function renderWordListScreen() {
   const deck = getSelectedDeck();
   if (!deck) return;
+  const grouped = getGroupedWordsByRange(deck.words);
   wordListDeckName.textContent = deck.name;
   document.querySelector("#word-list-title").textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
   wordSearchInput.placeholder = isClozeDeck(deck) ? "英文・日本語・正解で検索" : "英語・日本語で検索";
   wordSearchInput.value = "";
   wordSearchActive = false;
+  wordListSelectedParent = grouped[0]?.parent || "";
   closeWordDetailPanel();
   resetWordSearchFilters();
-  renderWordListContent(deck);
+  renderWordListContent(deck, grouped);
   renderWordSearchFilters(deck);
   renderWordSearchResults();
 }
 
-function renderWordListContent(deck = getSelectedDeck()) {
+function renderWordListContent(deck = getSelectedDeck(), grouped = null) {
   if (!deck) return;
-  const grouped = getGroupedWordsByRange(deck.words);
+  const groups = grouped || getGroupedWordsByRange(deck.words);
   wordListContent.innerHTML = "";
 
-  if (grouped.length === 0) {
+  if (groups.length === 0) {
     wordListContent.innerHTML = `<div class="empty-state">表示できる${isClozeDeck(deck) ? "問題" : "単語"}がありません。</div>`;
     return;
   }
 
-  grouped.forEach((stage) => {
-    const stageDetails = document.createElement("article");
-    stageDetails.className = "word-stage";
-    stageDetails.innerHTML = `
-      <button class="word-stage-summary" type="button" aria-expanded="false">
-        <span>${escapeHtml(stage.parent)}</span>
-        <strong>${stage.wordCount}${getDeckUnit(deck)}</strong>
-      </button>
-      <div class="word-stage-body" hidden></div>
-    `;
-    const stageBody = stageDetails.querySelector(".word-stage-body");
-    prepareSmoothDetails(stageDetails);
+  if (!groups.some((group) => group.parent === wordListSelectedParent)) {
+    wordListSelectedParent = groups[0].parent;
+  }
 
-    stage.children.forEach((part) => {
-      const partDetails = document.createElement("article");
-      partDetails.className = "word-part";
-      partDetails.innerHTML = `
-        <button class="word-part-summary" type="button" aria-expanded="false">
-          <span>${escapeHtml(part.childLabel)}</span>
-          <strong>${part.words.length}${getDeckUnit(deck)}</strong>
-        </button>
-        <div class="word-card-grid" hidden></div>
-      `;
-      const grid = partDetails.querySelector(".word-card-grid");
-      part.words.forEach((word) => {
-        grid.appendChild(createWordCard(word, deck.id));
-      });
-      prepareSmoothDetails(partDetails);
-      stageBody.appendChild(partDetails);
+  const filter = document.createElement("div");
+  filter.className = "word-stage-filter";
+  filter.innerHTML = `
+    <div>
+      <span>大分類</span>
+      <strong>${escapeHtml(wordListSelectedParent)}</strong>
+    </div>
+    <div class="word-stage-filter-buttons"></div>
+  `;
+  const filterButtons = filter.querySelector(".word-stage-filter-buttons");
+  groups.forEach((stage) => {
+    const button = document.createElement("button");
+    button.className = `word-stage-filter-button${stage.parent === wordListSelectedParent ? " is-selected" : ""}`;
+    button.type = "button";
+    button.textContent = stage.parent;
+    button.addEventListener("click", () => {
+      if (wordListSelectedParent === stage.parent) return;
+      wordListSelectedParent = stage.parent;
+      renderWordListContent(deck);
     });
-
-    wordListContent.appendChild(stageDetails);
+    filterButtons.appendChild(button);
   });
+  wordListContent.appendChild(filter);
+
+  const selectedStage = groups.find((stage) => stage.parent === wordListSelectedParent);
+  const partList = document.createElement("div");
+  partList.className = "word-part-list";
+
+  selectedStage.children.forEach((part) => {
+    const partDetails = document.createElement("article");
+    partDetails.className = "word-part";
+    partDetails.innerHTML = `
+      <button class="word-part-summary" type="button" aria-expanded="false">
+        <span>${escapeHtml(part.childLabel)}</span>
+        <strong>${part.words.length}${getDeckUnit(deck)}</strong>
+      </button>
+      <div class="word-card-grid" hidden></div>
+    `;
+    const grid = partDetails.querySelector(".word-card-grid");
+    part.words.forEach((word) => {
+      grid.appendChild(createWordCard(word, deck.id));
+    });
+    prepareSmoothDetails(partDetails);
+    partList.appendChild(partDetails);
+  });
+  wordListContent.appendChild(partList);
 }
 
 function renderWordSearchResults() {
@@ -1755,76 +1775,34 @@ function closePartDetails(details, content) {
     content.style.height = "";
     content.style.opacity = "";
     details.classList.remove("is-animating", "is-closing");
-  }, getDetailsAnimationDuration(details) + 80);
+  }, getDetailsCloseAnimationDuration(details) + 90);
   requestAnimationFrame(() => {
     content.style.height = "0px";
-    content.style.opacity = "0";
     finish.arm();
   });
 }
 
 function closeStageDetails(details, content) {
   const summary = details.querySelector(":scope > .word-stage-summary");
-  if (!hasOpenNestedParts(details)) {
-    closeCompactStageDetails(details, content, summary);
-    return;
-  }
-
   const startHeight = content.offsetHeight;
-  details.classList.add("is-closing", "is-stage-closing");
-  content.style.height = `${startHeight}px`;
-  content.style.opacity = "1";
-
-  const fadeDone = onceTransitionDone(content, () => {
-    details.classList.remove("is-stage-fading");
-    closeNestedWordParts(details);
-    content.style.height = `${startHeight}px`;
-    void content.offsetHeight;
-    const heightDone = onceTransitionDone(content, () => {
-      details.classList.remove("is-open");
-      summary?.setAttribute("aria-expanded", "false");
-      content.hidden = true;
-      content.style.height = "";
-      content.style.opacity = "";
-      details.classList.remove("is-animating", "is-closing", "is-stage-closing", "is-stage-fading");
-    }, 260, ["height"]);
-    requestAnimationFrame(() => {
-      content.style.height = "0px";
-      heightDone.arm();
-    });
-  }, 150, ["opacity"]);
-
-  requestAnimationFrame(() => {
-    details.classList.add("is-stage-fading");
-    content.style.opacity = "0";
-    fadeDone.arm();
-  });
-}
-
-function closeCompactStageDetails(details, content, summary) {
-  const startHeight = content.offsetHeight;
-  details.classList.add("is-closing", "is-stage-compact-closing");
-  details.classList.remove("is-open");
-  summary?.setAttribute("aria-expanded", "false");
+  details.classList.add("is-closing");
   content.style.height = `${startHeight}px`;
   content.style.opacity = "1";
 
   const finish = onceTransitionDone(content, () => {
+    closeNestedWordParts(details);
+    details.classList.remove("is-open");
+    summary?.setAttribute("aria-expanded", "false");
     content.hidden = true;
     content.style.height = "";
     content.style.opacity = "";
-    details.classList.remove("is-animating", "is-closing", "is-stage-compact-closing");
-  }, 170, ["height"]);
+    details.classList.remove("is-animating", "is-closing");
+  }, getDetailsCloseAnimationDuration(details) + 100, ["height"]);
 
   requestAnimationFrame(() => {
     content.style.height = "0px";
-    content.style.opacity = "0";
     finish.arm();
   });
-}
-
-function hasOpenNestedParts(stageDetails) {
-  return Boolean(stageDetails.querySelector(".word-part.is-open"));
 }
 
 function onceTransitionDone(element, callback, fallbackDelay, propertyNames = ["height"]) {
@@ -1851,6 +1829,10 @@ function onceTransitionDone(element, callback, fallbackDelay, propertyNames = ["
 
 function getDetailsAnimationDuration(details) {
   return details.classList.contains("word-stage") ? 260 : 220;
+}
+
+function getDetailsCloseAnimationDuration(details) {
+  return details.classList.contains("word-stage") ? 320 : 280;
 }
 
 function closeNestedWordParts(stageDetails) {
