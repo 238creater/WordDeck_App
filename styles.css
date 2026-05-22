@@ -5400,21 +5400,115 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
     transform: none;
   }
 
-  .secondary-button:hover:not(:disabled),
-  .bookmark-panel-actions .secondary-button:hover:not(:disabled),
-  .result-actions .secondary-button:hover:not(:disabled) {
+  .secondary-button:hover:not(:disabled):not(.is-selected),
+  .bookmark-panel-actions .secondary-button:hover:not(:disabled):not(.is-selected),
+  .result-actions .secondary-button:hover:not(:disabled):not(.is-selected) {
     border-color: rgba(181, 193, 187, 0.9);
     background: linear-gradient(180deg, #fbfdfc, #e4ebe8);
   }
 
-  body.challenge-active .secondary-button:hover:not(:disabled),
+  body.challenge-active .secondary-button:hover:not(:disabled):not(.is-selected),
   body.challenge-active .mode-button:hover:not(:disabled):not(.is-selected),
   body.challenge-active .range-all-button:hover:not(:disabled):not(.is-selected),
   body.challenge-active .range-toggle:hover:not(:disabled):not(.is-selected),
   body.challenge-active .choice-button:hover:not(:disabled),
-  body.challenge-active .result-actions .secondary-button:hover:not(:disabled),
-  body.challenge-active .bookmark-panel-actions .secondary-button:hover:not(:disabled) {
+  body.challenge-active .result-actions .secondary-button:hover:not(:disabled):not(.is-selected),
+  body.challenge-active .bookmark-panel-actions .secondary-button:hover:not(:disabled):not(.is-selected) {
     border-color: rgba(146, 104, 42, 0.42);
     background: linear-gradient(180deg, #fffaf0, #f4ead6);
   }
+}
+
+.bookmark-item .secondary-button:hover:not(:disabled),
+.bookmark-item .secondary-button:focus:not(:disabled),
+.bookmark-item .secondary-button:active:not(:disabled),
+.word-list-bookmark-button:hover:not(:disabled),
+.word-list-bookmark-button:focus:not(:disabled),
+.word-list-bookmark-button:active:not(:disabled),
+.weakness-bookmark-button:hover:not(:disabled),
+.weakness-bookmark-button:focus:not(:disabled),
+.weakness-bookmark-button:active:not(:disabled),
+.wrong-bookmark-button:hover:not(:disabled),
+.wrong-bookmark-button:focus:not(:disabled),
+.wrong-bookmark-button:active:not(:disabled) {
+  border-color: rgba(84, 111, 99, 0.5);
+  color: #53635b;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(239, 246, 242, 0.52)),
+    rgba(244, 248, 246, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    0 4px 10px rgba(32, 44, 38, 0.06);
+}
+
+.bookmark-item .secondary-button.is-bookmarked:hover:not(:disabled),
+.bookmark-item .secondary-button.is-bookmarked:focus:not(:disabled),
+.bookmark-item .secondary-button.is-bookmarked:active:not(:disabled),
+.bookmark-item .bookmark-item-toggle.is-bookmarked:hover:not(:disabled),
+.bookmark-item .bookmark-item-toggle.is-bookmarked:focus:not(:disabled),
+.bookmark-item .bookmark-item-toggle.is-bookmarked:active:not(:disabled),
+.word-list-bookmark-button.is-bookmarked:hover:not(:disabled),
+.word-list-bookmark-button.is-bookmarked:focus:not(:disabled),
+.word-list-bookmark-button.is-bookmarked:active:not(:disabled),
+.weakness-bookmark-button.is-bookmarked:hover:not(:disabled),
+.weakness-bookmark-button.is-bookmarked:focus:not(:disabled),
+.weakness-bookmark-button.is-bookmarked:active:not(:disabled),
+.wrong-bookmark-button.is-bookmarked:hover:not(:disabled),
+.wrong-bookmark-button.is-bookmarked:focus:not(:disabled),
+.wrong-bookmark-button.is-bookmarked:active:not(:disabled) {
+  border-color: rgba(23, 130, 91, 0.26);
+  color: #17644a;
+  background:
+    linear-gradient(180deg, rgba(238, 250, 244, 0.74), rgba(223, 244, 234, 0.5)),
+    rgba(238, 250, 244, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 10px rgba(23, 130, 91, 0.07);
+}
+
+body.challenge-active .bookmark-item .secondary-button:hover:not(:disabled),
+body.challenge-active .bookmark-item .secondary-button:focus:not(:disabled),
+body.challenge-active .bookmark-item .secondary-button:active:not(:disabled),
+body.challenge-active .word-list-bookmark-button:hover:not(:disabled),
+body.challenge-active .word-list-bookmark-button:focus:not(:disabled),
+body.challenge-active .word-list-bookmark-button:active:not(:disabled),
+body.challenge-active .weakness-bookmark-button:hover:not(:disabled),
+body.challenge-active .weakness-bookmark-button:focus:not(:disabled),
+body.challenge-active .weakness-bookmark-button:active:not(:disabled),
+body.challenge-active .wrong-bookmark-button:hover:not(:disabled),
+body.challenge-active .wrong-bookmark-button:focus:not(:disabled),
+body.challenge-active .wrong-bookmark-button:active:not(:disabled) {
+  border-color: rgba(146, 104, 42, 0.28);
+  color: #6f665b;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(244, 234, 214, 0.48)),
+    rgba(255, 250, 240, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    0 4px 10px rgba(91, 63, 28, 0.06);
+}
+
+body.challenge-active .bookmark-item .secondary-button.is-bookmarked:hover:not(:disabled),
+body.challenge-active .bookmark-item .secondary-button.is-bookmarked:focus:not(:disabled),
+body.challenge-active .bookmark-item .secondary-button.is-bookmarked:active:not(:disabled),
+body.challenge-active .bookmark-item .bookmark-item-toggle.is-bookmarked:hover:not(:disabled),
+body.challenge-active .bookmark-item .bookmark-item-toggle.is-bookmarked:focus:not(:disabled),
+body.challenge-active .bookmark-item .bookmark-item-toggle.is-bookmarked:active:not(:disabled),
+body.challenge-active .word-list-bookmark-button.is-bookmarked:hover:not(:disabled),
+body.challenge-active .word-list-bookmark-button.is-bookmarked:focus:not(:disabled),
+body.challenge-active .word-list-bookmark-button.is-bookmarked:active:not(:disabled),
+body.challenge-active .weakness-bookmark-button.is-bookmarked:hover:not(:disabled),
+body.challenge-active .weakness-bookmark-button.is-bookmarked:focus:not(:disabled),
+body.challenge-active .weakness-bookmark-button.is-bookmarked:active:not(:disabled),
+body.challenge-active .wrong-bookmark-button.is-bookmarked:hover:not(:disabled),
+body.challenge-active .wrong-bookmark-button.is-bookmarked:focus:not(:disabled),
+body.challenge-active .wrong-bookmark-button.is-bookmarked:active:not(:disabled) {
+  border-color: rgba(180, 100, 56, 0.34);
+  color: #7b432d;
+  background:
+    linear-gradient(180deg, rgba(248, 220, 200, 0.72), rgba(239, 192, 170, 0.52)),
+    rgba(248, 220, 200, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.66),
+    0 4px 10px rgba(91, 63, 28, 0.07);
 }
