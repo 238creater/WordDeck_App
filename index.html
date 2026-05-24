@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260522-39" />
+    <link rel="stylesheet" href="styles.css?v=20260522-63" />
   </head>
   <body>
     <main class="app-shell">
@@ -36,15 +36,10 @@
 
       <section id="setup-screen" class="screen" aria-labelledby="setup-title">
         <header class="topbar compact">
-          <button class="icon-button" data-action="back-to-decks" title="単語帳へ戻る">←</button>
+          <button class="icon-button" data-action="back-to-decks" title="単語帳選択へ戻る" aria-label="単語帳選択へ戻る">←</button>
           <div class="topbar-title">
             <p id="active-deck-name" class="eyebrow"></p>
             <h1 id="setup-title">ホーム</h1>
-          </div>
-          <div class="setup-header-actions">
-            <button id="open-detail-settings-button" class="secondary-button small setup-list-button" type="button">詳細設定</button>
-            <button id="open-learning-record-button" class="secondary-button small setup-list-button" type="button">学習記録</button>
-            <button id="open-word-list-button" class="secondary-button small setup-list-button" type="button">単語一覧</button>
           </div>
         </header>
 
@@ -116,7 +111,7 @@
 
       <section id="detail-settings-screen" class="screen" aria-labelledby="detail-settings-title">
         <header class="topbar compact">
-          <button class="icon-button" data-action="back-to-setup" title="ホームへ戻る">←</button>
+          <button class="icon-button" data-action="back-to-decks" title="単語帳選択へ戻る" aria-label="単語帳選択へ戻る">←</button>
           <div class="topbar-title">
             <p id="detail-deck-name" class="eyebrow"></p>
             <h1 id="detail-settings-title">詳細設定</h1>
@@ -149,6 +144,7 @@
             <div class="data-management-grid">
               <button id="reset-learning-button" class="secondary-button small" type="button">おまかせをリセット</button>
               <button id="reset-recent-mistakes-button" class="secondary-button small" type="button">最近ミスをリセット</button>
+              <button id="reset-study-record-button" class="secondary-button small" type="button">学習記録をリセット</button>
               <button id="detail-clear-bookmarks-button" class="secondary-button small" type="button">しおりを一括解除</button>
             </div>
           </section>
@@ -213,7 +209,7 @@
 
       <section id="learning-record-screen" class="screen" aria-labelledby="learning-record-title">
         <header class="topbar compact">
-          <button class="icon-button" data-action="back-to-setup" title="ホームへ戻る">←</button>
+          <button class="icon-button" data-action="back-to-decks" title="単語帳選択へ戻る" aria-label="単語帳選択へ戻る">←</button>
           <div class="topbar-title">
             <p id="learning-record-deck-name" class="eyebrow"></p>
             <h1 id="learning-record-title">学習記録</h1>
@@ -222,7 +218,10 @@
 
         <div class="settings-grid learning-record-grid">
           <section class="settings-block">
-            <h2>今日の学習</h2>
+            <div class="record-section-head">
+              <h2>今日の学習</h2>
+              <button id="open-study-history-button" class="secondary-button small" type="button">履歴を見る</button>
+            </div>
             <div id="record-goal-panel" class="goal-record-panel">
               <div>
                 <strong id="record-goal-label">目標 50問</strong>
@@ -273,13 +272,64 @@
         <button id="floating-start-button" class="primary-button small" type="button">開始</button>
       </div>
 
+      <nav id="app-bottom-nav" class="app-bottom-nav" aria-label="アプリ内ナビゲーション">
+        <div class="app-nav-indicator" aria-hidden="true"></div>
+        <button class="app-nav-button" type="button" data-nav-screen="setup">
+          <span class="app-nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M3.8 10.4 12 3.7l8.2 6.7" />
+              <path d="M6.2 9.4v9.2c0 .9.6 1.5 1.5 1.5h8.6c.9 0 1.5-.6 1.5-1.5V9.4" />
+              <path d="M9.6 20.1v-5.4h4.8v5.4" />
+            </svg>
+          </span>
+          <strong>ホーム</strong>
+        </button>
+        <button id="bottom-word-list-button" class="app-nav-button" type="button" data-nav-screen="wordList">
+          <span class="app-nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M5.5 4.2h10.6c1.3 0 2.4 1.1 2.4 2.4v13.2H7.1a2.6 2.6 0 0 1-2.6-2.6V5.2c0-.6.4-1 1-1Z" />
+              <path d="M7.1 19.8a2.5 2.5 0 0 1 0-5h11.4" />
+              <path d="M8.2 8h6.4" />
+              <path d="M8.2 11h4.8" />
+            </svg>
+          </span>
+          <strong>単語一覧</strong>
+        </button>
+        <button class="app-nav-button" type="button" data-nav-screen="learningRecord">
+          <span class="app-nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4.5 19.5h15" />
+              <path d="M6.5 16.5v-5" />
+              <path d="M12 16.5v-9" />
+              <path d="M17.5 16.5v-7" />
+              <path d="M6.6 6.8 10 4.9l3.8 2.4 3.4-2.8" />
+            </svg>
+          </span>
+          <strong>学習記録</strong>
+        </button>
+        <button class="app-nav-button" type="button" data-nav-screen="detailSettings">
+          <span class="app-nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4.8 7.2h14.4" />
+              <path d="M4.8 16.8h14.4" />
+              <path d="M9.1 4.8v4.8" />
+              <path d="M14.9 14.4v4.8" />
+              <path d="M9.1 7.2h.1" />
+              <path d="M14.9 16.8h.1" />
+            </svg>
+          </span>
+          <strong>詳細設定</strong>
+        </button>
+      </nav>
+
       <section id="word-list-screen" class="screen word-list-screen" aria-labelledby="word-list-title">
         <header class="topbar compact word-list-topbar">
-          <button class="icon-button" data-action="back-to-setup" title="学習設定へ戻る">←</button>
+          <button class="icon-button" data-action="back-to-decks" title="単語帳選択へ戻る" aria-label="単語帳選択へ戻る">←</button>
           <div class="topbar-title">
             <p id="word-list-deck-name" class="eyebrow"></p>
             <h1 id="word-list-title">単語一覧</h1>
           </div>
+          <button id="word-list-select-toggle" class="secondary-button small word-list-select-toggle" type="button">選択</button>
         </header>
 
         <div class="word-list-search">
@@ -290,6 +340,14 @@
           <button id="close-word-search-button" class="secondary-button small word-search-close-button" type="button">閉じる</button>
         </div>
         <div id="word-search-filters" class="word-search-filters is-hidden"></div>
+        <div id="word-list-selection-bar" class="word-list-selection-bar is-hidden" aria-live="polite">
+          <strong id="word-list-selection-count">0件選択中</strong>
+          <div>
+            <button id="word-list-bulk-bookmark-button" class="secondary-button small" type="button">まとめてしおり</button>
+            <button id="word-list-bulk-unbookmark-button" class="secondary-button small" type="button">まとめて解除</button>
+            <button id="word-list-clear-selection-button" class="secondary-button small" type="button">選択解除</button>
+          </div>
+        </div>
 
         <div id="word-detail-panel" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="word-detail-title">
           <div class="dialog-panel word-detail-panel">
@@ -389,7 +447,7 @@
         <div class="result-actions">
           <button class="secondary-button" data-result-action="retry-wrong">間違えた単語だけ</button>
           <button class="secondary-button" data-result-action="repeat-same">同じ設定でもう一度</button>
-          <button class="secondary-button" data-action="back-to-setup">モード選択に戻る</button>
+          <button class="secondary-button" data-action="back-to-setup">ホームに戻る</button>
         </div>
 
         <section class="wrong-section">
@@ -429,6 +487,19 @@
             <button id="recent-mistake-tab-button" class="secondary-button small" type="button">最近ミス</button>
           </div>
           <div id="bookmark-list" class="bookmark-list"></div>
+        </div>
+      </div>
+
+      <div id="study-history-dialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="study-history-title">
+        <div class="dialog-panel study-history-dialog-panel">
+          <div class="study-history-dialog-head">
+            <div>
+              <p id="study-history-deck-name" class="eyebrow"></p>
+              <h2 id="study-history-title">学習履歴</h2>
+            </div>
+            <button id="close-study-history-button" class="secondary-button small" type="button">閉じる</button>
+          </div>
+          <div id="study-history-list" class="study-history-list"></div>
         </div>
       </div>
 
@@ -497,6 +568,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260522-39"></script>
+    <script src="app.js?v=20260522-63"></script>
   </body>
 </html>

@@ -10,6 +10,7 @@ const modes = [
 const DEFAULT_MODE_ID = "choice-en-ja";
 const DEFAULT_CLOZE_MODE_ID = "cloze-choice";
 const WEAKNESS_SUMMARY_LIMIT = 10;
+const STUDY_HISTORY_PAGE_SIZE = 20;
 
 const countOptions = [
   { id: "10", label: "10問", value: 10 },
@@ -191,9 +192,8 @@ const lessonOptions = document.querySelector("#range-list");
 const rangeSummaryTitle = document.querySelector("#range-summary-title");
 const rangeSummaryDetail = document.querySelector("#range-summary-detail");
 const openRangeDialogButton = document.querySelector("#open-range-dialog-button");
-const openDetailSettingsButton = document.querySelector("#open-detail-settings-button");
-const openLearningRecordButton = document.querySelector("#open-learning-record-button");
-const openWordListButton = document.querySelector("#open-word-list-button");
+const appBottomNav = document.querySelector("#app-bottom-nav");
+const bottomWordListButton = document.querySelector("#bottom-word-list-button");
 const learningRecordDeckName = document.querySelector("#learning-record-deck-name");
 const favoritePresetMenuButton = document.querySelector("#favorite-preset-menu-button");
 const favoritePresetDialog = document.querySelector("#favorite-preset-dialog");
@@ -215,6 +215,11 @@ const recordTodayAnswered = document.querySelector("#record-today-answered");
 const recordTodayCorrect = document.querySelector("#record-today-correct");
 const recordTodayAccuracy = document.querySelector("#record-today-accuracy");
 const recordStreakDays = document.querySelector("#record-streak-days");
+const openStudyHistoryButton = document.querySelector("#open-study-history-button");
+const studyHistoryDialog = document.querySelector("#study-history-dialog");
+const studyHistoryDeckName = document.querySelector("#study-history-deck-name");
+const studyHistoryList = document.querySelector("#study-history-list");
+const closeStudyHistoryButton = document.querySelector("#close-study-history-button");
 const weaknessCategoryTab = document.querySelector("#weakness-category-tab");
 const weaknessProblemTab = document.querySelector("#weakness-problem-tab");
 const weaknessSummaryList = document.querySelector("#weakness-summary-list");
@@ -223,6 +228,12 @@ const resultGoalDetail = document.querySelector("#result-goal-detail");
 const resultGoalProgress = document.querySelector("#result-goal-progress");
 const wordListScreen = document.querySelector("#word-list-screen");
 const wordListDeckName = document.querySelector("#word-list-deck-name");
+const wordListSelectToggle = document.querySelector("#word-list-select-toggle");
+const wordListSelectionBar = document.querySelector("#word-list-selection-bar");
+const wordListSelectionCount = document.querySelector("#word-list-selection-count");
+const wordListBulkBookmarkButton = document.querySelector("#word-list-bulk-bookmark-button");
+const wordListBulkUnbookmarkButton = document.querySelector("#word-list-bulk-unbookmark-button");
+const wordListClearSelectionButton = document.querySelector("#word-list-clear-selection-button");
 const wordSearchInput = document.querySelector("#word-search-input");
 const clearWordSearchButton = document.querySelector("#clear-word-search-button");
 const closeWordSearchButton = document.querySelector("#close-word-search-button");
@@ -252,6 +263,7 @@ const countOptionsEl = document.querySelector("#count-options");
 const questionOrderOptionsEl = document.querySelector("#question-order-options");
 const resetLearningButton = document.querySelector("#reset-learning-button");
 const resetRecentMistakesButton = document.querySelector("#reset-recent-mistakes-button");
+const resetStudyRecordButton = document.querySelector("#reset-study-record-button");
 const detailClearBookmarksButton = document.querySelector("#detail-clear-bookmarks-button");
 const timeOptionsEl = document.querySelector("#time-options");
 const continuePanel = document.querySelector("#continue-panel");
@@ -310,6 +322,12 @@ let floatingStartFrame = null;
 let wordSearchTimer = null;
 let reviewListTab = "bookmarks";
 let wordDetailTouchStartY = 0;
+let wordListSelectionMode = false;
+let wordListSelectedKeys = new Set();
+let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
+let appNavPointerActive = false;
+let suppressNextAppNavClick = false;
+let appNavSettleTimer = null;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -360,17 +378,47 @@ weaknessProblemTab.addEventListener("click", () => {
 openRangeDialogButton.addEventListener("click", () => {
   openRangeDialog();
 });
-openDetailSettingsButton.addEventListener("click", () => {
-  renderSetup();
-  showScreen("detailSettings");
+appBottomNav.addEventListener("click", (event) => {
+  if (suppressNextAppNavClick) {
+    suppressNextAppNavClick = false;
+    return;
+  }
+  const button = event.target.closest("[data-nav-screen]");
+  if (!button) return;
+  navigateAppSection(button.dataset.navScreen);
 });
-openLearningRecordButton.addEventListener("click", () => {
-  renderLearningRecordScreen();
-  showScreen("learningRecord");
+appBottomNav.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest("[data-nav-screen]")) return;
+  appNavPointerActive = true;
+  beginAppNavDrag(event.clientX);
+  appBottomNav.setPointerCapture?.(event.pointerId);
+  moveAppNavIndicatorToPoint(event.clientX);
 });
-openWordListButton.addEventListener("click", () => {
-  renderWordListScreen();
-  showScreen("wordList");
+appBottomNav.addEventListener("pointermove", (event) => {
+  if (!appNavPointerActive) return;
+  updateAppNavDragMotion(event.clientX);
+  moveAppNavIndicatorToPoint(event.clientX);
+});
+appBottomNav.addEventListener("pointerup", (event) => {
+  if (!appNavPointerActive) return;
+  appNavPointerActive = false;
+  appBottomNav.releasePointerCapture?.(event.pointerId);
+  const button = getNearestAppNavButton(event.clientX);
+  if (button) {
+    suppressNextAppNavClick = true;
+    navigateAppSection(button.dataset.navScreen);
+  } else {
+    updateAppBottomNav();
+  }
+  settleAppNavDrag();
+});
+appBottomNav.addEventListener("pointercancel", () => {
+  appNavPointerActive = false;
+  settleAppNavDrag();
+  updateAppBottomNav();
+});
+appBottomNav.addEventListener("pointerleave", () => {
+  if (!appNavPointerActive) updateAppBottomNav();
 });
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-preset]");
@@ -378,6 +426,7 @@ document.addEventListener("click", (event) => {
 });
 wordSearchInput.addEventListener("input", scheduleWordSearchResults);
 wordSearchInput.addEventListener("focus", () => {
+  if (wordListSelectionMode) resetWordListSelection();
   wordSearchActive = true;
   renderWordSearchResults();
 });
@@ -391,6 +440,10 @@ closeWordSearchButton.addEventListener("click", () => {
 });
 wordListContent.addEventListener("click", handleWordListCardClick);
 wordSearchResults.addEventListener("click", handleWordListCardClick);
+wordListSelectToggle.addEventListener("click", toggleWordListSelectionMode);
+wordListBulkBookmarkButton.addEventListener("click", () => bulkSetWordListBookmarks(true));
+wordListBulkUnbookmarkButton.addEventListener("click", () => bulkSetWordListBookmarks(false));
+wordListClearSelectionButton.addEventListener("click", clearWordListSelection);
 wordDetailBookmarkButton.addEventListener("click", toggleWordDetailBookmark);
 wordSearchFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-search-filter]");
@@ -404,6 +457,7 @@ wordSearchFilters.addEventListener("click", (event) => {
 });
 resetLearningButton.addEventListener("click", confirmResetLearning);
 resetRecentMistakesButton.addEventListener("click", confirmResetRecentMistakes);
+resetStudyRecordButton.addEventListener("click", confirmResetStudyRecord);
 detailClearBookmarksButton.addEventListener("click", confirmClearBookmarks);
 continueStudyButton.addEventListener("click", continueSavedStudy);
 discardProgressButton.addEventListener("click", confirmDiscardProgress);
@@ -438,6 +492,8 @@ hintCurrentButton.addEventListener("click", showCurrentHint);
 toggleWrongBookmarksButton.addEventListener("click", toggleWrongBookmarks);
 clearBookmarksButton.addEventListener("click", handleReviewListBulkAction);
 closeBookmarkDialogButton.addEventListener("click", closeBookmarkDialog);
+openStudyHistoryButton.addEventListener("click", openStudyHistoryDialog);
+closeStudyHistoryButton.addEventListener("click", closeStudyHistoryDialog);
 closeRangeDialogButton.addEventListener("click", closeRangeDialog);
 closeFavoritePresetDialogButton.addEventListener("click", closeFavoritePresetDialog);
 closeClozeExplanationButton.addEventListener("click", closeClozeExplanationDialog);
@@ -448,6 +504,14 @@ quitDialog.addEventListener("click", (event) => {
 });
 bookmarkDialog.addEventListener("click", (event) => {
   if (event.target === bookmarkDialog) closeBookmarkDialog();
+});
+studyHistoryDialog.addEventListener("click", (event) => {
+  if (event.target === studyHistoryDialog) closeStudyHistoryDialog();
+});
+studyHistoryList.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-action='show-more-history']")) return;
+  studyHistoryVisibleCount += STUDY_HISTORY_PAGE_SIZE;
+  renderStudyHistoryDialog();
 });
 rangeDialog.addEventListener("click", (event) => {
   if (event.target === rangeDialog) closeRangeDialog();
@@ -469,6 +533,7 @@ wordDetailPanel.addEventListener("touchmove", preventWordDetailBackgroundScroll,
 window.addEventListener("pagehide", () => {
   if (session && screens.study.classList.contains("is-active")) saveCurrentStudyProgress();
 });
+window.addEventListener("resize", () => updateAppBottomNav());
 
 renderDecks();
 scheduleFloatingStartUpdate();
@@ -537,10 +602,12 @@ function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
+  document.body.classList.toggle("app-nav-active", isAppNavScreen(name));
   if (name !== "study") {
     document.body.classList.remove("study-input-active", "study-cloze-active", "study-choice-active", "study-writing-active");
   }
   syncChallengeTheme(name);
+  updateAppBottomNav(name);
   updateFloatingStartVisibility();
   if (name === "study") {
     forceScrollToTop();
@@ -548,6 +615,82 @@ function showScreen(name) {
   } else {
     scrollToTop();
   }
+}
+
+function navigateAppSection(name) {
+  if (!isAppNavScreen(name)) return;
+  const deck = getSelectedDeck();
+  if (!deck) {
+    showScreen("decks");
+    return;
+  }
+  if (name === "setup" || name === "detailSettings") renderSetup();
+  if (name === "learningRecord") renderLearningRecordScreen();
+  if (name === "wordList") renderWordListScreen();
+  showScreen(name);
+}
+
+function isAppNavScreen(name) {
+  return name === "setup" || name === "detailSettings" || name === "learningRecord" || name === "wordList";
+}
+
+function updateAppBottomNav(activeName = getActiveScreenName()) {
+  if (!appBottomNav) return;
+  const buttons = [...appBottomNav.querySelectorAll("[data-nav-screen]")];
+  buttons.forEach((button) => {
+    const isSelected = button.dataset.navScreen === activeName;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-current", isSelected ? "page" : "false");
+  });
+  positionAppNavIndicator(buttons.find((button) => button.dataset.navScreen === activeName) || buttons[0]);
+}
+
+function getNearestAppNavButton(clientX) {
+  if (!appBottomNav) return null;
+  const buttons = [...appBottomNav.querySelectorAll("[data-nav-screen]")];
+  return buttons.reduce((nearest, button) => {
+    const rect = button.getBoundingClientRect();
+    const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+    if (!nearest || distance < nearest.distance) return { button, distance };
+    return nearest;
+  }, null)?.button || null;
+}
+
+function moveAppNavIndicatorToPoint(clientX) {
+  const button = getNearestAppNavButton(clientX);
+  if (!button) return;
+  positionAppNavIndicator(button);
+}
+
+function beginAppNavDrag(clientX) {
+  window.clearTimeout(appNavSettleTimer);
+  appBottomNav.classList.remove("is-settling");
+  appBottomNav.classList.add("is-dragging");
+  appBottomNav.style.setProperty("--nav-lift", "1.08");
+}
+
+function updateAppNavDragMotion() {
+  appBottomNav.style.setProperty("--nav-lift", "1.1");
+}
+
+function settleAppNavDrag() {
+  if (!appBottomNav) return;
+  appBottomNav.classList.remove("is-dragging");
+  appBottomNav.classList.add("is-settling");
+  appBottomNav.style.setProperty("--nav-lift", "1.05");
+  window.clearTimeout(appNavSettleTimer);
+  appNavSettleTimer = window.setTimeout(() => {
+    appBottomNav.classList.remove("is-settling");
+    appBottomNav.style.setProperty("--nav-lift", "1");
+  }, 260);
+}
+
+function positionAppNavIndicator(button) {
+  if (!appBottomNav || !button) return;
+  const navRect = appBottomNav.getBoundingClientRect();
+  const rect = button.getBoundingClientRect();
+  appBottomNav.style.setProperty("--nav-indicator-x", `${rect.left - navRect.left}px`);
+  appBottomNav.style.setProperty("--nav-indicator-width", `${rect.width}px`);
 }
 
 function scheduleFloatingStartUpdate() {
@@ -628,6 +771,7 @@ function scrollToTop() {
 function handleGlobalClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "back-to-decks") {
+    session = null;
     showScreen("decks");
   }
   if (action === "back-to-setup") {
@@ -678,6 +822,10 @@ function handleKeyboard(event) {
   }
   if (!bookmarkDialog.classList.contains("is-hidden")) {
     if (event.key === "Escape") closeBookmarkDialog();
+    return;
+  }
+  if (!studyHistoryDialog.classList.contains("is-hidden")) {
+    if (event.key === "Escape") closeStudyHistoryDialog();
     return;
   }
   if (!rangeDialog.classList.contains("is-hidden")) {
@@ -755,6 +903,23 @@ function closeBookmarkDialog() {
   if (!bookmarkDialog.classList.contains("is-hidden")) {
     bookmarkDialog.classList.add("is-hidden");
     reviewListSnapshot = null;
+    unlockPageScroll();
+  }
+}
+
+function openStudyHistoryDialog() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
+  renderStudyHistoryDialog(deck);
+  studyHistoryDialog.classList.remove("is-hidden");
+  lockPageScroll();
+  closeStudyHistoryButton.focus();
+}
+
+function closeStudyHistoryDialog() {
+  if (!studyHistoryDialog.classList.contains("is-hidden")) {
+    studyHistoryDialog.classList.add("is-hidden");
     unlockPageScroll();
   }
 }
@@ -890,7 +1055,7 @@ function renderSetup() {
   activeDeckName.textContent = deck.name;
   if (detailDeckName) detailDeckName.textContent = deck.name;
   if (learningRecordDeckName) learningRecordDeckName.textContent = deck.name;
-  openWordListButton.textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
+  if (bottomWordListButton) bottomWordListButton.querySelector("strong").textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
   refreshSetupControls(deck);
   challengeToggle.checked = setup.challenge;
   renderAppSettingControls();
@@ -1048,8 +1213,14 @@ function renderLearningResetState(deck) {
 function renderDataManagementState(deck) {
   const recentCount = getRecentMistakeWords(deck, { ignoreRange: true }).length;
   const bookmarkCountAll = getBookmarkedWords(deck).length;
+  const deckStats = getDeckStats(deck.id);
+  const hasStudyRecord = Object.keys(deckStats.days).length > 0
+    || deckStats.histories.length > 0
+    || Number(deckStats.streak || 0) > 0;
   resetRecentMistakesButton.disabled = recentCount === 0;
   resetRecentMistakesButton.textContent = recentCount > 0 ? `最近ミスをリセット (${recentCount})` : "最近ミスなし";
+  resetStudyRecordButton.disabled = !hasStudyRecord;
+  resetStudyRecordButton.textContent = hasStudyRecord ? "学習記録をリセット" : "学習記録なし";
   detailClearBookmarksButton.disabled = bookmarkCountAll === 0;
   detailClearBookmarksButton.textContent = bookmarkCountAll > 0 ? `しおりを一括解除 (${bookmarkCountAll})` : "しおりなし";
 }
@@ -1432,6 +1603,7 @@ function renderWordListScreen() {
   const deck = getSelectedDeck();
   if (!deck) return;
   const grouped = getGroupedWordsByRange(deck.words);
+  resetWordListSelection();
   wordListDeckName.textContent = deck.name;
   document.querySelector("#word-list-title").textContent = isClozeDeck(deck) ? "問題一覧" : "単語一覧";
   wordSearchInput.placeholder = isClozeDeck(deck) ? "英文・日本語・正解で検索" : "英語・日本語で検索";
@@ -1443,6 +1615,81 @@ function renderWordListScreen() {
   renderWordListContent(deck, grouped);
   renderWordSearchFilters(deck);
   renderWordSearchResults();
+}
+
+function resetWordListSelection() {
+  wordListSelectionMode = false;
+  wordListSelectedKeys = new Set();
+  updateWordListSelectionState();
+}
+
+function toggleWordListSelectionMode() {
+  wordListSelectionMode = !wordListSelectionMode;
+  if (!wordListSelectionMode) wordListSelectedKeys.clear();
+  updateWordListSelectionState();
+}
+
+function clearWordListSelection() {
+  wordListSelectedKeys.clear();
+  updateWordListSelectionState();
+}
+
+function updateWordListSelectionState() {
+  if (!wordListScreen) return;
+  const deck = getSelectedDeck();
+  const itemName = isClozeDeck(deck) ? "問題" : "単語";
+  const count = wordListSelectedKeys.size;
+  wordListScreen.classList.toggle("is-selecting", wordListSelectionMode);
+  wordListSelectToggle.classList.toggle("is-selected", wordListSelectionMode);
+  wordListSelectToggle.textContent = wordListSelectionMode ? "完了" : "選択";
+  wordListSelectionBar.classList.toggle("is-hidden", !wordListSelectionMode);
+  wordListSelectionCount.textContent = `${count}${itemName}選択中`;
+  wordListBulkBookmarkButton.disabled = count === 0;
+  wordListBulkUnbookmarkButton.disabled = count === 0;
+  wordListClearSelectionButton.disabled = count === 0;
+  wordListContent.querySelectorAll(".word-list-card").forEach((card) => {
+    const key = card.dataset.wordKey ? decodeURIComponent(card.dataset.wordKey) : "";
+    const selected = wordListSelectedKeys.has(key);
+    card.classList.toggle("is-selected", selected);
+    card.setAttribute("aria-pressed", String(selected));
+    card.setAttribute("aria-label", wordListSelectionMode
+      ? `${selected ? "選択解除" : "選択"}`
+      : `${isClozeDeck(deck) ? "問題" : "単語"}の詳細を開く`);
+  });
+}
+
+function toggleWordListCardSelection(key) {
+  if (wordListSelectedKeys.has(key)) {
+    wordListSelectedKeys.delete(key);
+  } else {
+    wordListSelectedKeys.add(key);
+  }
+  updateWordListSelectionState();
+}
+
+function bulkSetWordListBookmarks(shouldBookmark) {
+  const deck = getSelectedDeck();
+  if (!deck || wordListSelectedKeys.size === 0) return;
+  const selectedKeys = new Set(wordListSelectedKeys);
+  const bookmarks = getBookmarkSet(deck.id);
+  let changed = 0;
+  selectedKeys.forEach((key) => {
+    if (shouldBookmark) {
+      if (!bookmarks.has(key)) changed += 1;
+      bookmarks.add(key);
+    } else {
+      if (bookmarks.has(key)) changed += 1;
+      bookmarks.delete(key);
+    }
+  });
+  setBookmarkSet(deck.id, bookmarks);
+  selectedKeys.forEach((key) => updateWordListBookmarkButtons(key, bookmarks.has(key)));
+  renderBookmarkPanel(deck);
+  updateWordListSelectionState();
+  const itemName = isClozeDeck(deck) ? "問題" : "単語";
+  showToast(shouldBookmark
+    ? `${changed}${itemName}をしおりに追加しました。`
+    : `${changed}${itemName}のしおりを解除しました。`);
 }
 
 function renderWordListContent(deck = getSelectedDeck(), grouped = null) {
@@ -1505,6 +1752,7 @@ function renderWordListContent(deck = getSelectedDeck(), grouped = null) {
     partList.appendChild(partDetails);
   });
   wordListContent.appendChild(partList);
+  updateWordListSelectionState();
 }
 
 function renderWordSearchResults() {
@@ -1877,7 +2125,12 @@ function handleWordListCardClick(event) {
   if (event.target.closest("button")) return;
   const card = event.target.closest(".word-list-card");
   if (!card?.dataset.wordKey) return;
-  openWordDetail(decodeURIComponent(card.dataset.wordKey));
+  const key = decodeURIComponent(card.dataset.wordKey);
+  if (wordListSelectionMode && wordListContent.contains(card)) {
+    toggleWordListCardSelection(key);
+    return;
+  }
+  openWordDetail(key);
 }
 
 function handleWordListCardKeydown(event) {
@@ -1886,7 +2139,12 @@ function handleWordListCardKeydown(event) {
   const card = event.target.closest(".word-list-card");
   if (!card?.dataset.wordKey) return;
   event.preventDefault();
-  openWordDetail(decodeURIComponent(card.dataset.wordKey));
+  const key = decodeURIComponent(card.dataset.wordKey);
+  if (wordListSelectionMode && wordListContent.contains(card)) {
+    toggleWordListCardSelection(key);
+    return;
+  }
+  openWordDetail(key);
 }
 
 wordListContent.addEventListener("keydown", handleWordListCardKeydown);
@@ -2172,6 +2430,9 @@ function startStudy() {
     wrongItems: [],
     challenge: setup.challenge,
     timeLimit,
+    reviewSources: { ...setup.reviewSources },
+    startedAt: Date.now(),
+    historyRecorded: false,
     current: null,
     locked: false,
   };
@@ -2722,10 +2983,41 @@ function nextQuestion() {
 }
 
 function showResultScreen() {
+  recordStudyHistory();
   applyAfterStudyActions();
   renderResult({ prepareAnimation: true });
   showScreen("result");
   playResultAnimations();
+}
+
+function recordStudyHistory() {
+  if (!session?.deck?.id || session.historyRecorded) return;
+  session.historyRecorded = true;
+  const deckId = session.deck.id;
+  const deckStats = getDeckStats(deckId);
+  const entry = {
+    id: createId(),
+    at: new Date().toISOString(),
+    mode: session.mode,
+    count: session.count,
+    answered: Number(session.answered || 0),
+    correct: Number(session.correct || 0),
+    wrong: Math.max(0, Number(session.answered || 0) - Number(session.correct || 0)),
+    accuracy: getAccuracy(),
+    challenge: Boolean(session.challenge),
+    timeLimit: session.timeLimit || null,
+    questionOrder: session.questionOrder || "random",
+    reviewSources: { ...(session.reviewSources || {}) },
+    durationMs: session.startedAt ? Date.now() - session.startedAt : 0,
+  };
+  state.stats = {
+    ...(state.stats || {}),
+    [deckId]: {
+      ...deckStats,
+      histories: [entry, ...deckStats.histories].slice(0, 100),
+    },
+  };
+  saveState();
 }
 
 function applyAfterStudyActions() {
@@ -2746,6 +3038,9 @@ function renderLearningRecordScreen() {
   const today = getTodayKey();
   const deckStats = getDeckStats(deck.id);
   const todayStats = deckStats.days?.[today] || createEmptyDayStats();
+  const historyCount = deckStats.histories.length;
+  openStudyHistoryButton.disabled = historyCount === 0;
+  openStudyHistoryButton.textContent = historyCount > 0 ? `履歴を見る (${historyCount})` : "履歴なし";
   renderRecordGoal(todayStats.answered);
   recordTodayAnswered.textContent = todayStats.answered;
   recordTodayCorrect.textContent = todayStats.correct;
@@ -2755,6 +3050,88 @@ function renderLearningRecordScreen() {
   recordStreakDays.textContent = `${getCurrentStreak(deckStats)}日`;
 
   renderWeaknessSummary(deck);
+}
+
+function renderStudyHistoryDialog(deck = getSelectedDeck()) {
+  if (!deck) return;
+  const histories = getDeckStats(deck.id).histories;
+  studyHistoryDeckName.textContent = deck.name;
+  studyHistoryList.innerHTML = "";
+  if (histories.length === 0) {
+    studyHistoryList.innerHTML = '<p class="empty-state compact">まだ学習履歴がありません。学習を完了するとここに残ります。</p>';
+    return;
+  }
+
+  histories.slice(0, studyHistoryVisibleCount).forEach((entry) => {
+    const article = document.createElement("article");
+    article.className = "study-history-item";
+    const correct = Number(entry.correct || 0);
+    const answered = Number(entry.answered || 0);
+    const wrong = Number(entry.wrong || Math.max(0, answered - correct));
+    const accuracyText = answered > 0 ? `${Math.round((correct / answered) * 100)}%` : "0%";
+    const timeText = entry.timeLimit ? `制限 ${entry.timeLimit}秒` : "制限なし";
+    const challengeText = entry.challenge ? "チャレンジ" : "通常";
+    const sourceText = getHistorySourceLabel(entry);
+    article.innerHTML = `
+      <div class="study-history-main">
+        <div>
+          <strong>${escapeHtml(formatHistoryDate(entry.at))}</strong>
+          <span>${escapeHtml(getModeLabel(entry.mode))}</span>
+        </div>
+        <div class="study-history-score">
+          <strong>${correct}/${answered}</strong>
+          <span>${accuracyText}</span>
+        </div>
+      </div>
+      <p>${escapeHtml(`${challengeText} / ${getQuestionOrderLabel(entry.questionOrder)} / ${timeText}${sourceText}`)}</p>
+      <small>不正解 ${wrong}${getDeckUnit(deck)}・学習時間 ${formatDuration(entry.durationMs)}</small>
+    `;
+    studyHistoryList.appendChild(article);
+  });
+
+  if (histories.length > studyHistoryVisibleCount) {
+    const moreButton = document.createElement("button");
+    moreButton.className = "secondary-button study-history-more-button";
+    moreButton.type = "button";
+    moreButton.dataset.action = "show-more-history";
+    moreButton.textContent = `さらに表示（${Math.min(STUDY_HISTORY_PAGE_SIZE, histories.length - studyHistoryVisibleCount)}件）`;
+    studyHistoryList.appendChild(moreButton);
+  }
+}
+
+function getModeLabel(modeId) {
+  return modes.find((mode) => mode.id === modeId)?.label || "学習";
+}
+
+function getQuestionOrderLabel(orderId) {
+  return questionOrderOptions.find((option) => option.id === orderId)?.label || "ランダム";
+}
+
+function getHistorySourceLabel(entry) {
+  const sources = entry.reviewSources || {};
+  const labels = [];
+  if (sources.bookmarks) labels.push("しおり");
+  if (sources.recentMistakes) labels.push("最近ミス");
+  if (sources.smartWeak) labels.push("苦手のみ");
+  return labels.length > 0 ? ` / ${labels.join("+")}` : "";
+}
+
+function formatHistoryDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "日時不明";
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${month}/${day} ${hours}:${minutes}`;
+}
+
+function formatDuration(durationMs) {
+  const totalSeconds = Math.max(0, Math.round(Number(durationMs || 0) / 1000));
+  if (totalSeconds < 60) return `${totalSeconds}秒`;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return seconds > 0 ? `${minutes}分${seconds}秒` : `${minutes}分`;
 }
 
 function renderRecordGoal(answered) {
@@ -3041,6 +3418,9 @@ function retryWrongWords() {
     wrongWords: [],
     wrongItems: [],
     count: wrongWords.length,
+    startedAt: Date.now(),
+    historyRecorded: false,
+    afterStudyActionsApplied: false,
     current: null,
     locked: false,
   };
@@ -3348,6 +3728,35 @@ function resetRecentMistakes(deckId = selectedDeckId) {
   showToast("最近ミスをリセットしました。");
 }
 
+function confirmResetStudyRecord() {
+  const deck = getSelectedDeck();
+  if (!deck) return;
+  const deckStats = getDeckStats(deck.id);
+  const hasRecord = Object.keys(deckStats.days).length > 0
+    || deckStats.histories.length > 0
+    || Number(deckStats.streak || 0) > 0;
+  if (!hasRecord) return;
+  openConfirmDialog({
+    title: "学習記録をリセットしますか？",
+    message: `${deck.name} の回答数・今日の目標進捗・学習履歴を削除します。おまかせデータ、最近ミス、しおりは残ります。`,
+    confirmLabel: "リセットする",
+    cancelLabel: "やめる",
+    onConfirm: () => resetStudyRecord(deck.id),
+  });
+}
+
+function resetStudyRecord(deckId = selectedDeckId) {
+  if (!deckId || !state.stats?.[deckId]) return;
+  delete state.stats[deckId];
+  saveState();
+  const deck = getSelectedDeck();
+  if (deck) {
+    renderLearningRecordScreen();
+    renderDataManagementState(deck);
+  }
+  showToast("学習記録をリセットしました。");
+}
+
 function recordLearningResult(word, result) {
   if (!session?.deck?.id || !word) return;
   const deckId = session.deck.id;
@@ -3425,6 +3834,7 @@ function getDeckStats(deckId = selectedDeckId) {
   const current = state.stats?.[deckId] || {};
   return {
     days: current.days && typeof current.days === "object" ? current.days : {},
+    histories: Array.isArray(current.histories) ? current.histories : [],
     lastStudyDate: current.lastStudyDate || "",
     streak: Number(current.streak || 0),
   };
@@ -3746,7 +4156,10 @@ function getSmartWeakWords(deck = getSelectedDeck(), options = {}) {
     .map((word) => ({
       word,
       record: getLearningRecord(deck.id, word),
-      weight: getSmartWordWeight(word, deck.id),
+      weight: getSmartWordWeight(word, deck.id, {
+        includeCoverage: false,
+        includeRecentSeenPenalty: false,
+      }),
     }))
     .filter(({ record, weight }) => record.seen > 0 && weight >= 3.2)
     .sort((a, b) => b.weight - a.weight || getLastWrongAt(b.record) - getLastWrongAt(a.record))
@@ -3785,7 +4198,7 @@ function makeSmartQuestionList(pool, deckId) {
       const random = Math.max(Number.EPSILON, Math.random());
       return {
         word,
-        // 重い単語ほど前に来やすい、重複なしの軽量な重み付き並び替え。
+        // 苦手・未出題・最近ミスを優先しつつ、直近出題は少し下げる重み付き並び替え。
         rank: -Math.log(random) / weight,
       };
     })
@@ -3793,22 +4206,62 @@ function makeSmartQuestionList(pool, deckId) {
     .map((item) => item.word);
 }
 
-function getSmartWordWeight(word, deckId) {
+function getSmartWordWeight(word, deckId, options = {}) {
   const record = getLearningRecord(deckId, word);
-  if (!record.seen) return 2.4;
+  const includeCoverage = options.includeCoverage !== false;
+  const includeRecentSeenPenalty = options.includeRecentSeenPenalty !== false;
+  const now = Date.now();
+  if (!record.seen) return includeCoverage ? 4.8 : 0.7;
 
   let weight = 1;
-  weight += record.wrong * 1.8;
-  weight += record.timedOut * 2.4;
-  weight -= record.correct * 0.16;
-  weight -= record.streak * 0.35;
-  if (record.lastResult === "wrong") weight += 2.1;
-  if (record.lastResult === "timedOut") weight += 2.8;
-  if (record.lastAt) {
-    const days = (Date.now() - record.lastAt) / 86400000;
-    if (days >= 7) weight += Math.min(1.5, days / 14);
-  }
-  return Math.max(0.45, Math.min(9, weight));
+  weight += getMistakePriority(record);
+  if (includeCoverage) weight += getLowSeenBonus(record);
+  weight += getRecentMistakeBonus(record, now);
+  weight -= record.correct * 0.12;
+  weight -= record.streak * 0.32;
+  if (includeRecentSeenPenalty) weight -= getRecentSeenPenalty(record, now);
+  weight += getReviewGapBonus(record, now);
+  return Math.max(0.45, Math.min(10, weight));
+}
+
+function getMistakePriority(record) {
+  return (Number(record.wrong || 0) * 1.8) + (Number(record.timedOut || 0) * 2.3);
+}
+
+function getLowSeenBonus(record) {
+  const seen = Number(record.seen || 0);
+  return Math.max(0, 5 - seen) * 0.65;
+}
+
+function getRecentMistakeBonus(record, now = Date.now()) {
+  let bonus = 0;
+  if (record.lastResult === "wrong") bonus += 2.2;
+  if (record.lastResult === "timedOut") bonus += 2.6;
+
+  const lastWrongAt = getLastWrongAt(record);
+  if (!lastWrongAt) return bonus;
+  const days = (now - lastWrongAt) / 86400000;
+  if (days <= 1) bonus += 1.2;
+  else if (days <= 3) bonus += 0.8;
+  else if (days <= 7) bonus += 0.45;
+  return bonus;
+}
+
+function getRecentSeenPenalty(record, now = Date.now()) {
+  if (!record.lastAt) return 0;
+  const minutes = (now - record.lastAt) / 60000;
+  if (minutes <= 10) return 2.2;
+  if (minutes <= 60) return 1.5;
+  if (minutes <= 360) return 0.8;
+  if (minutes <= 1440) return 0.35;
+  return 0;
+}
+
+function getReviewGapBonus(record, now = Date.now()) {
+  if (!record.lastAt) return 0;
+  const days = (now - record.lastAt) / 86400000;
+  if (days < 7) return 0;
+  return Math.min(1.4, days / 14);
 }
 
 function getEndlessWord() {
@@ -3937,6 +4390,9 @@ function continueSavedStudy() {
       .filter((item) => item.word),
     challenge: false,
     timeLimit: progress.timeLimit ?? null,
+    reviewSources: { ...setup.reviewSources },
+    startedAt: Date.now(),
+    historyRecorded: false,
     current: null,
     locked: false,
   };
