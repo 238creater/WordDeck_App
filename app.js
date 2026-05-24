@@ -326,6 +326,12 @@ let wordListSelectionMode = false;
 let wordListSelectedKeys = new Set();
 let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
 let appNavPointerActive = false;
+let appNavLastClientX = 0;
+let appNavLastMoveAt = 0;
+let appNavWobbleTimer = null;
+let appNavBounceTimer = null;
+let appNavBounceResetTimer = null;
+let appNavAtEdge = false;
 let suppressNextAppNavClick = false;
 let appNavSettleTimer = null;
 
@@ -657,27 +663,98 @@ function getNearestAppNavButton(clientX) {
 }
 
 function moveAppNavIndicatorToPoint(clientX) {
+  if (!appBottomNav) return;
   const button = getNearestAppNavButton(clientX);
-  if (!button) return;
-  positionAppNavIndicator(button);
+  const navRect = appBottomNav.getBoundingClientRect();
+  const buttonRect = button?.getBoundingClientRect();
+  const width = buttonRect?.width || Number.parseFloat(getComputedStyle(appBottomNav).getPropertyValue("--nav-indicator-width")) || 0;
+  const rawX = clientX - navRect.left - width / 2;
+  const overflowLimit = 6;
+  const minX = -overflowLimit;
+  const maxX = navRect.width - width + overflowLimit;
+  const x = Math.min(maxX, Math.max(minX, rawX));
+  const edgePull = rawX - x;
+  appNavAtEdge = Math.abs(edgePull) > 0.5;
+  const edgeRatio = Math.min(1, Math.abs(edgePull) / Math.max(width * 0.55, 1));
+  const stretch = Math.min(0.085, Math.abs(edgePull) / Math.max(width, 1) * 0.3);
+  const verticalStretch = Math.min(0.045, stretch * 0.42 + edgeRatio * 0.012);
+  const origin = edgePull < 0 ? "right center" : edgePull > 0 ? "left center" : "center";
+  appBottomNav.style.setProperty("--nav-indicator-width", `${width}px`);
+  appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
+  appBottomNav.style.setProperty("--nav-stretch", `${1 + stretch}`);
+  appBottomNav.style.setProperty("--nav-edge-lift", `${1 + verticalStretch}`);
+  appBottomNav.style.setProperty("--nav-stretch-origin", origin);
+  previewAppNavSelection(button);
 }
 
 function beginAppNavDrag(clientX) {
   window.clearTimeout(appNavSettleTimer);
+  window.clearTimeout(appNavWobbleTimer);
+  window.clearTimeout(appNavBounceTimer);
+  window.clearTimeout(appNavBounceResetTimer);
+  appNavLastClientX = clientX;
+  appNavLastMoveAt = performance.now();
+  appNavAtEdge = false;
   appBottomNav.classList.remove("is-settling");
   appBottomNav.classList.add("is-dragging");
   appBottomNav.style.setProperty("--nav-lift", "1.08");
+  appBottomNav.style.setProperty("--nav-stretch", "1");
+  appBottomNav.style.setProperty("--nav-edge-lift", "1");
+  appBottomNav.style.setProperty("--nav-wobble", "1");
+  appBottomNav.style.setProperty("--nav-stretch-origin", "center");
 }
 
-function updateAppNavDragMotion() {
+function updateAppNavDragMotion(clientX) {
+  const now = performance.now();
+  const elapsed = Math.max(16, now - appNavLastMoveAt);
+  const velocity = (clientX - appNavLastClientX) / elapsed;
+  const wobble = appNavAtEdge ? 0 : Math.min(0.05, Math.abs(velocity) * 0.02);
   appBottomNav.style.setProperty("--nav-lift", "1.1");
+  appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
+  appNavLastClientX = clientX;
+  appNavLastMoveAt = now;
+  window.clearTimeout(appNavWobbleTimer);
+  appNavWobbleTimer = window.setTimeout(() => {
+    if (appNavAtEdge) {
+      appBottomNav?.style.setProperty("--nav-wobble", "1");
+      return;
+    }
+    appBottomNav?.style.setProperty("--nav-wobble", "0.992");
+    window.clearTimeout(appNavBounceResetTimer);
+    appNavBounceResetTimer = window.setTimeout(() => {
+      appBottomNav?.style.setProperty("--nav-wobble", "1");
+    }, 90);
+  }, 80);
+}
+
+function previewAppNavSelection(targetButton) {
+  if (!appBottomNav || !targetButton) return;
+  appBottomNav.querySelectorAll("[data-nav-screen]").forEach((button) => {
+    button.classList.toggle("is-selected", button === targetButton);
+  });
 }
 
 function settleAppNavDrag() {
   if (!appBottomNav) return;
+  window.clearTimeout(appNavWobbleTimer);
+  window.clearTimeout(appNavBounceTimer);
+  window.clearTimeout(appNavBounceResetTimer);
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.add("is-settling");
-  appBottomNav.style.setProperty("--nav-lift", "1.05");
+  appBottomNav.style.setProperty("--nav-lift", "1.065");
+  appBottomNav.style.setProperty("--nav-stretch", "1");
+  appBottomNav.style.setProperty("--nav-edge-lift", "0.985");
+  appBottomNav.style.setProperty("--nav-wobble", "1.03");
+  appBottomNav.style.setProperty("--nav-stretch-origin", "center");
+  appNavAtEdge = false;
+  appNavBounceTimer = window.setTimeout(() => {
+    appBottomNav?.style.setProperty("--nav-edge-lift", "1.018");
+    appBottomNav?.style.setProperty("--nav-wobble", "0.992");
+  }, 80);
+  appNavBounceResetTimer = window.setTimeout(() => {
+    appBottomNav?.style.setProperty("--nav-edge-lift", "1");
+    appBottomNav?.style.setProperty("--nav-wobble", "1");
+  }, 170);
   window.clearTimeout(appNavSettleTimer);
   appNavSettleTimer = window.setTimeout(() => {
     appBottomNav.classList.remove("is-settling");
@@ -1643,7 +1720,10 @@ function updateWordListSelectionState() {
   wordListSelectToggle.classList.toggle("is-selected", wordListSelectionMode);
   wordListSelectToggle.textContent = wordListSelectionMode ? "完了" : "選択";
   wordListSelectionBar.classList.toggle("is-hidden", !wordListSelectionMode);
-  wordListSelectionCount.textContent = `${count}${itemName}選択中`;
+  wordListSelectionBar.setAttribute("aria-hidden", "false");
+  wordListSelectionCount.textContent = wordListSelectionMode
+    ? `${count}${itemName}選択中`
+    : `選択するとまとめてしおり登録できます`;
   wordListBulkBookmarkButton.disabled = count === 0;
   wordListBulkUnbookmarkButton.disabled = count === 0;
   wordListClearSelectionButton.disabled = count === 0;
