@@ -5505,7 +5505,7 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
     width: calc(100% - 22px);
     gap: 6px;
     padding: 7px;
-    border-radius: 20px;
+    border-radius: 999px;
   }
 
   .app-nav-button {
