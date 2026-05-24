@@ -5211,6 +5211,7 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
   body.word-list-selecting-active .word-list-selection-bar {
     right: 11px;
     left: 11px;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 22px);
     max-width: calc(100% - 22px);
     min-height: 88px;
@@ -5564,7 +5565,7 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
   }
 
   .app-bottom-nav {
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 22px);
     gap: 6px;
     padding: 7px;
