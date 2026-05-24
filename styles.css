@@ -5154,6 +5154,7 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
   .word-list-selection-bar {
     align-items: stretch;
     flex-direction: column;
+    min-height: 96px;
   }
 
   .word-list-selection-bar > div {
@@ -5506,6 +5507,21 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
     gap: 6px;
     padding: 7px;
     border-radius: 999px;
+  }
+
+  .app-nav-indicator {
+    min-width: 76px;
+  }
+
+  .app-bottom-nav.is-dragging .app-nav-indicator {
+    transition:
+      top 120ms cubic-bezier(0.18, 0.86, 0.24, 1),
+      bottom 120ms cubic-bezier(0.18, 0.86, 0.24, 1),
+      transform 55ms linear,
+      width 120ms cubic-bezier(0.18, 0.86, 0.24, 1),
+      border-color 120ms ease,
+      background 120ms ease,
+      box-shadow 120ms ease;
   }
 
   .app-nav-button {
