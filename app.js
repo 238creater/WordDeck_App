@@ -234,6 +234,8 @@ const wordListSelectionCount = document.querySelector("#word-list-selection-coun
 const wordListBulkBookmarkButton = document.querySelector("#word-list-bulk-bookmark-button");
 const wordListBulkUnbookmarkButton = document.querySelector("#word-list-bulk-unbookmark-button");
 const wordListClearSelectionButton = document.querySelector("#word-list-clear-selection-button");
+const wordListFinishSelectionButton = document.querySelector("#word-list-finish-selection-button");
+document.body.appendChild(wordListSelectionBar);
 const wordSearchInput = document.querySelector("#word-search-input");
 const clearWordSearchButton = document.querySelector("#clear-word-search-button");
 const closeWordSearchButton = document.querySelector("#close-word-search-button");
@@ -394,7 +396,10 @@ appBottomNav.addEventListener("click", (event) => {
   navigateAppSection(button.dataset.navScreen);
 });
 appBottomNav.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest("[data-nav-screen]")) return;
+  const button = event.target.closest("[data-nav-screen]");
+  if (!button) return;
+  event.preventDefault();
+  button.blur();
   appNavPointerActive = true;
   beginAppNavDrag(event.clientX);
   appBottomNav.setPointerCapture?.(event.pointerId);
@@ -432,7 +437,6 @@ document.addEventListener("click", (event) => {
 });
 wordSearchInput.addEventListener("input", scheduleWordSearchResults);
 wordSearchInput.addEventListener("focus", () => {
-  if (wordListSelectionMode) resetWordListSelection();
   wordSearchActive = true;
   renderWordSearchResults();
 });
@@ -450,6 +454,11 @@ wordListSelectToggle.addEventListener("click", toggleWordListSelectionMode);
 wordListBulkBookmarkButton.addEventListener("click", () => bulkSetWordListBookmarks(true));
 wordListBulkUnbookmarkButton.addEventListener("click", () => bulkSetWordListBookmarks(false));
 wordListClearSelectionButton.addEventListener("click", clearWordListSelection);
+wordListFinishSelectionButton.addEventListener("click", () => {
+  wordListSelectionMode = false;
+  wordListSelectedKeys.clear();
+  updateWordListSelectionState();
+});
 wordDetailBookmarkButton.addEventListener("click", toggleWordDetailBookmark);
 wordSearchFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-search-filter]");
@@ -605,10 +614,12 @@ function updateAppSetting(key, value) {
 }
 
 function showScreen(name) {
+  if (name !== "wordList") resetWordListTransientState();
   Object.values(screens).forEach((screen) => screen.classList.remove("is-active"));
   screens[name].classList.add("is-active");
   document.body.classList.toggle("study-active", name === "study");
   document.body.classList.toggle("app-nav-active", isAppNavScreen(name));
+  document.body.classList.toggle("word-list-selecting-active", name === "wordList" && wordListSelectionMode);
   if (name !== "study") {
     document.body.classList.remove("study-input-active", "study-cloze-active", "study-choice-active", "study-writing-active");
   }
@@ -712,15 +723,23 @@ function updateAppNavDragMotion(clientX) {
   const now = performance.now();
   const elapsed = Math.max(16, now - appNavLastMoveAt);
   const velocity = (clientX - appNavLastClientX) / elapsed;
-  const wobble = appNavAtEdge || mobileNav ? 0 : Math.min(0.05, Math.abs(velocity) * 0.02);
-  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.04" : "1.1");
+  const wobble = appNavAtEdge
+    ? 0
+    : mobileNav
+      ? Math.min(0.018, Math.abs(velocity) * 0.006)
+      : Math.min(0.05, Math.abs(velocity) * 0.02);
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.045" : "1.1");
   appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
   appNavLastClientX = clientX;
   appNavLastMoveAt = now;
   window.clearTimeout(appNavWobbleTimer);
   appNavWobbleTimer = window.setTimeout(() => {
     if (mobileNav) {
-      appBottomNav?.style.setProperty("--nav-wobble", "1");
+      appBottomNav?.style.setProperty("--nav-wobble", "0.997");
+      window.clearTimeout(appNavBounceResetTimer);
+      appNavBounceResetTimer = window.setTimeout(() => {
+        appBottomNav?.style.setProperty("--nav-wobble", "1");
+      }, 70);
       return;
     }
     if (appNavAtEdge) {
@@ -754,15 +773,15 @@ function settleAppNavDrag() {
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.add("is-settling");
   const mobileNav = isMobileAppNav();
-  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.02" : "1.065");
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.035" : "1.065");
   appBottomNav.style.setProperty("--nav-stretch", "1");
-  appBottomNav.style.setProperty("--nav-edge-lift", mobileNav ? "1" : "0.985");
-  appBottomNav.style.setProperty("--nav-wobble", mobileNav ? "1" : "1.03");
+  appBottomNav.style.setProperty("--nav-edge-lift", mobileNav ? "0.992" : "0.985");
+  appBottomNav.style.setProperty("--nav-wobble", mobileNav ? "1.014" : "1.03");
   appBottomNav.style.setProperty("--nav-stretch-origin", "center");
   appNavAtEdge = false;
   appNavBounceTimer = window.setTimeout(() => {
-    appBottomNav?.style.setProperty("--nav-edge-lift", mobileNav ? "1" : "1.018");
-    appBottomNav?.style.setProperty("--nav-wobble", mobileNav ? "1" : "0.992");
+    appBottomNav?.style.setProperty("--nav-edge-lift", mobileNav ? "1.008" : "1.018");
+    appBottomNav?.style.setProperty("--nav-wobble", mobileNav ? "0.997" : "0.992");
   }, 80);
   appNavBounceResetTimer = window.setTimeout(() => {
     appBottomNav?.style.setProperty("--nav-edge-lift", "1");
@@ -1729,18 +1748,20 @@ function updateWordListSelectionState() {
   const deck = getSelectedDeck();
   const itemName = isClozeDeck(deck) ? "問題" : "単語";
   const count = wordListSelectedKeys.size;
+  const selectionVisible = wordListSelectionMode && screens.wordList.classList.contains("is-active");
   wordListScreen.classList.toggle("is-selecting", wordListSelectionMode);
+  document.body.classList.toggle("word-list-selecting-active", selectionVisible);
   wordListSelectToggle.classList.toggle("is-selected", wordListSelectionMode);
   wordListSelectToggle.textContent = wordListSelectionMode ? "完了" : "選択";
-  wordListSelectionBar.classList.toggle("is-hidden", !wordListSelectionMode);
-  wordListSelectionBar.setAttribute("aria-hidden", "false");
+  wordListSelectionBar.classList.toggle("is-hidden", !selectionVisible);
+  wordListSelectionBar.setAttribute("aria-hidden", String(!selectionVisible));
   wordListSelectionCount.textContent = wordListSelectionMode
     ? `${count}${itemName}選択中`
     : `選択するとまとめてしおり登録できます`;
   wordListBulkBookmarkButton.disabled = count === 0;
   wordListBulkUnbookmarkButton.disabled = count === 0;
   wordListClearSelectionButton.disabled = count === 0;
-  wordListContent.querySelectorAll(".word-list-card").forEach((card) => {
+  document.querySelectorAll("#word-list-content .word-list-card, #word-search-results .word-list-card").forEach((card) => {
     const key = card.dataset.wordKey ? decodeURIComponent(card.dataset.wordKey) : "";
     const selected = wordListSelectedKeys.has(key);
     card.classList.toggle("is-selected", selected);
@@ -1903,6 +1924,7 @@ function renderWordSearchResults() {
       grid.appendChild(createWordCard(word, deck.id, true));
     });
   wordSearchResults.appendChild(grid);
+  updateWordListSelectionState();
   if (matchedWords.length <= 60) {
     triggerAnimation(wordSearchResults, "is-refreshing", 220);
   }
@@ -1921,6 +1943,25 @@ function closeWordSearch() {
   wordSearchInput.blur();
   renderWordSearchFilters();
   renderWordSearchResults();
+}
+
+function resetWordListTransientState() {
+  window.clearTimeout(wordSearchTimer);
+  wordSearchActive = false;
+  wordSearchInput.value = "";
+  wordSearchInput.blur();
+  resetWordSearchFilters();
+  wordListScreen.classList.remove("is-searching", "has-search-query", "is-selecting");
+  wordListContent.classList.remove("is-hidden");
+  wordSearchResults.classList.add("is-hidden");
+  wordSearchResults.innerHTML = "";
+  wordSearchFilters.classList.add("is-hidden");
+  wordListSelectionMode = false;
+  wordListSelectedKeys.clear();
+  updateWordListSelectionState();
+  document.body.classList.remove("word-list-selecting-active");
+  wordListSelectionBar.classList.add("is-hidden");
+  wordListSelectionBar.setAttribute("aria-hidden", "true");
 }
 
 function renderWordSearchFilters(deck = getSelectedDeck()) {
@@ -2193,11 +2234,16 @@ function createWordCard(word, deckId, showRange = false) {
   const card = document.createElement("article");
   const bookmarked = isBookmarked(word, deckId);
   const deck = state.decks.find((item) => item.id === deckId);
-  card.className = "word-list-card";
+  const key = getWordKey(word);
+  const selected = wordListSelectedKeys.has(key);
+  card.className = `word-list-card${selected ? " is-selected" : ""}`;
   card.tabIndex = 0;
   card.setAttribute("role", "button");
-  card.dataset.wordKey = encodeURIComponent(getWordKey(word));
-  card.setAttribute("aria-label", `${isClozeDeck(deck) ? "問題" : "単語"}の詳細を開く`);
+  card.dataset.wordKey = encodeURIComponent(key);
+  card.setAttribute("aria-pressed", String(selected));
+  card.setAttribute("aria-label", wordListSelectionMode
+    ? `${selected ? "選択解除" : "選択"}`
+    : `${isClozeDeck(deck) ? "問題" : "単語"}の詳細を開く`);
   const rangeLabel = showRange ? `<span class="word-list-range">${escapeHtml(formatRangeSummaryLabel(word.lesson))}</span>` : "";
   const answerLine = isClozeDeck(deck) ? `<span class="word-list-answer">正解: ${escapeHtml(word.answer)}</span>` : "";
   card.innerHTML = `
@@ -2207,7 +2253,7 @@ function createWordCard(word, deckId, showRange = false) {
       <span>${escapeHtml(getItemSubLabel(word))}</span>
       ${answerLine}
     </div>
-    <button class="secondary-button small word-list-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-list-bookmark" data-bookmark-key="${encodeURIComponent(getWordKey(word))}">
+    <button class="secondary-button small word-list-bookmark-button${bookmarked ? " is-bookmarked" : ""}" type="button" data-action="toggle-list-bookmark" data-bookmark-key="${encodeURIComponent(key)}">
       ${bookmarked ? "しおり解除" : "しおりに追加"}
     </button>
   `;
@@ -2219,7 +2265,7 @@ function handleWordListCardClick(event) {
   const card = event.target.closest(".word-list-card");
   if (!card?.dataset.wordKey) return;
   const key = decodeURIComponent(card.dataset.wordKey);
-  if (wordListSelectionMode && wordListContent.contains(card)) {
+  if (wordListSelectionMode) {
     toggleWordListCardSelection(key);
     return;
   }
@@ -2233,7 +2279,7 @@ function handleWordListCardKeydown(event) {
   if (!card?.dataset.wordKey) return;
   event.preventDefault();
   const key = decodeURIComponent(card.dataset.wordKey);
-  if (wordListSelectionMode && wordListContent.contains(card)) {
+  if (wordListSelectionMode) {
     toggleWordListCardSelection(key);
     return;
   }

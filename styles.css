@@ -3173,6 +3173,22 @@ body.study-active .app-bottom-nav {
   background: transparent;
   box-shadow: none;
   font-weight: 900;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.app-bottom-nav .app-nav-button:hover:not(:disabled),
+.app-bottom-nav .app-nav-button:active:not(:disabled),
+body:not(.study-active) .app-bottom-nav .app-nav-button:hover:not(:disabled),
+body:not(.study-active) .app-bottom-nav .app-nav-button:active:not(:disabled) {
+  background: transparent;
+  filter: none;
+  transform: none;
+}
+
+.app-bottom-nav .app-nav-button:focus,
+.app-bottom-nav .app-nav-button:focus-visible {
+  outline: none;
 }
 
 .app-nav-icon {
@@ -4411,33 +4427,68 @@ body.challenge-active .wrong-bookmark-button.is-bookmarked {
 }
 
 .word-list-selection-bar.is-hidden {
-  display: flex;
-  visibility: visible;
-  opacity: 1;
-  pointer-events: none;
-  transform: none;
+  display: none !important;
+}
+
+body.word-list-selecting-active .app-bottom-nav {
+  display: none;
+}
+
+body.word-list-selecting-active .app-shell {
+  padding-bottom: 144px;
+}
+
+body.word-list-selecting-active .word-list-selection-bar {
+  position: fixed;
+  right: max(16px, calc((100vw - 980px) / 2));
+  left: max(16px, calc((100vw - 980px) / 2));
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 21;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  justify-items: stretch;
+  align-items: stretch;
+  gap: 8px;
+  width: auto;
+  max-width: none;
+  min-height: 82px;
+  margin: 0;
+  padding: 10px;
+  border-radius: 24px;
   animation: none;
-  border-color: rgba(207, 218, 213, 0.72);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 245, 243, 0.7)),
-    rgba(244, 248, 246, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transform: none;
+  transform-origin: center bottom;
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
 }
 
-.word-list-selection-bar.is-hidden > div {
-  display: none;
-}
-
-.word-list-selection-bar.is-hidden strong {
+body.word-list-selecting-active .word-list-selection-bar > strong {
+  display: block;
   width: 100%;
-  color: var(--muted);
   text-align: center;
-  white-space: normal;
-  font-size: 0.84rem;
 }
 
-.word-list-screen.is-searching .word-list-selection-bar {
-  display: none;
+body.word-list-selecting-active .word-list-selection-bar > div {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+body.word-list-selecting-active .word-list-selection-bar .small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding-inline: 10px;
+  white-space: nowrap;
 }
 
 #next-button {
@@ -5157,12 +5208,23 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
     min-height: 96px;
   }
 
+  body.word-list-selecting-active .word-list-selection-bar {
+    right: 11px;
+    left: 11px;
+    width: calc(100% - 22px);
+    max-width: calc(100% - 22px);
+    min-height: 88px;
+    transform: none;
+  }
+
   .word-list-selection-bar > div {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
   }
 
   .word-list-selection-bar .small {
+    width: 100%;
     min-width: 0;
     padding-inline: 8px;
   }
@@ -5502,7 +5564,7 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
   }
 
   .app-bottom-nav {
-    bottom: max(10px, env(safe-area-inset-bottom));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 22px);
     gap: 6px;
     padding: 7px;
@@ -5531,6 +5593,10 @@ body.challenge-active .weakness-summary-tabs .secondary-button.is-selected {
   .app-nav-button {
     min-height: 56px;
     padding-inline: 4px;
+  }
+
+  body.app-nav-active .app-shell {
+    padding-bottom: 144px;
   }
 
   .floating-start-bar strong,
