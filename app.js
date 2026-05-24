@@ -664,6 +664,7 @@ function getNearestAppNavButton(clientX) {
 
 function moveAppNavIndicatorToPoint(clientX) {
   if (!appBottomNav) return;
+  const mobileNav = isMobileAppNav();
   const button = getNearestAppNavButton(clientX);
   const navRect = appBottomNav.getBoundingClientRect();
   const buttonRect = button?.getBoundingClientRect();
@@ -676,8 +677,10 @@ function moveAppNavIndicatorToPoint(clientX) {
   const edgePull = rawX - x;
   appNavAtEdge = Math.abs(edgePull) > 0.5;
   const edgeRatio = Math.min(1, Math.abs(edgePull) / Math.max(width * 0.55, 1));
-  const stretch = Math.min(0.085, Math.abs(edgePull) / Math.max(width, 1) * 0.3);
-  const verticalStretch = Math.min(0.045, stretch * 0.42 + edgeRatio * 0.012);
+  const stretchLimit = mobileNav ? 0.025 : 0.085;
+  const stretchPower = mobileNav ? 0.12 : 0.3;
+  const stretch = Math.min(stretchLimit, Math.abs(edgePull) / Math.max(width, 1) * stretchPower);
+  const verticalStretch = mobileNav ? 0 : Math.min(0.045, stretch * 0.42 + edgeRatio * 0.012);
   const origin = edgePull < 0 ? "right center" : edgePull > 0 ? "left center" : "center";
   appBottomNav.style.setProperty("--nav-indicator-width", `${width}px`);
   appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
@@ -705,16 +708,21 @@ function beginAppNavDrag(clientX) {
 }
 
 function updateAppNavDragMotion(clientX) {
+  const mobileNav = isMobileAppNav();
   const now = performance.now();
   const elapsed = Math.max(16, now - appNavLastMoveAt);
   const velocity = (clientX - appNavLastClientX) / elapsed;
-  const wobble = appNavAtEdge ? 0 : Math.min(0.05, Math.abs(velocity) * 0.02);
-  appBottomNav.style.setProperty("--nav-lift", "1.1");
+  const wobble = appNavAtEdge || mobileNav ? 0 : Math.min(0.05, Math.abs(velocity) * 0.02);
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.04" : "1.1");
   appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
   appNavLastClientX = clientX;
   appNavLastMoveAt = now;
   window.clearTimeout(appNavWobbleTimer);
   appNavWobbleTimer = window.setTimeout(() => {
+    if (mobileNav) {
+      appBottomNav?.style.setProperty("--nav-wobble", "1");
+      return;
+    }
     if (appNavAtEdge) {
       appBottomNav?.style.setProperty("--nav-wobble", "1");
       return;
@@ -725,6 +733,10 @@ function updateAppNavDragMotion(clientX) {
       appBottomNav?.style.setProperty("--nav-wobble", "1");
     }, 90);
   }, 80);
+}
+
+function isMobileAppNav() {
+  return window.matchMedia("(max-width: 720px)").matches;
 }
 
 function previewAppNavSelection(targetButton) {
@@ -741,15 +753,16 @@ function settleAppNavDrag() {
   window.clearTimeout(appNavBounceResetTimer);
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.add("is-settling");
-  appBottomNav.style.setProperty("--nav-lift", "1.065");
+  const mobileNav = isMobileAppNav();
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.02" : "1.065");
   appBottomNav.style.setProperty("--nav-stretch", "1");
-  appBottomNav.style.setProperty("--nav-edge-lift", "0.985");
-  appBottomNav.style.setProperty("--nav-wobble", "1.03");
+  appBottomNav.style.setProperty("--nav-edge-lift", mobileNav ? "1" : "0.985");
+  appBottomNav.style.setProperty("--nav-wobble", mobileNav ? "1" : "1.03");
   appBottomNav.style.setProperty("--nav-stretch-origin", "center");
   appNavAtEdge = false;
   appNavBounceTimer = window.setTimeout(() => {
-    appBottomNav?.style.setProperty("--nav-edge-lift", "1.018");
-    appBottomNav?.style.setProperty("--nav-wobble", "0.992");
+    appBottomNav?.style.setProperty("--nav-edge-lift", mobileNav ? "1" : "1.018");
+    appBottomNav?.style.setProperty("--nav-wobble", mobileNav ? "1" : "0.992");
   }, 80);
   appNavBounceResetTimer = window.setTimeout(() => {
     appBottomNav?.style.setProperty("--nav-edge-lift", "1");
