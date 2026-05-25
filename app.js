@@ -434,44 +434,10 @@ appBottomNav.addEventListener("pointercancel", () => {
   settleAppNavDrag();
   updateAppBottomNav();
 });
-appBottomNav.addEventListener("touchstart", (event) => {
-  const touch = event.touches[0];
-  const button = touch ? document.elementFromPoint(touch.clientX, touch.clientY)?.closest("[data-nav-screen]") : null;
-  if (!touch || !button || !appBottomNav.contains(button)) return;
-  event.preventDefault();
-  appNavIgnorePointerUntil = Date.now() + 520;
-  appNavTouchFallbackActive = true;
-  beginAppNavDrag(touch.clientX);
-  moveAppNavIndicatorToPoint(touch.clientX);
-}, { passive: false });
-appBottomNav.addEventListener("touchmove", (event) => {
-  if (!appNavTouchFallbackActive) return;
-  const touch = event.touches[0];
-  if (!touch) return;
-  event.preventDefault();
-  updateAppNavDragMotion(touch.clientX);
-  moveAppNavIndicatorToPoint(touch.clientX);
-}, { passive: false });
-appBottomNav.addEventListener("touchend", (event) => {
-  if (!appNavTouchFallbackActive) return;
-  event.preventDefault();
-  appNavTouchFallbackActive = false;
-  const touch = event.changedTouches[0];
-  const button = touch ? getNearestAppNavButton(touch.clientX) : null;
-  if (button) {
-    suppressNextAppNavClick = true;
-    navigateAppSection(button.dataset.navScreen);
-  } else {
-    updateAppBottomNav();
-  }
-  settleAppNavDrag();
-}, { passive: false });
-appBottomNav.addEventListener("touchcancel", () => {
-  if (!appNavTouchFallbackActive) return;
-  appNavTouchFallbackActive = false;
-  settleAppNavDrag();
-  updateAppBottomNav();
-}, { passive: true });
+document.addEventListener("touchstart", handleAppNavTouchStart, { passive: false, capture: true });
+document.addEventListener("touchmove", handleAppNavTouchMove, { passive: false, capture: true });
+document.addEventListener("touchend", handleAppNavTouchEnd, { passive: false, capture: true });
+document.addEventListener("touchcancel", handleAppNavTouchCancel, { passive: true, capture: true });
 appBottomNav.addEventListener("pointerleave", () => {
   if (!appNavPointerActive) updateAppBottomNav();
 });
@@ -715,6 +681,67 @@ function getNearestAppNavButton(clientX) {
     if (!nearest || distance < nearest.distance) return { button, distance };
     return nearest;
   }, null)?.button || null;
+}
+
+function getAppNavTouchButton(clientX, clientY) {
+  if (!appBottomNav || !document.body.classList.contains("app-nav-active")) return null;
+  if (document.body.classList.contains("dialog-open") || document.body.classList.contains("study-active")) return null;
+  if (document.body.classList.contains("word-list-selecting-active")) return null;
+  const rect = appBottomNav.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  const hitSlop = 16;
+  const insideX = clientX >= rect.left - hitSlop && clientX <= rect.right + hitSlop;
+  const insideY = clientY >= rect.top - hitSlop && clientY <= rect.bottom + hitSlop;
+  if (!insideX || !insideY) return null;
+  return getNearestAppNavButton(clientX);
+}
+
+function handleAppNavTouchStart(event) {
+  if (event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  const button = getAppNavTouchButton(touch.clientX, touch.clientY);
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  appNavIgnorePointerUntil = Date.now() + 650;
+  appNavTouchFallbackActive = true;
+  appNavPointerActive = false;
+  button.blur();
+  beginAppNavDrag(touch.clientX);
+  moveAppNavIndicatorToPoint(touch.clientX);
+}
+
+function handleAppNavTouchMove(event) {
+  if (!appNavTouchFallbackActive) return;
+  const touch = event.touches[0];
+  if (!touch) return;
+  event.preventDefault();
+  event.stopPropagation();
+  updateAppNavDragMotion(touch.clientX);
+  moveAppNavIndicatorToPoint(touch.clientX);
+}
+
+function handleAppNavTouchEnd(event) {
+  if (!appNavTouchFallbackActive) return;
+  event.preventDefault();
+  event.stopPropagation();
+  appNavTouchFallbackActive = false;
+  const touch = event.changedTouches[0];
+  const button = touch ? getAppNavTouchButton(touch.clientX, touch.clientY) || getNearestAppNavButton(touch.clientX) : null;
+  if (button) {
+    suppressNextAppNavClick = true;
+    navigateAppSection(button.dataset.navScreen);
+  } else {
+    updateAppBottomNav();
+  }
+  settleAppNavDrag();
+}
+
+function handleAppNavTouchCancel() {
+  if (!appNavTouchFallbackActive) return;
+  appNavTouchFallbackActive = false;
+  settleAppNavDrag();
+  updateAppBottomNav();
 }
 
 function moveAppNavIndicatorToPoint(clientX) {
