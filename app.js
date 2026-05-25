@@ -336,6 +336,8 @@ let appNavBounceResetTimer = null;
 let appNavAtEdge = false;
 let suppressNextAppNavClick = false;
 let appNavSettleTimer = null;
+let appNavTouchFallbackActive = false;
+let appNavIgnorePointerUntil = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -396,6 +398,7 @@ appBottomNav.addEventListener("click", (event) => {
   navigateAppSection(button.dataset.navScreen);
 });
 appBottomNav.addEventListener("pointerdown", (event) => {
+  if (Date.now() < appNavIgnorePointerUntil) return;
   const button = event.target.closest("[data-nav-screen]");
   if (!button) return;
   event.preventDefault();
@@ -406,11 +409,13 @@ appBottomNav.addEventListener("pointerdown", (event) => {
   moveAppNavIndicatorToPoint(event.clientX);
 });
 appBottomNav.addEventListener("pointermove", (event) => {
+  if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
   updateAppNavDragMotion(event.clientX);
   moveAppNavIndicatorToPoint(event.clientX);
 });
 appBottomNav.addEventListener("pointerup", (event) => {
+  if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
   appNavPointerActive = false;
   appBottomNav.releasePointerCapture?.(event.pointerId);
@@ -424,10 +429,49 @@ appBottomNav.addEventListener("pointerup", (event) => {
   settleAppNavDrag();
 });
 appBottomNav.addEventListener("pointercancel", () => {
+  if (Date.now() < appNavIgnorePointerUntil) return;
   appNavPointerActive = false;
   settleAppNavDrag();
   updateAppBottomNav();
 });
+appBottomNav.addEventListener("touchstart", (event) => {
+  const touch = event.touches[0];
+  const button = touch ? document.elementFromPoint(touch.clientX, touch.clientY)?.closest("[data-nav-screen]") : null;
+  if (!touch || !button || !appBottomNav.contains(button)) return;
+  event.preventDefault();
+  appNavIgnorePointerUntil = Date.now() + 520;
+  appNavTouchFallbackActive = true;
+  beginAppNavDrag(touch.clientX);
+  moveAppNavIndicatorToPoint(touch.clientX);
+}, { passive: false });
+appBottomNav.addEventListener("touchmove", (event) => {
+  if (!appNavTouchFallbackActive) return;
+  const touch = event.touches[0];
+  if (!touch) return;
+  event.preventDefault();
+  updateAppNavDragMotion(touch.clientX);
+  moveAppNavIndicatorToPoint(touch.clientX);
+}, { passive: false });
+appBottomNav.addEventListener("touchend", (event) => {
+  if (!appNavTouchFallbackActive) return;
+  event.preventDefault();
+  appNavTouchFallbackActive = false;
+  const touch = event.changedTouches[0];
+  const button = touch ? getNearestAppNavButton(touch.clientX) : null;
+  if (button) {
+    suppressNextAppNavClick = true;
+    navigateAppSection(button.dataset.navScreen);
+  } else {
+    updateAppBottomNav();
+  }
+  settleAppNavDrag();
+}, { passive: false });
+appBottomNav.addEventListener("touchcancel", () => {
+  if (!appNavTouchFallbackActive) return;
+  appNavTouchFallbackActive = false;
+  settleAppNavDrag();
+  updateAppBottomNav();
+}, { passive: true });
 appBottomNav.addEventListener("pointerleave", () => {
   if (!appNavPointerActive) updateAppBottomNav();
 });

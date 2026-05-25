@@ -1195,10 +1195,6 @@ body.challenge-active .bookmark-item .bookmark-item-answer {
   box-shadow: 0 11px 24px rgba(45, 113, 136, 0.24);
 }
 
-.word-list-screen.is-searching .word-list-select-toggle {
-  display: none;
-}
-
 body.challenge-active .word-list-select-toggle.is-selected {
   border-color: rgba(123, 67, 45, 0.72);
   background:
