@@ -281,6 +281,9 @@ const clozeInitialHintToggle = document.querySelector("#cloze-initial-hint-toggl
 const startButton = document.querySelector("#start-button");
 const startNote = document.querySelector("#start-note");
 const startPanel = document.querySelector(".start-panel");
+const heroStartButton = document.querySelector("#hero-start-button");
+const heroModeTitle = document.querySelector("#hero-mode-title");
+const heroStartDetail = document.querySelector("#hero-start-detail");
 const floatingStartBar = document.querySelector("#floating-start-bar");
 const floatingStartButton = document.querySelector("#floating-start-button");
 const floatingStartTitle = document.querySelector("#floating-start-title");
@@ -510,6 +513,7 @@ challengeToggle.addEventListener("change", () => {
   stabilizeChallengeThemeSwitch();
 });
 startButton.addEventListener("click", startStudy);
+if (heroStartButton) heroStartButton.addEventListener("click", startStudy);
 floatingStartButton.addEventListener("click", startStudy);
 nextButton.addEventListener("click", nextQuestion);
 bookmarkCurrentButton.addEventListener("click", toggleCurrentBookmark);
@@ -906,12 +910,10 @@ function syncChallengeTheme(screenName = getActiveScreenName()) {
 }
 
 function stabilizeChallengeThemeSwitch() {
+  screens.setup?.classList.remove("challenge-preview");
+  document.body.classList.remove("theme-switching");
+  renderSetup();
   syncChallengeTheme();
-  renderCountOptions();
-  updateStartState(getSelectedDeck());
-  requestAnimationFrame(() => {
-    updateFloatingStartVisibility();
-  });
 }
 
 function getActiveScreenName() {
@@ -2666,11 +2668,21 @@ function updateStartState(deck) {
 
   startButton.disabled = !canStart;
   startButton.classList.toggle("is-disabled", !canStart);
+  if (heroStartButton) {
+    heroStartButton.disabled = !canStart;
+    heroStartButton.classList.toggle("is-disabled", !canStart);
+  }
   floatingStartButton.disabled = !canStart;
   floatingStartButton.classList.toggle("is-disabled", !canStart);
   floatingStartTitle.textContent = canStart ? "この設定で開始" : "開始できません";
   floatingStartTitle.classList.toggle("is-warning", !canStart);
   floatingStartDetail.textContent = getFloatingStartDetail(selectedCount, count);
+  if (heroModeTitle) heroModeTitle.textContent = "いつもの10問";
+  if (heroStartDetail) {
+    heroStartDetail.textContent = canStart
+      ? `${getFloatingStartDetail(selectedCount, count)}で始めましょう。`
+      : "設定を見直すと開始できます。";
+  }
 
   if (selectedCount === 0) {
     startNote.textContent = hasReviewSourceSelected()

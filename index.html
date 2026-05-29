@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Word Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260522-89" />
+    <link rel="stylesheet" href="styles.css?v=20260529-21" />
   </head>
   <body>
     <main class="app-shell">
@@ -44,12 +44,12 @@
         </header>
 
         <div class="settings-grid">
-          <section class="settings-block">
+          <section class="settings-block setup-mode-card">
             <h2>モード</h2>
             <div id="mode-options" class="option-grid"></div>
           </section>
 
-          <section class="settings-block">
+          <section class="settings-block setup-range-card">
             <h2>出題範囲</h2>
             <div class="range-summary-card">
               <div>
@@ -61,12 +61,12 @@
             </div>
           </section>
 
-          <section class="settings-block">
+          <section class="settings-block setup-count-card">
             <h2>出題数</h2>
             <div id="count-options" class="count-grid"></div>
           </section>
 
-          <section class="settings-block preset-panel">
+          <section class="settings-block preset-panel setup-preset-card">
             <h2>学習プリセット</h2>
             <div class="preset-grid">
               <button class="secondary-button small" type="button" data-preset="standard">通常練習</button>
@@ -76,7 +76,7 @@
             </div>
           </section>
 
-          <section class="settings-block">
+          <section class="settings-block setup-time-card">
             <h2>制限時間</h2>
             <div id="time-options" class="time-grid"></div>
           </section>
@@ -569,6 +569,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260522-89"></script>
+    <script src="app.js?v=20260529-21"></script>
   </body>
 </html>
