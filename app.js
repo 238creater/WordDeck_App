@@ -743,8 +743,12 @@ function handleAppNavTouchEnd(event) {
   event.preventDefault();
   event.stopPropagation();
   appNavTouchFallbackActive = false;
+  if (isAppNavInteractionBlocked()) {
+    resetAppNavInteraction();
+    return;
+  }
   const touch = event.changedTouches[0];
-  const button = touch ? getAppNavTouchButton(touch.clientX, touch.clientY) : null;
+  const button = touch ? getNearestAppNavButton(touch.clientX) : null;
   if (button) {
     suppressNextAppNavClick = true;
     navigateAppSection(button.dataset.navScreen);
