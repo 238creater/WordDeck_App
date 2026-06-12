@@ -332,6 +332,7 @@ let wordListSelectedKeys = new Set();
 let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
 let appNavPointerActive = false;
 let appNavLastClientX = 0;
+let appNavDragVisualX = null;
 let appNavLastMoveAt = 0;
 let appNavWobbleTimer = null;
 let appNavBounceTimer = null;
@@ -755,7 +756,11 @@ function moveAppNavIndicatorToPoint(clientX) {
   const navRect = appBottomNav.getBoundingClientRect();
   const buttonRect = button?.getBoundingClientRect();
   const width = buttonRect?.width || Number.parseFloat(getComputedStyle(appBottomNav).getPropertyValue("--nav-indicator-width")) || 0;
-  const rawX = clientX - navRect.left - width / 2;
+  const followRatio = mobileNav ? 0.78 : 0.7;
+  appNavDragVisualX = appNavDragVisualX == null
+    ? clientX
+    : appNavDragVisualX + (clientX - appNavDragVisualX) * followRatio;
+  const rawX = appNavDragVisualX - navRect.left - width / 2;
   const overflowLimit = 6;
   const minX = -overflowLimit;
   const maxX = navRect.width - width + overflowLimit;
@@ -782,6 +787,7 @@ function beginAppNavDrag(clientX) {
   window.clearTimeout(appNavBounceTimer);
   window.clearTimeout(appNavBounceResetTimer);
   appNavLastClientX = clientX;
+  appNavDragVisualX = clientX;
   appNavLastMoveAt = performance.now();
   appNavAtEdge = false;
   appBottomNav.classList.remove("is-settling");
@@ -854,6 +860,7 @@ function settleAppNavDrag() {
   appBottomNav.style.setProperty("--nav-wobble", mobileNav ? "1.014" : "1.03");
   appBottomNav.style.setProperty("--nav-stretch-origin", "center");
   appNavAtEdge = false;
+  appNavDragVisualX = null;
   appNavBounceTimer = window.setTimeout(() => {
     appBottomNav?.style.setProperty("--nav-edge-lift", mobileNav ? "1.008" : "1.018");
     appBottomNav?.style.setProperty("--nav-wobble", mobileNav ? "0.997" : "0.992");
@@ -912,7 +919,9 @@ function syncChallengeTheme(screenName = getActiveScreenName()) {
 function stabilizeChallengeThemeSwitch() {
   screens.setup?.classList.remove("challenge-preview");
   document.body.classList.remove("theme-switching");
-  renderSetup();
+  const deck = getSelectedDeck();
+  renderCountOptions();
+  if (deck) updateStartState(deck);
   syncChallengeTheme();
 }
 
@@ -1364,22 +1373,29 @@ function refreshSetupControls(deck = getSelectedDeck()) {
 }
 
 function renderCountOptions() {
-  const availableCountOptions = setup.challenge
-    ? countOptions.filter((option) => option.id !== "endless")
-    : countOptions;
-  renderOptionButtons(countOptionsEl, availableCountOptions, setup.count, (id) => {
+  renderOptionButtons(countOptionsEl, countOptions, setup.count, (id) => {
+    if (setup.challenge && id === "endless") return;
     setup.count = id;
     renderSetup();
+  }, {
+    disabledIds: setup.challenge ? ["endless"] : [],
   });
 }
 
 function renderOptionButtons(container, options, selectedId, onSelect, config = {}) {
   container.innerHTML = "";
+  const disabledIds = new Set(config.disabledIds || []);
   options.forEach((option) => {
+    const disabled = Boolean(config.disabled) || disabledIds.has(option.id);
     const button = document.createElement("button");
     button.className = `mode-button${option.id === selectedId ? " is-selected" : ""}`;
     button.type = "button";
-    button.disabled = Boolean(config.disabled);
+    button.disabled = disabled;
+    button.classList.toggle("is-disabled", disabled);
+    if (disabled && option.id === "endless") {
+      button.title = "チャレンジモードではエンドレスを選べません";
+      button.setAttribute("aria-label", `${option.label}（チャレンジモードでは選べません）`);
+    }
     button.textContent = option.label;
     button.addEventListener("click", () => onSelect(option.id));
     container.appendChild(button);
