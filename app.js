@@ -800,6 +800,9 @@ function resetAppNavInteraction() {
   appBottomNav?.style.setProperty("--nav-wobble", "1");
   appBottomNav?.style.setProperty("--nav-liquid-stretch", "1");
   appBottomNav?.style.setProperty("--nav-liquid-squash", "1");
+  appBottomNav?.style.setProperty("--nav-liquid-offset", "0px");
+  appBottomNav?.style.setProperty("--nav-liquid-front-shift", "0px");
+  appBottomNav?.style.setProperty("--nav-liquid-front-scale", "1");
   appBottomNav?.classList.remove("is-edge-hit");
   clearAppNavGlassOverlap();
   if (!isAppNavInteractionBlocked()) updateAppBottomNav();
@@ -860,11 +863,16 @@ function startAppNavFollower() {
       appNavFollowVelocity *= 0.5;
     }
     const speed = Math.min(1, Math.abs(appNavFollowVelocity) / 11);
+    const direction = appNavFollowVelocity < 0 ? -1 : 1;
     const edgeCompression = appNavAtEdge ? 0.93 : 1;
     appBottomNav.style.setProperty("--nav-indicator-x", `${appNavCurrentX}px`);
-    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.16}`);
+    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.13}`);
     appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.035}`);
-    appBottomNav.style.setProperty("--nav-liquid-direction", appNavFollowVelocity < 0 ? "-1" : "1");
+    appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
+    appBottomNav.style.setProperty("--nav-liquid-offset", `${direction * speed * 2.5}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * speed * 4}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + speed * 0.055}`);
+    appBottomNav.style.setProperty("--nav-stretch-origin", speed > 0.06 ? (direction > 0 ? "left center" : "right center") : "center");
     updateAppNavGlassOverlap(appNavCurrentX, appNavIndicatorWidth);
     if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08) {
       appNavFollowFrame = requestAnimationFrame(follow);
@@ -990,6 +998,9 @@ function settleAppNavDrag() {
   appBottomNav.style.setProperty("--nav-stretch-origin", "center");
   appBottomNav.style.setProperty("--nav-liquid-stretch", "1");
   appBottomNav.style.setProperty("--nav-liquid-squash", "1");
+  appBottomNav.style.setProperty("--nav-liquid-offset", "0px");
+  appBottomNav.style.setProperty("--nav-liquid-front-shift", "0px");
+  appBottomNav.style.setProperty("--nav-liquid-front-scale", "1");
   clearAppNavGlassOverlap();
   appNavAtEdge = false;
   appNavBounceTimer = window.setTimeout(() => {
