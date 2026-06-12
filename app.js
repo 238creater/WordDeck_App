@@ -182,6 +182,7 @@ const screens = {
   result: document.querySelector("#result-screen"),
 };
 
+const appShell = document.querySelector(".app-shell");
 const deckList = document.querySelector("#deck-list");
 const csvInput = document.querySelector("#csv-input");
 const activeDeckName = document.querySelector("#active-deck-name");
@@ -327,6 +328,7 @@ let floatingStartFrame = null;
 let wordSearchTimer = null;
 let reviewListTab = "bookmarks";
 let wordDetailTouchStartY = 0;
+let wordDetailPreviousFocus = null;
 let wordListSelectionMode = false;
 let wordListSelectedKeys = new Set();
 let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
@@ -2403,11 +2405,12 @@ function openWordDetail(key) {
   const word = deck.words.find((item) => getWordKey(item) === key);
   if (!word) return;
   renderWordDetail(deck, word);
+  wordDetailPreviousFocus = document.activeElement;
   document.body.classList.add("word-detail-open");
-  appBottomNav.inert = true;
-  appBottomNav.setAttribute("aria-hidden", "true");
+  setWordDetailBackgroundLocked(true);
   resetAppNavInteraction();
   wordDetailPanel.classList.remove("is-hidden");
+  wordDetailPanel.querySelector("[data-action='close-word-detail']")?.focus({ preventScroll: true });
 }
 
 function closeWordDetailPanel() {
@@ -2415,9 +2418,16 @@ function closeWordDetailPanel() {
   wordDetailPanel.classList.add("is-hidden");
   wordDetailBookmarkButton.dataset.bookmarkKey = "";
   document.body.classList.remove("word-detail-open");
-  appBottomNav.inert = false;
-  appBottomNav.removeAttribute("aria-hidden");
+  setWordDetailBackgroundLocked(false);
   updateAppBottomNav();
+  wordDetailPreviousFocus?.focus?.({ preventScroll: true });
+  wordDetailPreviousFocus = null;
+}
+
+function setWordDetailBackgroundLocked(locked) {
+  appShell.inert = locked;
+  wordListSelectionBar.inert = locked;
+  appShell.classList.toggle("is-modal-background", locked);
 }
 
 function preventWordDetailBackgroundScroll(event) {

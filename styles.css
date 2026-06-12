@@ -81,6 +81,11 @@ body.word-detail-open {
   overscroll-behavior: contain;
 }
 
+.app-shell.is-modal-background {
+  pointer-events: none;
+  user-select: none;
+}
+
 body.dialog-open .app-shell {
   min-height: 100dvh;
 }
@@ -3399,7 +3404,6 @@ body.app-nav-active .app-shell {
 }
 
 body.dialog-open .app-bottom-nav,
-body.word-detail-open .app-bottom-nav,
 body.study-active .app-bottom-nav {
   display: none;
   pointer-events: none;
