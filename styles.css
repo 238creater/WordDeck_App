@@ -7508,6 +7508,10 @@ body.challenge-active .word-list-search input {
     top: -3px;
     bottom: -3px;
     border-radius: 999px;
+    transform:
+      translateX(var(--nav-indicator-x))
+      scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * 1.18))
+      scaleY(calc(var(--nav-lift) * var(--nav-edge-lift)));
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.5),
       inset 0 -1px 0 rgba(46, 114, 223, 0.04),
