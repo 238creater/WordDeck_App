@@ -7538,25 +7538,25 @@ body.challenge-active .word-list-search input {
   }
 
   .app-bottom-nav.is-dragging .app-nav-indicator::before {
-    opacity: 0.58;
+    opacity: 0.74;
     transform:
       translateX(var(--nav-liquid-front-shift))
       scaleX(var(--nav-liquid-front-scale));
   }
 
   .app-bottom-nav.is-dragging .app-nav-indicator::after {
-    height: 1px;
-    opacity: 0.58;
-    box-shadow: 0 1px 8px rgba(92, 165, 255, 0.2);
-    transform: translateX(calc(var(--nav-liquid-direction) * 5px));
+    height: 2px;
+    opacity: 0.74;
+    box-shadow: 0 1px 10px rgba(92, 165, 255, 0.3);
+    transform: translateX(calc(var(--nav-liquid-direction) * 8px));
   }
 
   .app-bottom-nav.is-edge-hit .app-nav-indicator {
-    border-color: rgba(128, 181, 244, 0.56);
+    border-color: rgba(128, 181, 244, 0.7);
     box-shadow:
-      inset calc(var(--nav-edge-direction) * -9px) 0 14px rgba(255, 255, 255, 0.28),
-      inset calc(var(--nav-edge-direction) * 5px) 0 12px rgba(46, 114, 223, 0.08),
-      0 14px 28px rgba(46, 114, 223, 0.16);
+      inset calc(var(--nav-edge-direction) * -13px) 0 18px rgba(255, 255, 255, 0.38),
+      inset calc(var(--nav-edge-direction) * 8px) 0 16px rgba(46, 114, 223, 0.12),
+      0 16px 32px rgba(46, 114, 223, 0.19);
   }
 
   .app-nav-button .app-nav-icon,
@@ -7569,18 +7569,23 @@ body.challenge-active .word-list-search input {
   }
 
   .app-nav-button.is-glass-crossing .app-nav-icon {
-    color: color-mix(in srgb, var(--blue-strong) 72%, var(--muted));
-    transform: translateY(-1px) scale(1.035);
-    filter: brightness(1.08) saturate(1.08);
+    color: color-mix(in srgb, var(--blue-strong) 82%, var(--muted));
+    transform: translateY(-2px) scale(1.07);
+    filter: brightness(1.12) saturate(1.14);
   }
 
   .app-nav-button.is-glass-crossing strong {
-    color: color-mix(in srgb, var(--blue-strong) 58%, var(--muted));
+    color: color-mix(in srgb, var(--blue-strong) 72%, var(--muted));
+    transform: translateY(-1px);
   }
 
   .app-nav-button.is-glass-covered .app-nav-icon {
-    transform: translateY(-2px) scale(1.055);
-    filter: brightness(1.1) saturate(1.12) drop-shadow(0 3px 8px rgba(46, 114, 223, 0.14));
+    transform: translateY(-3px) scale(1.1);
+    filter: brightness(1.15) saturate(1.18) drop-shadow(0 4px 10px rgba(46, 114, 223, 0.2));
+  }
+
+  .app-nav-button.is-glass-covered strong {
+    transform: translateY(-1px);
   }
 
   .app-bottom-nav.is-settling .app-nav-indicator {

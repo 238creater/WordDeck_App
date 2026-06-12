@@ -864,14 +864,14 @@ function startAppNavFollower() {
     }
     const speed = Math.min(1, Math.abs(appNavFollowVelocity) / 11);
     const direction = appNavFollowVelocity < 0 ? -1 : 1;
-    const edgeCompression = appNavAtEdge ? 0.93 : 1;
+    const edgeCompression = appNavAtEdge ? 0.88 : 1;
     appBottomNav.style.setProperty("--nav-indicator-x", `${appNavCurrentX}px`);
-    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.13}`);
-    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.035}`);
+    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.22}`);
+    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.055}`);
     appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
-    appBottomNav.style.setProperty("--nav-liquid-offset", `${direction * speed * 2.5}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * speed * 4}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + speed * 0.055}`);
+    appBottomNav.style.setProperty("--nav-liquid-offset", `${direction * speed * 4.5}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * speed * 7}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + speed * 0.1}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", speed > 0.06 ? (direction > 0 ? "left center" : "right center") : "center");
     updateAppNavGlassOverlap(appNavCurrentX, appNavIndicatorWidth);
     if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08) {
