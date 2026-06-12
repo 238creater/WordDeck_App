@@ -350,6 +350,8 @@ let appNavIndicatorWidth = 0;
 let appNavFollowVelocity = 0;
 let appNavButtonMetrics = [];
 let appNavEdgePressure = 0;
+let appNavLiquidDirection = 1;
+let appNavVisualSpeed = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -791,6 +793,8 @@ function resetAppNavInteraction() {
   appNavFollowVelocity = 0;
   appNavButtonMetrics = [];
   appNavEdgePressure = 0;
+  appNavLiquidDirection = 1;
+  appNavVisualSpeed = 0;
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -832,7 +836,7 @@ function moveAppNavIndicatorToPoint(clientX) {
   const stretchPower = mobileNav ? 0.12 : 0.3;
   const stretch = Math.min(stretchLimit, Math.abs(edgePull) / Math.max(width, 1) * stretchPower);
   const verticalStretch = mobileNav ? 0 : Math.min(0.045, stretch * 0.42 + edgeRatio * 0.012);
-  const origin = edgePull < 0 ? "right center" : edgePull > 0 ? "left center" : "center";
+  const origin = mobileNav ? "center" : edgePull < 0 ? "right center" : edgePull > 0 ? "left center" : "center";
   appBottomNav.style.setProperty("--nav-indicator-width", `${width}px`);
   appBottomNav.style.setProperty("--nav-stretch", `${1 + stretch}`);
   appBottomNav.style.setProperty("--nav-edge-lift", `${1 + verticalStretch}`);
@@ -872,8 +876,14 @@ function startAppNavFollower() {
       appNavCurrentX = appNavTargetX;
       appNavFollowVelocity *= 0.5;
     }
-    const speed = Math.min(1, Math.abs(appNavFollowVelocity) / 11);
-    const direction = appNavFollowVelocity < 0 ? -1 : 1;
+    const rawSpeed = Math.min(1, Math.abs(appNavFollowVelocity) / 11);
+    const visualSpeedTarget = rawSpeed < 0.035 ? 0 : rawSpeed;
+    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * 0.28;
+    if (Math.abs(distance) > 0.8 && Math.abs(step) > 0.22) {
+      appNavLiquidDirection = distance < 0 ? -1 : 1;
+    }
+    const speed = appNavVisualSpeed;
+    const direction = appNavLiquidDirection;
     const edgeCompression = 1 - appNavEdgePressure * 0.12;
     appBottomNav.style.setProperty("--nav-indicator-x", `${appNavCurrentX}px`);
     appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.22}`);
@@ -882,9 +892,9 @@ function startAppNavFollower() {
     appBottomNav.style.setProperty("--nav-liquid-offset", `${direction * speed * 4.5}px`);
     appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * speed * 7}px`);
     appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + speed * 0.1}`);
-    appBottomNav.style.setProperty("--nav-stretch-origin", speed > 0.06 ? (direction > 0 ? "left center" : "right center") : "center");
+    appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(appNavCurrentX, appNavIndicatorWidth);
-    if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08) {
+    if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
       appNavFollowFrame = requestAnimationFrame(follow);
       return;
     }
@@ -938,6 +948,7 @@ function beginAppNavDrag(clientX) {
   appNavTargetX = null;
   appNavFollowVelocity = 0;
   appNavEdgePressure = 0;
+  appNavVisualSpeed = 0;
   const navRect = appBottomNav.getBoundingClientRect();
   appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
     const rect = button.getBoundingClientRect();
