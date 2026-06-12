@@ -349,6 +349,7 @@ let appNavTargetX = null;
 let appNavIndicatorWidth = 0;
 let appNavFollowVelocity = 0;
 let appNavButtonMetrics = [];
+let appNavEdgePressure = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -789,6 +790,7 @@ function resetAppNavInteraction() {
   appNavTargetX = null;
   appNavFollowVelocity = 0;
   appNavButtonMetrics = [];
+  appNavEdgePressure = 0;
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -803,6 +805,9 @@ function resetAppNavInteraction() {
   appBottomNav?.style.setProperty("--nav-liquid-offset", "0px");
   appBottomNav?.style.setProperty("--nav-liquid-front-shift", "0px");
   appBottomNav?.style.setProperty("--nav-liquid-front-scale", "1");
+  appBottomNav?.style.setProperty("--nav-edge-pressure", "0");
+  appBottomNav?.style.setProperty("--nav-edge-light-x", "0px");
+  appBottomNav?.style.setProperty("--nav-edge-shade-x", "0px");
   appBottomNav?.classList.remove("is-edge-hit");
   clearAppNavGlassOverlap();
   if (!isAppNavInteractionBlocked()) updateAppBottomNav();
@@ -833,11 +838,16 @@ function moveAppNavIndicatorToPoint(clientX) {
   appBottomNav.style.setProperty("--nav-edge-lift", `${1 + verticalStretch}`);
   appBottomNav.style.setProperty("--nav-stretch-origin", origin);
   if (mobileNav) {
+    appNavEdgePressure = edgeRatio;
     appNavIndicatorWidth = width;
     appNavTargetX = x;
     if (appNavCurrentX === null) appNavCurrentX = x;
-    appBottomNav.classList.toggle("is-edge-hit", appNavAtEdge);
-    appBottomNav.style.setProperty("--nav-edge-direction", edgePull < 0 ? "-1" : edgePull > 0 ? "1" : "0");
+    appBottomNav.classList.toggle("is-edge-hit", edgeRatio > 0.02);
+    appBottomNav.style.setProperty("--nav-edge-pressure", edgeRatio.toFixed(3));
+    const edgeDirection = edgePull < 0 ? -1 : edgePull > 0 ? 1 : 0;
+    appBottomNav.style.setProperty("--nav-edge-direction", `${edgeDirection}`);
+    appBottomNav.style.setProperty("--nav-edge-light-x", `${edgeDirection * edgeRatio * -13}px`);
+    appBottomNav.style.setProperty("--nav-edge-shade-x", `${edgeDirection * edgeRatio * 8}px`);
     startAppNavFollower();
   } else {
     appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
@@ -864,7 +874,7 @@ function startAppNavFollower() {
     }
     const speed = Math.min(1, Math.abs(appNavFollowVelocity) / 11);
     const direction = appNavFollowVelocity < 0 ? -1 : 1;
-    const edgeCompression = appNavAtEdge ? 0.88 : 1;
+    const edgeCompression = 1 - appNavEdgePressure * 0.12;
     appBottomNav.style.setProperty("--nav-indicator-x", `${appNavCurrentX}px`);
     appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.22}`);
     appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.055}`);
@@ -891,15 +901,26 @@ function updateAppNavGlassOverlap(indicatorX, indicatorWidth) {
     const overlap = Math.max(0, Math.min(right, indicatorRight) - Math.max(left, indicatorLeft));
     const ratio = Math.min(1, overlap / Math.max(width, 1));
     button.style.setProperty("--nav-glass-overlap", ratio.toFixed(3));
-    button.classList.toggle("is-glass-crossing", ratio > 0.12 && ratio < 0.72);
-    button.classList.toggle("is-glass-covered", ratio >= 0.72);
+    button.style.setProperty("--nav-glass-icon-weight", `${ratio * 82}%`);
+    button.style.setProperty("--nav-glass-label-weight", `${ratio * 70}%`);
+    button.style.setProperty("--nav-glass-icon-lift", `${ratio * -2.5}px`);
+    button.style.setProperty("--nav-glass-label-lift", `${ratio * -1}px`);
+    button.style.setProperty("--nav-glass-icon-scale", `${1 + ratio * 0.085}`);
+    button.style.setProperty("--nav-glass-brightness", `${1 + ratio * 0.13}`);
+    button.style.setProperty("--nav-glass-saturation", `${1 + ratio * 0.16}`);
   });
 }
 
 function clearAppNavGlassOverlap() {
   appBottomNav?.querySelectorAll("[data-nav-screen]").forEach((button) => {
     button.style.removeProperty("--nav-glass-overlap");
-    button.classList.remove("is-glass-crossing", "is-glass-covered");
+    button.style.removeProperty("--nav-glass-icon-weight");
+    button.style.removeProperty("--nav-glass-label-weight");
+    button.style.removeProperty("--nav-glass-icon-lift");
+    button.style.removeProperty("--nav-glass-label-lift");
+    button.style.removeProperty("--nav-glass-icon-scale");
+    button.style.removeProperty("--nav-glass-brightness");
+    button.style.removeProperty("--nav-glass-saturation");
   });
 }
 
@@ -916,6 +937,7 @@ function beginAppNavDrag(clientX) {
   appNavCurrentX = null;
   appNavTargetX = null;
   appNavFollowVelocity = 0;
+  appNavEdgePressure = 0;
   const navRect = appBottomNav.getBoundingClientRect();
   appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
     const rect = button.getBoundingClientRect();
@@ -989,6 +1011,9 @@ function settleAppNavDrag() {
   window.clearTimeout(appNavBounceResetTimer);
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.remove("is-edge-hit");
+  appBottomNav.style.setProperty("--nav-edge-pressure", "0");
+  appBottomNav.style.setProperty("--nav-edge-light-x", "0px");
+  appBottomNav.style.setProperty("--nav-edge-shade-x", "0px");
   appBottomNav.classList.add("is-settling");
   const mobileNav = isMobileAppNav();
   appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.035" : "1.065");

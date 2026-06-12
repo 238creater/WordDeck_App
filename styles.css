@@ -3368,6 +3368,9 @@ body.challenge-active .continue-panel {
   --nav-liquid-front-shift: 0px;
   --nav-liquid-front-scale: 1;
   --nav-edge-direction: 0;
+  --nav-edge-pressure: 0;
+  --nav-edge-light-x: 0px;
+  --nav-edge-shade-x: 0px;
   --nav-stretch-origin: center;
   position: fixed;
   left: 50%;
@@ -7552,40 +7555,46 @@ body.challenge-active .word-list-search input {
   }
 
   .app-bottom-nav.is-edge-hit .app-nav-indicator {
-    border-color: rgba(128, 181, 244, 0.7);
+    border-color: rgba(128, 181, 244, 0.58);
     box-shadow:
-      inset calc(var(--nav-edge-direction) * -13px) 0 18px rgba(255, 255, 255, 0.38),
-      inset calc(var(--nav-edge-direction) * 8px) 0 16px rgba(46, 114, 223, 0.12),
-      0 16px 32px rgba(46, 114, 223, 0.19);
+      inset var(--nav-edge-light-x) 0 18px rgba(255, 255, 255, 0.34),
+      inset var(--nav-edge-shade-x) 0 16px rgba(46, 114, 223, 0.1),
+      0 16px 32px rgba(46, 114, 223, 0.17);
+  }
+
+  .app-nav-button {
+    --nav-glass-overlap: 0;
+    --nav-glass-icon-weight: 0%;
+    --nav-glass-label-weight: 0%;
+    --nav-glass-icon-lift: 0px;
+    --nav-glass-label-lift: 0px;
+    --nav-glass-icon-scale: 1;
+    --nav-glass-brightness: 1;
+    --nav-glass-saturation: 1;
   }
 
   .app-nav-button .app-nav-icon,
   .app-nav-button strong {
     transition:
-      color 100ms ease-out,
-      transform 120ms cubic-bezier(0.2, 0.8, 0.25, 1),
-      filter 120ms ease-out,
-      opacity 100ms ease-out;
+      color 80ms linear,
+      transform 70ms linear,
+      filter 70ms linear,
+      opacity 80ms linear;
   }
 
-  .app-nav-button.is-glass-crossing .app-nav-icon {
-    color: color-mix(in srgb, var(--blue-strong) 82%, var(--muted));
-    transform: translateY(-2px) scale(1.07);
-    filter: brightness(1.12) saturate(1.14);
+  .app-bottom-nav.is-dragging .app-nav-button .app-nav-icon {
+    color: color-mix(in srgb, var(--blue-strong) var(--nav-glass-icon-weight), var(--muted));
+    transform:
+      translateY(var(--nav-glass-icon-lift))
+      scale(var(--nav-glass-icon-scale));
+    filter:
+      brightness(var(--nav-glass-brightness))
+      saturate(var(--nav-glass-saturation));
   }
 
-  .app-nav-button.is-glass-crossing strong {
-    color: color-mix(in srgb, var(--blue-strong) 72%, var(--muted));
-    transform: translateY(-1px);
-  }
-
-  .app-nav-button.is-glass-covered .app-nav-icon {
-    transform: translateY(-3px) scale(1.1);
-    filter: brightness(1.15) saturate(1.18) drop-shadow(0 4px 10px rgba(46, 114, 223, 0.2));
-  }
-
-  .app-nav-button.is-glass-covered strong {
-    transform: translateY(-1px);
+  .app-bottom-nav.is-dragging .app-nav-button strong {
+    color: color-mix(in srgb, var(--blue-strong) var(--nav-glass-label-weight), var(--muted));
+    transform: translateY(var(--nav-glass-label-lift));
   }
 
   .app-bottom-nav.is-settling .app-nav-indicator {
@@ -7604,9 +7613,9 @@ body.challenge-active .word-list-search input {
       0 0 14px rgba(230, 178, 136, 0.1);
   }
 
-  body.challenge-active .app-nav-button.is-glass-crossing .app-nav-icon,
-  body.challenge-active .app-nav-button.is-glass-crossing strong {
-    color: #7b432d;
+  body.challenge-active .app-bottom-nav.is-dragging .app-nav-button .app-nav-icon,
+  body.challenge-active .app-bottom-nav.is-dragging .app-nav-button strong {
+    color: color-mix(in srgb, #7b432d var(--nav-glass-icon-weight), var(--muted));
   }
 
   @media (prefers-reduced-motion: reduce) {
