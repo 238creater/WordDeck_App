@@ -3399,8 +3399,10 @@ body.app-nav-active .app-shell {
 }
 
 body.dialog-open .app-bottom-nav,
+body.word-detail-open .app-bottom-nav,
 body.study-active .app-bottom-nav {
   display: none;
+  pointer-events: none;
 }
 
 .app-nav-indicator {

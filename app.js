@@ -689,7 +689,11 @@ function getNearestAppNavButton(clientX) {
 
 function getAppNavTouchButton(clientX, clientY) {
   if (!appBottomNav || !document.body.classList.contains("app-nav-active")) return null;
-  if (document.body.classList.contains("dialog-open") || document.body.classList.contains("study-active")) return null;
+  if (
+    document.body.classList.contains("dialog-open")
+    || document.body.classList.contains("word-detail-open")
+    || document.body.classList.contains("study-active")
+  ) return null;
   if (document.body.classList.contains("word-list-selecting-active")) return null;
   const rect = appBottomNav.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return null;
