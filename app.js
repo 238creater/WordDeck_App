@@ -2033,7 +2033,9 @@ function renderWordSearchResults() {
   grid.className = "word-card-grid word-card-grid-search";
   matchedWords
     .slice()
-    .sort((a, b) => a.lesson.localeCompare(b.lesson, "ja", { numeric: true }) || a.english.localeCompare(b.english, "en", { numeric: true }))
+    .sort((a, b) => getItemSearchScore(a, normalizedQuery, deck) - getItemSearchScore(b, normalizedQuery, deck)
+      || a.lesson.localeCompare(b.lesson, "ja", { numeric: true })
+      || a.english.localeCompare(b.english, "en", { numeric: true }))
     .forEach((word) => {
       grid.appendChild(createWordCard(word, deck.id, true));
     });
@@ -2081,6 +2083,7 @@ function resetWordListTransientState() {
 function renderWordSearchFilters(deck = getSelectedDeck()) {
   if (!deck) return;
   const stages = getSearchStageOptions(deck.words);
+  reconcileWordSearchPartFilters(deck.words);
   const parts = getSearchPartOptions(deck.words);
   wordSearchFilters.innerHTML = `
     <section class="word-search-filter-group">
@@ -2105,15 +2108,32 @@ function renderSearchFilterButton(type, value, label, selected) {
 }
 
 function matchesItemSearch(word, normalizedQuery, deck = getSelectedDeck()) {
+  return Number.isFinite(getItemSearchScore(word, normalizedQuery, deck));
+}
+
+function getItemSearchScore(word, normalizedQuery, deck = getSelectedDeck()) {
   const english = normalizeSearchText(word.english);
-  const japanese = normalizeSearchText(formatJapanese(word));
-  if (isClozeDeck(deck)) {
-    const answer = normalizeSearchText(word.answer);
-    return english.includes(normalizedQuery)
-      || japanese.includes(normalizedQuery)
-      || answer.includes(normalizedQuery);
+  const japaneseItems = word.japanese.map((value) => normalizeSearchText(value));
+  const scores = [];
+  const searchJapanese = isJapaneseSearchQuery(normalizedQuery);
+
+  if (!searchJapanese) {
+    if (english === normalizedQuery) scores.push(0);
+    else if (english.startsWith(normalizedQuery)) scores.push(1);
+    return scores.length > 0 ? Math.min(...scores) : Number.POSITIVE_INFINITY;
   }
-  return english.startsWith(normalizedQuery) || japanese.includes(normalizedQuery);
+
+  japaneseItems.forEach((japanese) => {
+    if (japanese === normalizedQuery) scores.push(0);
+    else if (japanese.startsWith(normalizedQuery)) scores.push(1);
+    else if (japanese.includes(normalizedQuery)) scores.push(3);
+  });
+
+  return scores.length > 0 ? Math.min(...scores) : Number.POSITIVE_INFINITY;
+}
+
+function isJapaneseSearchQuery(value) {
+  return /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(value);
 }
 
 function getWordSearchScrollState() {
@@ -2143,6 +2163,7 @@ function toggleWordSearchFilter(type, value) {
 
   if (value === "all") {
     targetSet.clear();
+    if (type === "stage") reconcileWordSearchPartFilters(deck.words);
     return;
   }
 
@@ -2155,6 +2176,8 @@ function toggleWordSearchFilter(type, value) {
   if (targetSet.size >= allOptions.length) {
     targetSet.clear();
   }
+
+  if (type === "stage") reconcileWordSearchPartFilters(deck.words);
 }
 
 function resetWordSearchFilters() {
@@ -2193,13 +2216,23 @@ function getSearchStageOptions(words) {
 }
 
 function getSearchPartOptions(words) {
-  return [...new Set(words.map((word) => getWordRangeMeta(word).child))]
+  const scopedWords = wordSearchStageFilters.size === 0
+    ? words
+    : words.filter((word) => wordSearchStageFilters.has(getWordRangeMeta(word).parent));
+  return [...new Set(scopedWords.map((word) => getWordRangeMeta(word).child))]
     .sort((a, b) => {
       const aIndex = getPartOrderIndex(a);
       const bIndex = getPartOrderIndex(b);
       if (aIndex !== bIndex) return aIndex - bIndex;
       return a.localeCompare(b, "ja", { numeric: true });
     });
+}
+
+function reconcileWordSearchPartFilters(words) {
+  const availableParts = new Set(getSearchPartOptions(words));
+  wordSearchPartFilters.forEach((part) => {
+    if (!availableParts.has(part)) wordSearchPartFilters.delete(part);
+  });
 }
 
 function getWordRangeMeta(word) {
