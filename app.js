@@ -392,6 +392,7 @@ openRangeDialogButton.addEventListener("click", () => {
   openRangeDialog();
 });
 appBottomNav.addEventListener("click", (event) => {
+  if (isAppNavInteractionBlocked()) return;
   if (suppressNextAppNavClick) {
     suppressNextAppNavClick = false;
     return;
@@ -401,6 +402,7 @@ appBottomNav.addEventListener("click", (event) => {
   navigateAppSection(button.dataset.navScreen);
 });
 appBottomNav.addEventListener("pointerdown", (event) => {
+  if (isAppNavInteractionBlocked()) return;
   if (Date.now() < appNavIgnorePointerUntil) return;
   const button = event.target.closest("[data-nav-screen]");
   if (!button) return;
@@ -412,12 +414,17 @@ appBottomNav.addEventListener("pointerdown", (event) => {
   moveAppNavIndicatorToPoint(event.clientX);
 });
 appBottomNav.addEventListener("pointermove", (event) => {
+  if (isAppNavInteractionBlocked()) return;
   if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
   updateAppNavDragMotion(event.clientX);
   moveAppNavIndicatorToPoint(event.clientX);
 });
 appBottomNav.addEventListener("pointerup", (event) => {
+  if (isAppNavInteractionBlocked()) {
+    resetAppNavInteraction();
+    return;
+  }
   if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
   appNavPointerActive = false;
@@ -649,6 +656,7 @@ function showScreen(name) {
 }
 
 function navigateAppSection(name) {
+  if (isAppNavInteractionBlocked()) return;
   if (!isAppNavScreen(name)) return;
   const deck = getSelectedDeck();
   if (!deck) {
@@ -689,12 +697,7 @@ function getNearestAppNavButton(clientX) {
 
 function getAppNavTouchButton(clientX, clientY) {
   if (!appBottomNav || !document.body.classList.contains("app-nav-active")) return null;
-  if (
-    document.body.classList.contains("dialog-open")
-    || document.body.classList.contains("word-detail-open")
-    || document.body.classList.contains("study-active")
-  ) return null;
-  if (document.body.classList.contains("word-list-selecting-active")) return null;
+  if (isAppNavInteractionBlocked()) return null;
   const rect = appBottomNav.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return null;
   const hitSlop = 16;
@@ -721,6 +724,10 @@ function handleAppNavTouchStart(event) {
 
 function handleAppNavTouchMove(event) {
   if (!appNavTouchFallbackActive) return;
+  if (isAppNavInteractionBlocked()) {
+    resetAppNavInteraction();
+    return;
+  }
   const touch = event.touches[0];
   if (!touch) return;
   event.preventDefault();
@@ -735,7 +742,7 @@ function handleAppNavTouchEnd(event) {
   event.stopPropagation();
   appNavTouchFallbackActive = false;
   const touch = event.changedTouches[0];
-  const button = touch ? getAppNavTouchButton(touch.clientX, touch.clientY) || getNearestAppNavButton(touch.clientX) : null;
+  const button = touch ? getAppNavTouchButton(touch.clientX, touch.clientY) : null;
   if (button) {
     suppressNextAppNavClick = true;
     navigateAppSection(button.dataset.navScreen);
@@ -750,6 +757,30 @@ function handleAppNavTouchCancel() {
   appNavTouchFallbackActive = false;
   settleAppNavDrag();
   updateAppBottomNav();
+}
+
+function isAppNavInteractionBlocked() {
+  return document.body.classList.contains("dialog-open")
+    || document.body.classList.contains("word-detail-open")
+    || document.body.classList.contains("study-active")
+    || document.body.classList.contains("word-list-selecting-active");
+}
+
+function resetAppNavInteraction() {
+  window.clearTimeout(appNavSettleTimer);
+  window.clearTimeout(appNavWobbleTimer);
+  window.clearTimeout(appNavBounceTimer);
+  window.clearTimeout(appNavBounceResetTimer);
+  appNavPointerActive = false;
+  appNavTouchFallbackActive = false;
+  appNavAtEdge = false;
+  suppressNextAppNavClick = false;
+  appBottomNav?.classList.remove("is-dragging", "is-settling");
+  appBottomNav?.style.setProperty("--nav-lift", "1");
+  appBottomNav?.style.setProperty("--nav-stretch", "1");
+  appBottomNav?.style.setProperty("--nav-edge-lift", "1");
+  appBottomNav?.style.setProperty("--nav-wobble", "1");
+  if (!isAppNavInteractionBlocked()) updateAppBottomNav();
 }
 
 function moveAppNavIndicatorToPoint(clientX) {
@@ -2372,8 +2403,11 @@ function openWordDetail(key) {
   const word = deck.words.find((item) => getWordKey(item) === key);
   if (!word) return;
   renderWordDetail(deck, word);
-  wordDetailPanel.classList.remove("is-hidden");
   document.body.classList.add("word-detail-open");
+  appBottomNav.inert = true;
+  appBottomNav.setAttribute("aria-hidden", "true");
+  resetAppNavInteraction();
+  wordDetailPanel.classList.remove("is-hidden");
 }
 
 function closeWordDetailPanel() {
@@ -2381,6 +2415,9 @@ function closeWordDetailPanel() {
   wordDetailPanel.classList.add("is-hidden");
   wordDetailBookmarkButton.dataset.bookmarkKey = "";
   document.body.classList.remove("word-detail-open");
+  appBottomNav.inert = false;
+  appBottomNav.removeAttribute("aria-hidden");
+  updateAppBottomNav();
 }
 
 function preventWordDetailBackgroundScroll(event) {
