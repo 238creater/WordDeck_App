@@ -348,6 +348,7 @@ let appNavCurrentX = null;
 let appNavTargetX = null;
 let appNavIndicatorWidth = 0;
 let appNavFollowVelocity = 0;
+let appNavButtonMetrics = [];
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -787,6 +788,7 @@ function resetAppNavInteraction() {
   appNavCurrentX = null;
   appNavTargetX = null;
   appNavFollowVelocity = 0;
+  appNavButtonMetrics = [];
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -849,7 +851,7 @@ function startAppNavFollower() {
       return;
     }
     const distance = appNavTargetX - appNavCurrentX;
-    const followRate = reduceMotion ? 1 : Math.abs(distance) > 30 ? 0.24 : 0.38;
+    const followRate = reduceMotion ? 1 : Math.abs(distance) > 36 ? 0.68 : 0.78;
     const step = distance * followRate;
     appNavCurrentX += step;
     appNavFollowVelocity = appNavFollowVelocity * 0.62 + step * 0.38;
@@ -875,15 +877,11 @@ function startAppNavFollower() {
 
 function updateAppNavGlassOverlap(indicatorX, indicatorWidth) {
   if (!appBottomNav || !indicatorWidth) return;
-  const navRect = appBottomNav.getBoundingClientRect();
   const indicatorLeft = indicatorX;
   const indicatorRight = indicatorX + indicatorWidth;
-  appBottomNav.querySelectorAll("[data-nav-screen]").forEach((button) => {
-    const rect = button.getBoundingClientRect();
-    const left = rect.left - navRect.left;
-    const right = rect.right - navRect.left;
+  appNavButtonMetrics.forEach(({ button, left, right, width }) => {
     const overlap = Math.max(0, Math.min(right, indicatorRight) - Math.max(left, indicatorLeft));
-    const ratio = Math.min(1, overlap / Math.max(rect.width, 1));
+    const ratio = Math.min(1, overlap / Math.max(width, 1));
     button.style.setProperty("--nav-glass-overlap", ratio.toFixed(3));
     button.classList.toggle("is-glass-crossing", ratio > 0.12 && ratio < 0.72);
     button.classList.toggle("is-glass-covered", ratio >= 0.72);
@@ -902,12 +900,24 @@ function beginAppNavDrag(clientX) {
   window.clearTimeout(appNavWobbleTimer);
   window.clearTimeout(appNavBounceTimer);
   window.clearTimeout(appNavBounceResetTimer);
+  cancelAnimationFrame(appNavFollowFrame);
+  appNavFollowFrame = null;
   appNavLastClientX = clientX;
   appNavLastMoveAt = performance.now();
   appNavAtEdge = false;
   appNavCurrentX = null;
   appNavTargetX = null;
   appNavFollowVelocity = 0;
+  const navRect = appBottomNav.getBoundingClientRect();
+  appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
+    const rect = button.getBoundingClientRect();
+    return {
+      button,
+      left: rect.left - navRect.left,
+      right: rect.right - navRect.left,
+      width: rect.width,
+    };
+  });
   appBottomNav.classList.remove("is-settling");
   appBottomNav.classList.add("is-dragging");
   appBottomNav.style.setProperty("--nav-lift", "1.08");
