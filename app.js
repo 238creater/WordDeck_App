@@ -800,7 +800,7 @@ function resetAppNavInteraction() {
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
   suppressNextAppNavClick = false;
-  appBottomNav?.classList.remove("is-dragging", "is-settling", "is-vertical-pull");
+  appBottomNav?.classList.remove("is-dragging", "is-settling");
   appBottomNav?.style.setProperty("--nav-lift", "1");
   appBottomNav?.style.setProperty("--nav-stretch", "1");
   appBottomNav?.style.setProperty("--nav-edge-lift", "1");
@@ -813,12 +813,6 @@ function resetAppNavInteraction() {
   appBottomNav?.style.setProperty("--nav-edge-pressure", "0");
   appBottomNav?.style.setProperty("--nav-edge-light-x", "0px");
   appBottomNav?.style.setProperty("--nav-edge-shade-x", "0px");
-  appBottomNav?.style.setProperty("--nav-edge-light-y", "0px");
-  appBottomNav?.style.setProperty("--nav-edge-shade-y", "0px");
-  appBottomNav?.style.setProperty("--nav-vertical-stretch", "1");
-  appBottomNav?.style.setProperty("--nav-vertical-origin", "center");
-  appBottomNav?.style.setProperty("--nav-bar-bulge-stretch", "1");
-  appBottomNav?.style.setProperty("--nav-bar-bulge-origin", "center");
   appBottomNav?.classList.remove("is-edge-hit");
   clearAppNavGlassOverlap();
   if (!isAppNavInteractionBlocked()) updateAppBottomNav();
@@ -839,13 +833,7 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
   const x = Math.min(maxX, Math.max(minX, rawX));
   const edgePull = rawX - x;
   const edgeRatio = Math.min(1, Math.abs(edgePull) / Math.max(width * 0.55, 1));
-  const navCenterY = navRect.top + navRect.height / 2;
-  const verticalDistance = clientY === null ? 0 : clientY - navCenterY;
-  const verticalDeadZone = navRect.height * 0.2;
-  const verticalRatio = Math.min(1, Math.max(0, Math.abs(verticalDistance) - verticalDeadZone) / Math.max(navRect.height * 0.38, 1));
-  const verticalDirection = verticalDistance < 0 ? -1 : verticalDistance > 0 ? 1 : 0;
-  const combinedEdgeRatio = Math.max(edgeRatio, verticalRatio);
-  appNavAtEdge = combinedEdgeRatio > 0.02;
+  appNavAtEdge = edgeRatio > 0.02;
   const stretchLimit = mobileNav ? 0.025 : 0.085;
   const stretchPower = mobileNav ? 0.12 : 0.3;
   const stretch = Math.min(stretchLimit, Math.abs(edgePull) / Math.max(width, 1) * stretchPower);
@@ -862,24 +850,12 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
     appNavIndicatorWidth = width;
     appNavTargetX = x;
     if (appNavCurrentX === null) appNavCurrentX = x;
-    appBottomNav.classList.toggle("is-edge-hit", combinedEdgeRatio > 0.02);
-    appBottomNav.style.setProperty("--nav-edge-pressure", combinedEdgeRatio.toFixed(3));
+    appBottomNav.classList.toggle("is-edge-hit", edgeRatio > 0.02);
+    appBottomNav.style.setProperty("--nav-edge-pressure", edgeRatio.toFixed(3));
     const edgeDirection = edgePull < 0 ? -1 : edgePull > 0 ? 1 : 0;
     appBottomNav.style.setProperty("--nav-edge-direction", `${edgeDirection}`);
     appBottomNav.style.setProperty("--nav-edge-light-x", `${edgeDirection * edgeRatio * -13}px`);
     appBottomNav.style.setProperty("--nav-edge-shade-x", `${edgeDirection * edgeRatio * 8}px`);
-    appBottomNav.style.setProperty("--nav-edge-light-y", `${verticalDirection * verticalRatio * -11}px`);
-    appBottomNav.style.setProperty("--nav-edge-shade-y", `${verticalDirection * verticalRatio * 7}px`);
-    appBottomNav.style.setProperty("--nav-vertical-stretch", "1");
-    appBottomNav.style.setProperty("--nav-vertical-origin", "center");
-    appBottomNav.classList.toggle("is-vertical-pull", verticalRatio > 0.02);
-    appBottomNav.style.setProperty("--nav-bar-bulge-x", `${x - width * 0.08}px`);
-    appBottomNav.style.setProperty("--nav-bar-bulge-width", `${width * 1.16}px`);
-    appBottomNav.style.setProperty("--nav-bar-bulge-stretch", `${1 + verticalRatio * 0.11}`);
-    appBottomNav.style.setProperty(
-      "--nav-bar-bulge-origin",
-      verticalDirection < 0 ? "center bottom" : verticalDirection > 0 ? "center top" : "center"
-    );
     startAppNavFollower();
   } else {
     appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
@@ -1064,16 +1040,9 @@ function settleAppNavDrag() {
   window.clearTimeout(appNavBounceResetTimer);
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.remove("is-edge-hit");
-  appBottomNav.classList.remove("is-vertical-pull");
   appBottomNav.style.setProperty("--nav-edge-pressure", "0");
   appBottomNav.style.setProperty("--nav-edge-light-x", "0px");
   appBottomNav.style.setProperty("--nav-edge-shade-x", "0px");
-  appBottomNav.style.setProperty("--nav-edge-light-y", "0px");
-  appBottomNav.style.setProperty("--nav-edge-shade-y", "0px");
-  appBottomNav.style.setProperty("--nav-vertical-stretch", "1");
-  appBottomNav.style.setProperty("--nav-vertical-origin", "center");
-  appBottomNav.style.setProperty("--nav-bar-bulge-stretch", "1");
-  appBottomNav.style.setProperty("--nav-bar-bulge-origin", "center");
   appBottomNav.classList.add("is-settling");
   const mobileNav = isMobileAppNav();
   appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.012" : "1.065");
