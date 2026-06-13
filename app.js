@@ -825,7 +825,7 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
   const navRect = appBottomNav.getBoundingClientRect();
   const buttonRect = button?.getBoundingClientRect();
   const buttonWidth = buttonRect?.width || Number.parseFloat(getComputedStyle(appBottomNav).getPropertyValue("--nav-indicator-width")) || 0;
-  const width = mobileNav ? buttonWidth * 1.06 : buttonWidth;
+  const width = mobileNav ? buttonWidth * 1.16 : buttonWidth;
   const rawX = clientX - navRect.left - width / 2;
   const overflowLimit = 6;
   const minX = -overflowLimit;
@@ -1081,13 +1081,18 @@ function positionAppNavIndicator(button) {
   if (!appBottomNav || !button) return;
   const navRect = appBottomNav.getBoundingClientRect();
   const rect = button.getBoundingClientRect();
+  const mobileNav = isMobileAppNav();
+  const width = mobileNav ? rect.width * 1.16 : rect.width;
+  const centeredX = rect.left - navRect.left - (width - rect.width) / 2;
+  const overflowLimit = mobileNav ? 6 : 0;
+  const x = Math.min(navRect.width - width + overflowLimit, Math.max(-overflowLimit, centeredX));
   cancelAnimationFrame(appNavFollowFrame);
   appNavFollowFrame = null;
-  appNavCurrentX = rect.left - navRect.left;
+  appNavCurrentX = x;
   appNavTargetX = appNavCurrentX;
-  appNavIndicatorWidth = rect.width;
-  appBottomNav.style.setProperty("--nav-indicator-x", `${rect.left - navRect.left}px`);
-  appBottomNav.style.setProperty("--nav-indicator-width", `${rect.width}px`);
+  appNavIndicatorWidth = width;
+  appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
+  appBottomNav.style.setProperty("--nav-indicator-width", `${width}px`);
 }
 
 function scheduleFloatingStartUpdate() {
