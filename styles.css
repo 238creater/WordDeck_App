@@ -3366,10 +3366,8 @@ body.challenge-active .continue-panel {
   --nav-liquid-direction: 1;
   --nav-liquid-offset: 0px;
   --nav-liquid-front-shift: 0px;
-  --nav-liquid-front-shift-y: 0px;
   --nav-liquid-front-scale: 1;
-  --nav-liquid-angle: 0deg;
-  --nav-liquid-angle-inverse: 0deg;
+  --nav-slide-vertical-stretch: 1;
   --nav-edge-direction: 0;
   --nav-edge-pressure: 0;
   --nav-edge-light-x: 0px;
@@ -7527,11 +7525,8 @@ body.challenge-active .word-list-search input {
     border-radius: 999px;
     transform:
       translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), 0, 0)
-      rotate(var(--nav-liquid-angle))
-      scaleX(var(--nav-liquid-stretch))
-      rotate(var(--nav-liquid-angle-inverse))
-      scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * 1.08))
-      scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash) * var(--nav-vertical-stretch)));
+      scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * var(--nav-liquid-stretch) * 1.08))
+      scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash) * var(--nav-vertical-stretch) * var(--nav-slide-vertical-stretch)));
     transform-origin: var(--nav-vertical-origin);
     will-change: transform;
     -webkit-backdrop-filter: blur(14px) saturate(1.38) contrast(1.02);
@@ -7554,7 +7549,7 @@ body.challenge-active .word-list-search input {
   .app-bottom-nav.is-dragging .app-nav-indicator::before {
     opacity: 0.74;
     transform:
-      translate(var(--nav-liquid-front-shift), var(--nav-liquid-front-shift-y))
+      translateX(var(--nav-liquid-front-shift))
       scaleX(var(--nav-liquid-front-scale));
   }
 
@@ -7562,10 +7557,7 @@ body.challenge-active .word-list-search input {
     height: 2px;
     opacity: 0.74;
     box-shadow: 0 1px 10px rgba(92, 165, 255, 0.3);
-    transform:
-      rotate(var(--nav-liquid-angle))
-      translateX(8px)
-      rotate(var(--nav-liquid-angle-inverse));
+    transform: translateX(calc(var(--nav-liquid-direction) * 8px));
   }
 
   .app-bottom-nav.is-edge-hit .app-nav-indicator {
