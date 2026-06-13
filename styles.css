@@ -3371,6 +3371,9 @@ body.challenge-active .continue-panel {
   --nav-edge-pressure: 0;
   --nav-edge-light-x: 0px;
   --nav-edge-shade-x: 0px;
+  --nav-edge-light-y: 0px;
+  --nav-edge-shade-y: 0px;
+  --nav-vertical-offset: 0px;
   --nav-stretch-origin: center;
   position: fixed;
   left: 50%;
@@ -7519,7 +7522,7 @@ body.challenge-active .word-list-search input {
     bottom: -3px;
     border-radius: 999px;
     transform:
-      translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), 0, 0)
+      translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), var(--nav-vertical-offset), 0)
       scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * var(--nav-liquid-stretch) * 1.08))
       scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash)));
     will-change: transform;
@@ -7557,8 +7560,8 @@ body.challenge-active .word-list-search input {
   .app-bottom-nav.is-edge-hit .app-nav-indicator {
     border-color: rgba(128, 181, 244, 0.58);
     box-shadow:
-      inset var(--nav-edge-light-x) 0 18px rgba(255, 255, 255, 0.34),
-      inset var(--nav-edge-shade-x) 0 16px rgba(46, 114, 223, 0.1),
+      inset var(--nav-edge-light-x) var(--nav-edge-light-y) 18px rgba(255, 255, 255, 0.34),
+      inset var(--nav-edge-shade-x) var(--nav-edge-shade-y) 16px rgba(46, 114, 223, 0.1),
       0 16px 32px rgba(46, 114, 223, 0.17);
   }
 
