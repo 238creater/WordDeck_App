@@ -7490,7 +7490,7 @@ body.challenge-active .word-list-search input {
   .app-bottom-nav {
     gap: 0;
     width: calc(100% - 24px);
-    padding: 5px;
+    padding: 8px;
     border-color: rgba(150, 175, 198, 0.5);
     border-radius: 999px;
     background:
@@ -7505,8 +7505,8 @@ body.challenge-active .word-list-search input {
   }
 
   .app-nav-indicator {
-    top: 5px;
-    bottom: 5px;
+    top: 9px;
+    bottom: 9px;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.62),
       inset 0 -1px 0 rgba(46, 114, 223, 0.04),
@@ -7579,8 +7579,8 @@ body.challenge-active .word-list-search input {
     --nav-glass-icon-scale: 1;
     --nav-glass-brightness: 1;
     --nav-glass-saturation: 1;
-    min-height: 50px;
-    padding: 5px 3px 4px;
+    min-height: 56px;
+    padding: 7px 6px 6px;
     border-radius: 999px;
   }
 
