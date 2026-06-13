@@ -7494,8 +7494,10 @@ body.challenge-active .word-list-search input {
     border-color: rgba(150, 175, 198, 0.5);
     border-radius: 999px;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(232, 242, 251, 0.68)),
-      rgba(247, 251, 255, 0.76);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(232, 242, 251, 0.5)),
+      rgba(247, 251, 255, 0.56);
+    -webkit-backdrop-filter: blur(20px) saturate(1.38);
+    backdrop-filter: blur(20px) saturate(1.38);
   }
 
   .app-nav-indicator,
@@ -7507,6 +7509,10 @@ body.challenge-active .word-list-search input {
   .app-nav-indicator {
     top: 9px;
     bottom: 9px;
+    background:
+      radial-gradient(circle at 28% 6%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.1) 30%, transparent 58%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.28), rgba(198, 232, 230, 0.09) 52%, rgba(255, 255, 255, 0.12)),
+      rgba(231, 247, 245, 0.08);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.62),
       inset 0 -1px 0 rgba(46, 114, 223, 0.04),
@@ -7525,6 +7531,11 @@ body.challenge-active .word-list-search input {
     top: -9px;
     bottom: -9px;
     border-radius: 999px;
+    background:
+      linear-gradient(118deg, transparent 0%, rgba(225, 255, 252, 0.12) 16%, transparent 34%),
+      radial-gradient(circle at 28% 0%, rgba(179, 226, 228, 0.13), rgba(179, 226, 228, 0.035) 28%, transparent 58%),
+      radial-gradient(circle at 80% 92%, rgba(45, 113, 136, 0.07), transparent 46%),
+      rgba(222, 248, 247, 0.012);
     transform:
       translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), 0, 0)
       scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * var(--nav-liquid-stretch)))
