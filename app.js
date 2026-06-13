@@ -800,7 +800,7 @@ function resetAppNavInteraction() {
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
   suppressNextAppNavClick = false;
-  appBottomNav?.classList.remove("is-dragging", "is-settling");
+  appBottomNav?.classList.remove("is-dragging", "is-settling", "is-vertical-pull");
   appBottomNav?.style.setProperty("--nav-lift", "1");
   appBottomNav?.style.setProperty("--nav-stretch", "1");
   appBottomNav?.style.setProperty("--nav-edge-lift", "1");
@@ -817,6 +817,8 @@ function resetAppNavInteraction() {
   appBottomNav?.style.setProperty("--nav-edge-shade-y", "0px");
   appBottomNav?.style.setProperty("--nav-vertical-stretch", "1");
   appBottomNav?.style.setProperty("--nav-vertical-origin", "center");
+  appBottomNav?.style.setProperty("--nav-bar-bulge-stretch", "1");
+  appBottomNav?.style.setProperty("--nav-bar-bulge-origin", "center");
   appBottomNav?.classList.remove("is-edge-hit");
   clearAppNavGlassOverlap();
   if (!isAppNavInteractionBlocked()) updateAppBottomNav();
@@ -868,9 +870,14 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
     appBottomNav.style.setProperty("--nav-edge-shade-x", `${edgeDirection * edgeRatio * 8}px`);
     appBottomNav.style.setProperty("--nav-edge-light-y", `${verticalDirection * verticalRatio * -11}px`);
     appBottomNav.style.setProperty("--nav-edge-shade-y", `${verticalDirection * verticalRatio * 7}px`);
-    appBottomNav.style.setProperty("--nav-vertical-stretch", `${1 + verticalRatio * 0.06}`);
+    appBottomNav.style.setProperty("--nav-vertical-stretch", "1");
+    appBottomNav.style.setProperty("--nav-vertical-origin", "center");
+    appBottomNav.classList.toggle("is-vertical-pull", verticalRatio > 0.02);
+    appBottomNav.style.setProperty("--nav-bar-bulge-x", `${x - width * 0.08}px`);
+    appBottomNav.style.setProperty("--nav-bar-bulge-width", `${width * 1.16}px`);
+    appBottomNav.style.setProperty("--nav-bar-bulge-stretch", `${1 + verticalRatio * 0.11}`);
     appBottomNav.style.setProperty(
-      "--nav-vertical-origin",
+      "--nav-bar-bulge-origin",
       verticalDirection < 0 ? "center bottom" : verticalDirection > 0 ? "center top" : "center"
     );
     startAppNavFollower();
@@ -990,7 +997,7 @@ function beginAppNavDrag(clientX, clientY) {
   });
   appBottomNav.classList.remove("is-settling");
   appBottomNav.classList.add("is-dragging");
-  appBottomNav.style.setProperty("--nav-lift", "1.08");
+  appBottomNav.style.setProperty("--nav-lift", isMobileAppNav() ? "1.02" : "1.08");
   appBottomNav.style.setProperty("--nav-stretch", "1");
   appBottomNav.style.setProperty("--nav-edge-lift", "1");
   appBottomNav.style.setProperty("--nav-wobble", "1");
@@ -1012,7 +1019,7 @@ function updateAppNavDragMotion(clientX, clientY) {
     : mobileNav
       ? Math.min(0.008, Math.abs(velocityX) * 0.003)
       : Math.min(0.05, Math.abs(velocity) * 0.02);
-  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.045" : "1.1");
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.018" : "1.1");
   appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
   appNavLastClientX = clientX;
   appNavLastClientY = clientY;
@@ -1057,6 +1064,7 @@ function settleAppNavDrag() {
   window.clearTimeout(appNavBounceResetTimer);
   appBottomNav.classList.remove("is-dragging");
   appBottomNav.classList.remove("is-edge-hit");
+  appBottomNav.classList.remove("is-vertical-pull");
   appBottomNav.style.setProperty("--nav-edge-pressure", "0");
   appBottomNav.style.setProperty("--nav-edge-light-x", "0px");
   appBottomNav.style.setProperty("--nav-edge-shade-x", "0px");
@@ -1064,9 +1072,11 @@ function settleAppNavDrag() {
   appBottomNav.style.setProperty("--nav-edge-shade-y", "0px");
   appBottomNav.style.setProperty("--nav-vertical-stretch", "1");
   appBottomNav.style.setProperty("--nav-vertical-origin", "center");
+  appBottomNav.style.setProperty("--nav-bar-bulge-stretch", "1");
+  appBottomNav.style.setProperty("--nav-bar-bulge-origin", "center");
   appBottomNav.classList.add("is-settling");
   const mobileNav = isMobileAppNav();
-  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.035" : "1.065");
+  appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.012" : "1.065");
   appBottomNav.style.setProperty("--nav-stretch", "1");
   appBottomNav.style.setProperty("--nav-edge-lift", mobileNav ? "0.992" : "0.985");
   appBottomNav.style.setProperty("--nav-wobble", mobileNav ? "1.014" : "1.03");
