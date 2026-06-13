@@ -334,6 +334,7 @@ let wordListSelectedKeys = new Set();
 let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
 let appNavPointerActive = false;
 let appNavLastClientX = 0;
+let appNavLastClientY = 0;
 let appNavLastMoveAt = 0;
 let appNavWobbleTimer = null;
 let appNavBounceTimer = null;
@@ -352,6 +353,8 @@ let appNavButtonMetrics = [];
 let appNavEdgePressure = 0;
 let appNavLiquidDirection = 1;
 let appNavVisualSpeed = 0;
+let appNavGestureSpeed = 0;
+let appNavLiquidAngle = 0;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
@@ -420,7 +423,7 @@ appBottomNav.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   button.blur();
   appNavPointerActive = true;
-  beginAppNavDrag(event.clientX);
+  beginAppNavDrag(event.clientX, event.clientY);
   appBottomNav.setPointerCapture?.(event.pointerId);
   moveAppNavIndicatorToPoint(event.clientX, event.clientY);
 });
@@ -428,7 +431,7 @@ appBottomNav.addEventListener("pointermove", (event) => {
   if (isAppNavInteractionBlocked()) return;
   if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
-  updateAppNavDragMotion(event.clientX);
+  updateAppNavDragMotion(event.clientX, event.clientY);
   moveAppNavIndicatorToPoint(event.clientX, event.clientY);
 });
 appBottomNav.addEventListener("pointerup", (event) => {
@@ -729,7 +732,7 @@ function handleAppNavTouchStart(event) {
   appNavTouchFallbackActive = true;
   appNavPointerActive = false;
   button.blur();
-  beginAppNavDrag(touch.clientX);
+  beginAppNavDrag(touch.clientX, touch.clientY);
   moveAppNavIndicatorToPoint(touch.clientX, touch.clientY);
 }
 
@@ -743,7 +746,7 @@ function handleAppNavTouchMove(event) {
   if (!touch) return;
   event.preventDefault();
   event.stopPropagation();
-  updateAppNavDragMotion(touch.clientX);
+  updateAppNavDragMotion(touch.clientX, touch.clientY);
   moveAppNavIndicatorToPoint(touch.clientX, touch.clientY);
 }
 
@@ -795,6 +798,8 @@ function resetAppNavInteraction() {
   appNavEdgePressure = 0;
   appNavLiquidDirection = 1;
   appNavVisualSpeed = 0;
+  appNavGestureSpeed = 0;
+  appNavLiquidAngle = 0;
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -808,13 +813,17 @@ function resetAppNavInteraction() {
   appBottomNav?.style.setProperty("--nav-liquid-squash", "1");
   appBottomNav?.style.setProperty("--nav-liquid-offset", "0px");
   appBottomNav?.style.setProperty("--nav-liquid-front-shift", "0px");
+  appBottomNav?.style.setProperty("--nav-liquid-front-shift-y", "0px");
   appBottomNav?.style.setProperty("--nav-liquid-front-scale", "1");
+  appBottomNav?.style.setProperty("--nav-liquid-angle", "0deg");
+  appBottomNav?.style.setProperty("--nav-liquid-angle-inverse", "0deg");
   appBottomNav?.style.setProperty("--nav-edge-pressure", "0");
   appBottomNav?.style.setProperty("--nav-edge-light-x", "0px");
   appBottomNav?.style.setProperty("--nav-edge-shade-x", "0px");
   appBottomNav?.style.setProperty("--nav-edge-light-y", "0px");
   appBottomNav?.style.setProperty("--nav-edge-shade-y", "0px");
-  appBottomNav?.style.setProperty("--nav-vertical-offset", "0px");
+  appBottomNav?.style.setProperty("--nav-vertical-stretch", "1");
+  appBottomNav?.style.setProperty("--nav-vertical-origin", "center");
   appBottomNav?.classList.remove("is-edge-hit");
   clearAppNavGlassOverlap();
   if (!isAppNavInteractionBlocked()) updateAppBottomNav();
@@ -851,7 +860,7 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
   appBottomNav.style.setProperty("--nav-edge-lift", `${1 + verticalStretch}`);
   appBottomNav.style.setProperty("--nav-stretch-origin", origin);
   if (mobileNav) {
-    appNavEdgePressure = combinedEdgeRatio;
+    appNavEdgePressure = edgeRatio;
     appNavIndicatorWidth = width;
     appNavTargetX = x;
     if (appNavCurrentX === null) appNavCurrentX = x;
@@ -863,7 +872,11 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
     appBottomNav.style.setProperty("--nav-edge-shade-x", `${edgeDirection * edgeRatio * 8}px`);
     appBottomNav.style.setProperty("--nav-edge-light-y", `${verticalDirection * verticalRatio * -11}px`);
     appBottomNav.style.setProperty("--nav-edge-shade-y", `${verticalDirection * verticalRatio * 7}px`);
-    appBottomNav.style.setProperty("--nav-vertical-offset", `${verticalDirection * verticalRatio * 3}px`);
+    appBottomNav.style.setProperty("--nav-vertical-stretch", `${1 + verticalRatio * 0.12}`);
+    appBottomNav.style.setProperty(
+      "--nav-vertical-origin",
+      verticalDirection < 0 ? "center bottom" : verticalDirection > 0 ? "center top" : "center"
+    );
     startAppNavFollower();
   } else {
     appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
@@ -889,24 +902,30 @@ function startAppNavFollower() {
       appNavFollowVelocity *= 0.5;
     }
     const rawSpeed = Math.min(1, Math.abs(appNavFollowVelocity) / 8.5);
+    appNavGestureSpeed *= 0.82;
     const visualSpeedTarget = rawSpeed < 0.018 ? 0 : rawSpeed;
-    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * 0.34;
+    const directionalSpeedTarget = Math.max(visualSpeedTarget, appNavGestureSpeed);
+    appNavVisualSpeed += (directionalSpeedTarget - appNavVisualSpeed) * 0.34;
     if (Math.abs(distance) > 0.8 && Math.abs(step) > 0.22) {
       appNavLiquidDirection = distance < 0 ? -1 : 1;
     }
     const speed = appNavVisualSpeed;
     const direction = appNavLiquidDirection;
+    const angleRadians = appNavLiquidAngle * Math.PI / 180;
     const edgeCompression = 1 - appNavEdgePressure * 0.12;
     appBottomNav.style.setProperty("--nav-indicator-x", `${appNavCurrentX}px`);
     appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.34}`);
     appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.075}`);
     appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
-    appBottomNav.style.setProperty("--nav-liquid-offset", `${direction * speed * 6}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * speed * 10}px`);
+    appBottomNav.style.setProperty("--nav-liquid-angle", `${appNavLiquidAngle}deg`);
+    appBottomNav.style.setProperty("--nav-liquid-angle-inverse", `${-appNavLiquidAngle}deg`);
+    appBottomNav.style.setProperty("--nav-liquid-offset", `${Math.cos(angleRadians) * speed * 6}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${Math.cos(angleRadians) * speed * 10}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift-y", `${Math.sin(angleRadians) * speed * 10}px`);
     appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + speed * 0.16}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(appNavCurrentX, appNavIndicatorWidth);
-    if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
+    if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006 || appNavGestureSpeed > 0.006) {
       appNavFollowFrame = requestAnimationFrame(follow);
       return;
     }
@@ -946,7 +965,7 @@ function clearAppNavGlassOverlap() {
   });
 }
 
-function beginAppNavDrag(clientX) {
+function beginAppNavDrag(clientX, clientY) {
   window.clearTimeout(appNavSettleTimer);
   window.clearTimeout(appNavWobbleTimer);
   window.clearTimeout(appNavBounceTimer);
@@ -954,6 +973,7 @@ function beginAppNavDrag(clientX) {
   cancelAnimationFrame(appNavFollowFrame);
   appNavFollowFrame = null;
   appNavLastClientX = clientX;
+  appNavLastClientY = clientY;
   appNavLastMoveAt = performance.now();
   appNavAtEdge = false;
   appNavCurrentX = null;
@@ -961,6 +981,8 @@ function beginAppNavDrag(clientX) {
   appNavFollowVelocity = 0;
   appNavEdgePressure = 0;
   appNavVisualSpeed = 0;
+  appNavGestureSpeed = 0;
+  appNavLiquidAngle = 0;
   const navRect = appBottomNav.getBoundingClientRect();
   appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
     const rect = button.getBoundingClientRect();
@@ -980,11 +1002,18 @@ function beginAppNavDrag(clientX) {
   appBottomNav.style.setProperty("--nav-stretch-origin", "center");
 }
 
-function updateAppNavDragMotion(clientX) {
+function updateAppNavDragMotion(clientX, clientY) {
   const mobileNav = isMobileAppNav();
   const now = performance.now();
   const elapsed = Math.max(16, now - appNavLastMoveAt);
-  const velocity = (clientX - appNavLastClientX) / elapsed;
+  const velocityX = (clientX - appNavLastClientX) / elapsed;
+  const velocityY = (clientY - appNavLastClientY) / elapsed;
+  const velocity = Math.hypot(velocityX, velocityY);
+  if (velocity > 0.015) {
+    appNavLiquidAngle = Math.atan2(velocityY, velocityX) * 180 / Math.PI;
+    appNavLiquidDirection = velocityX < 0 ? -1 : velocityX > 0 ? 1 : appNavLiquidDirection;
+  }
+  appNavGestureSpeed = Math.min(1, velocity / 0.72);
   const wobble = appNavAtEdge
     ? 0
     : mobileNav
@@ -993,6 +1022,7 @@ function updateAppNavDragMotion(clientX) {
   appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.045" : "1.1");
   appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
   appNavLastClientX = clientX;
+  appNavLastClientY = clientY;
   appNavLastMoveAt = now;
   window.clearTimeout(appNavWobbleTimer);
   appNavWobbleTimer = window.setTimeout(() => {
@@ -1039,7 +1069,8 @@ function settleAppNavDrag() {
   appBottomNav.style.setProperty("--nav-edge-shade-x", "0px");
   appBottomNav.style.setProperty("--nav-edge-light-y", "0px");
   appBottomNav.style.setProperty("--nav-edge-shade-y", "0px");
-  appBottomNav.style.setProperty("--nav-vertical-offset", "0px");
+  appBottomNav.style.setProperty("--nav-vertical-stretch", "1");
+  appBottomNav.style.setProperty("--nav-vertical-origin", "center");
   appBottomNav.classList.add("is-settling");
   const mobileNav = isMobileAppNav();
   appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.035" : "1.065");
@@ -1051,7 +1082,10 @@ function settleAppNavDrag() {
   appBottomNav.style.setProperty("--nav-liquid-squash", "1");
   appBottomNav.style.setProperty("--nav-liquid-offset", "0px");
   appBottomNav.style.setProperty("--nav-liquid-front-shift", "0px");
+  appBottomNav.style.setProperty("--nav-liquid-front-shift-y", "0px");
   appBottomNav.style.setProperty("--nav-liquid-front-scale", "1");
+  appBottomNav.style.setProperty("--nav-liquid-angle", "0deg");
+  appBottomNav.style.setProperty("--nav-liquid-angle-inverse", "0deg");
   clearAppNavGlassOverlap();
   appNavAtEdge = false;
   appNavBounceTimer = window.setTimeout(() => {
