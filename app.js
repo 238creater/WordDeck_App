@@ -828,7 +828,8 @@ function moveAppNavIndicatorToPoint(clientX, clientY = null) {
   const button = getNearestAppNavButton(clientX);
   const navRect = appBottomNav.getBoundingClientRect();
   const buttonRect = button?.getBoundingClientRect();
-  const width = buttonRect?.width || Number.parseFloat(getComputedStyle(appBottomNav).getPropertyValue("--nav-indicator-width")) || 0;
+  const buttonWidth = buttonRect?.width || Number.parseFloat(getComputedStyle(appBottomNav).getPropertyValue("--nav-indicator-width")) || 0;
+  const width = mobileNav ? buttonWidth * 1.06 : buttonWidth;
   const rawX = clientX - navRect.left - width / 2;
   const overflowLimit = 6;
   const minX = -overflowLimit;
@@ -888,10 +889,10 @@ function startAppNavFollower() {
       return;
     }
     const distance = appNavTargetX - appNavCurrentX;
-    const followRate = reduceMotion ? 1 : Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.42 : 0.54;
+    const followRate = reduceMotion ? 1 : Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.34 : 0.46;
     const step = distance * followRate;
     appNavCurrentX += step;
-    appNavFollowVelocity = appNavFollowVelocity * 0.62 + step * 0.38;
+    appNavFollowVelocity = appNavFollowVelocity * 0.7 + step * 0.3;
     if (Math.abs(distance) < 0.18) {
       appNavCurrentX = appNavTargetX;
       appNavFollowVelocity *= 0.5;
@@ -908,17 +909,17 @@ function startAppNavFollower() {
     const lag = appNavTargetX - appNavCurrentX;
     const extension = reduceMotion
       ? 0
-      : Math.min(appNavIndicatorWidth * 0.88, Math.abs(lag) * 1.24);
+      : Math.min(appNavIndicatorWidth * 0.92, Math.abs(lag) * 1.14);
     const visualWidth = appNavIndicatorWidth + extension;
     const visualX = lag < 0 ? appNavCurrentX - extension : appNavCurrentX;
     appBottomNav.style.setProperty("--nav-indicator-x", `${visualX}px`);
     appBottomNav.style.setProperty("--nav-indicator-width", `${visualWidth}px`);
-    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.035}`);
-    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.025}`);
+    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.018}`);
+    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.018}`);
     appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
     appBottomNav.style.setProperty("--nav-liquid-offset", "0px");
-    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(10, extension * 0.13)}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(0.12, extension / Math.max(appNavIndicatorWidth, 1) * 0.14)}`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(7, extension * 0.09)}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(0.07, extension / Math.max(appNavIndicatorWidth, 1) * 0.08)}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(visualX, visualWidth);
     if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
@@ -1009,7 +1010,7 @@ function updateAppNavDragMotion(clientX, clientY) {
   const wobble = appNavAtEdge
     ? 0
     : mobileNav
-      ? Math.min(0.018, Math.abs(velocity) * 0.006)
+      ? Math.min(0.008, Math.abs(velocityX) * 0.003)
       : Math.min(0.05, Math.abs(velocity) * 0.02);
   appBottomNav.style.setProperty("--nav-lift", mobileNav ? "1.045" : "1.1");
   appBottomNav.style.setProperty("--nav-wobble", `${1 + wobble}`);
