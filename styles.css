@@ -3367,7 +3367,6 @@ body.challenge-active .continue-panel {
   --nav-liquid-offset: 0px;
   --nav-liquid-front-shift: 0px;
   --nav-liquid-front-scale: 1;
-  --nav-slide-vertical-stretch: 1;
   --nav-edge-direction: 0;
   --nav-edge-pressure: 0;
   --nav-edge-light-x: 0px;
@@ -7526,7 +7525,7 @@ body.challenge-active .word-list-search input {
     transform:
       translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), 0, 0)
       scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * var(--nav-liquid-stretch) * 1.08))
-      scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash) * var(--nav-vertical-stretch) * var(--nav-slide-vertical-stretch)));
+      scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash) * var(--nav-vertical-stretch)));
     transform-origin: var(--nav-vertical-origin);
     will-change: transform;
     -webkit-backdrop-filter: blur(14px) saturate(1.38) contrast(1.02);
@@ -7540,7 +7539,7 @@ body.challenge-active .word-list-search input {
       top 100ms ease-out,
       bottom 100ms ease-out,
       transform 0ms linear,
-      width 80ms ease-out,
+      width 0ms linear,
       border-color 120ms ease,
       background 120ms ease,
       box-shadow 120ms ease;
