@@ -335,6 +335,9 @@ let studyHistoryVisibleCount = STUDY_HISTORY_PAGE_SIZE;
 let appNavPointerActive = false;
 let appNavLastClientX = 0;
 let appNavLastClientY = 0;
+let appNavStartClientX = 0;
+let appNavStartClientY = 0;
+let appNavDragMoved = false;
 let appNavLastMoveAt = 0;
 let appNavWobbleTimer = null;
 let appNavBounceTimer = null;
@@ -353,10 +356,16 @@ let appNavButtonMetrics = [];
 let appNavEdgePressure = 0;
 let appNavLiquidDirection = 1;
 let appNavVisualSpeed = 0;
+let appNavAnimateNextPosition = false;
+let appNavSettleAfterFollow = false;
+let appNavLastScrollY = window.scrollY || 0;
+let appNavScrollFrame = null;
+let appNavScrollRevealTimer = null;
 
 document.addEventListener("click", handleGlobalClick);
 document.addEventListener("keydown", handleKeyboard);
 window.addEventListener("scroll", scheduleFloatingStartUpdate, { passive: true });
+window.addEventListener("scroll", scheduleAppNavScrollMotion, { passive: true });
 window.addEventListener("resize", scheduleFloatingStartUpdate);
 csvInput.addEventListener("change", handleCsvImport);
 document.querySelector("#load-sample-button").addEventListener("click", addSampleDeck);
@@ -423,12 +432,13 @@ appBottomNav.addEventListener("pointerdown", (event) => {
   appNavPointerActive = true;
   beginAppNavDrag(event.clientX, event.clientY);
   appBottomNav.setPointerCapture?.(event.pointerId);
-  moveAppNavIndicatorToPoint(event.clientX, event.clientY);
 });
 appBottomNav.addEventListener("pointermove", (event) => {
   if (isAppNavInteractionBlocked()) return;
   if (Date.now() < appNavIgnorePointerUntil) return;
   if (!appNavPointerActive) return;
+  if (!appNavDragMoved && Math.hypot(event.clientX - appNavStartClientX, event.clientY - appNavStartClientY) < 8) return;
+  appNavDragMoved = true;
   updateAppNavDragMotion(event.clientX, event.clientY);
   moveAppNavIndicatorToPoint(event.clientX, event.clientY);
 });
@@ -444,15 +454,19 @@ appBottomNav.addEventListener("pointerup", (event) => {
   const button = getNearestAppNavButton(event.clientX);
   if (button) {
     suppressNextAppNavClick = true;
+    appNavAnimateNextPosition = !appNavDragMoved;
     navigateAppSection(button.dataset.navScreen);
   } else {
     updateAppBottomNav();
   }
-  settleAppNavDrag();
+  if (appNavDragMoved) {
+    settleAppNavDrag();
+  }
 });
 appBottomNav.addEventListener("pointercancel", () => {
   if (Date.now() < appNavIgnorePointerUntil) return;
   appNavPointerActive = false;
+  appNavDragMoved = false;
   settleAppNavDrag();
   updateAppBottomNav();
 });
@@ -693,7 +707,10 @@ function updateAppBottomNav(activeName = getActiveScreenName()) {
     button.classList.toggle("is-selected", isSelected);
     button.setAttribute("aria-current", isSelected ? "page" : "false");
   });
-  positionAppNavIndicator(buttons.find((button) => button.dataset.navScreen === activeName) || buttons[0]);
+  const targetButton = buttons.find((button) => button.dataset.navScreen === activeName) || buttons[0];
+  const shouldAnimate = appNavAnimateNextPosition;
+  appNavAnimateNextPosition = false;
+  positionAppNavIndicator(targetButton, shouldAnimate);
 }
 
 function getNearestAppNavButton(clientX) {
@@ -731,7 +748,6 @@ function handleAppNavTouchStart(event) {
   appNavPointerActive = false;
   button.blur();
   beginAppNavDrag(touch.clientX, touch.clientY);
-  moveAppNavIndicatorToPoint(touch.clientX, touch.clientY);
 }
 
 function handleAppNavTouchMove(event) {
@@ -744,6 +760,8 @@ function handleAppNavTouchMove(event) {
   if (!touch) return;
   event.preventDefault();
   event.stopPropagation();
+  if (!appNavDragMoved && Math.hypot(touch.clientX - appNavStartClientX, touch.clientY - appNavStartClientY) < 8) return;
+  appNavDragMoved = true;
   updateAppNavDragMotion(touch.clientX, touch.clientY);
   moveAppNavIndicatorToPoint(touch.clientX, touch.clientY);
 }
@@ -761,16 +779,20 @@ function handleAppNavTouchEnd(event) {
   const button = touch ? getNearestAppNavButton(touch.clientX) : null;
   if (button) {
     suppressNextAppNavClick = true;
+    appNavAnimateNextPosition = !appNavDragMoved;
     navigateAppSection(button.dataset.navScreen);
   } else {
     updateAppBottomNav();
   }
-  settleAppNavDrag();
+  if (appNavDragMoved) {
+    settleAppNavDrag();
+  }
 }
 
 function handleAppNavTouchCancel() {
   if (!appNavTouchFallbackActive) return;
   appNavTouchFallbackActive = false;
+  appNavDragMoved = false;
   settleAppNavDrag();
   updateAppBottomNav();
 }
@@ -796,6 +818,9 @@ function resetAppNavInteraction() {
   appNavEdgePressure = 0;
   appNavLiquidDirection = 1;
   appNavVisualSpeed = 0;
+  appNavDragMoved = false;
+  appNavAnimateNextPosition = false;
+  appNavSettleAfterFollow = false;
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -888,21 +913,24 @@ function startAppNavFollower() {
     }
     const speed = appNavVisualSpeed;
     const direction = appNavLiquidDirection;
+    const edgeImpact = appNavEdgePressure;
     const edgeCompression = 1 - appNavEdgePressure * 0.12;
     const lag = appNavTargetX - appNavCurrentX;
-    const extension = reduceMotion
+    const extensionBase = reduceMotion
       ? 0
       : Math.min(appNavIndicatorWidth * 1.02, Math.abs(lag) * 1.32);
-    const visualWidth = appNavIndicatorWidth + extension;
+    const extension = extensionBase * (1 - edgeImpact * 0.78);
+    const baseWidth = appNavIndicatorWidth * (1 - edgeImpact * 0.055);
+    const visualWidth = baseWidth + extension;
     const visualX = lag < 0 ? appNavCurrentX - extension : appNavCurrentX;
     appBottomNav.style.setProperty("--nav-indicator-x", `${visualX}px`);
     appBottomNav.style.setProperty("--nav-indicator-width", `${visualWidth}px`);
-    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.045}`);
-    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.03}`);
+    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.045 - edgeImpact * 0.035}`);
+    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.03 + edgeImpact * 0.018}`);
     appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
     appBottomNav.style.setProperty("--nav-liquid-offset", "0px");
-    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(10, extension * 0.12)}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(0.1, extension / Math.max(appNavIndicatorWidth, 1) * 0.11)}`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(10, extension * 0.12) * (1 - edgeImpact * 0.6)}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(0.1, extension / Math.max(appNavIndicatorWidth, 1) * 0.11) * (1 - edgeImpact * 0.7)}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(visualX, visualWidth);
     if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
@@ -910,6 +938,10 @@ function startAppNavFollower() {
       return;
     }
     appNavFollowFrame = null;
+    if (appNavSettleAfterFollow) {
+      appNavSettleAfterFollow = false;
+      settleAppNavDrag();
+    }
   };
   appNavFollowFrame = requestAnimationFrame(follow);
 }
@@ -952,15 +984,18 @@ function beginAppNavDrag(clientX, clientY) {
   window.clearTimeout(appNavBounceResetTimer);
   cancelAnimationFrame(appNavFollowFrame);
   appNavFollowFrame = null;
+  appNavStartClientX = clientX;
+  appNavStartClientY = clientY;
   appNavLastClientX = clientX;
   appNavLastClientY = clientY;
   appNavLastMoveAt = performance.now();
+  appNavDragMoved = false;
   appNavAtEdge = false;
-  appNavCurrentX = null;
-  appNavTargetX = null;
   appNavFollowVelocity = 0;
   appNavEdgePressure = 0;
   appNavVisualSpeed = 0;
+  appNavSettleAfterFollow = false;
+  appBottomNav.classList.remove("is-scroll-hidden");
   const navRect = appBottomNav.getBoundingClientRect();
   appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
     const rect = button.getBoundingClientRect();
@@ -1026,6 +1061,33 @@ function isMobileAppNav() {
   return window.matchMedia("(max-width: 720px)").matches;
 }
 
+function scheduleAppNavScrollMotion() {
+  if (appNavScrollFrame) return;
+  appNavScrollFrame = requestAnimationFrame(updateAppNavScrollMotion);
+}
+
+function updateAppNavScrollMotion() {
+  appNavScrollFrame = null;
+  if (!appBottomNav || !isMobileAppNav() || isAppNavInteractionBlocked() || appNavPointerActive || appNavTouchFallbackActive) {
+    appBottomNav?.classList.remove("is-scroll-hidden");
+    appNavLastScrollY = window.scrollY || 0;
+    return;
+  }
+  const currentY = window.scrollY || 0;
+  const delta = currentY - appNavLastScrollY;
+  appNavLastScrollY = currentY;
+  if (!document.body.classList.contains("app-nav-active") || currentY < 24 || Math.abs(delta) < 4) return;
+  if (delta > 0) {
+    appBottomNav.classList.add("is-scroll-hidden");
+    window.clearTimeout(appNavScrollRevealTimer);
+    appNavScrollRevealTimer = window.setTimeout(() => {
+      appBottomNav?.classList.remove("is-scroll-hidden");
+    }, 1100);
+    return;
+  }
+  appBottomNav.classList.remove("is-scroll-hidden");
+}
+
 function previewAppNavSelection(targetButton) {
   if (!appBottomNav || !targetButton) return;
   appBottomNav.querySelectorAll("[data-nav-screen]").forEach((button) => {
@@ -1062,6 +1124,7 @@ function settleAppNavDrag() {
   }
   clearAppNavGlassOverlap();
   appNavAtEdge = false;
+  appNavDragMoved = false;
   appNavBounceTimer = window.setTimeout(() => {
     appBottomNav?.style.setProperty("--nav-edge-lift", mobileNav ? "1.008" : "1.018");
     appBottomNav?.style.setProperty("--nav-wobble", mobileNav ? "0.997" : "0.992");
@@ -1077,7 +1140,7 @@ function settleAppNavDrag() {
   }, 260);
 }
 
-function positionAppNavIndicator(button) {
+function positionAppNavIndicator(button, animate = false) {
   if (!appBottomNav || !button) return;
   const navRect = appBottomNav.getBoundingClientRect();
   const rect = button.getBoundingClientRect();
@@ -1088,11 +1151,33 @@ function positionAppNavIndicator(button) {
   const x = Math.min(navRect.width - width + overflowLimit, Math.max(-overflowLimit, centeredX));
   cancelAnimationFrame(appNavFollowFrame);
   appNavFollowFrame = null;
+  if (animate && mobileNav && appNavCurrentX !== null && Math.abs(x - appNavCurrentX) > 0.5) {
+    appNavIndicatorWidth = width;
+    appNavTargetX = x;
+    appNavFollowVelocity = 0;
+    appNavEdgePressure = 0;
+    appNavVisualSpeed = 0;
+    appNavLiquidDirection = x < appNavCurrentX ? -1 : 1;
+    appNavSettleAfterFollow = true;
+    appBottomNav.classList.remove("is-settling", "is-edge-hit");
+    appBottomNav.classList.add("is-dragging");
+    appBottomNav.style.setProperty("--nav-lift", "1.02");
+    appBottomNav.style.setProperty("--nav-stretch", "1");
+    appBottomNav.style.setProperty("--nav-edge-lift", "1");
+    appBottomNav.style.setProperty("--nav-edge-pressure", "0");
+    appBottomNav.style.setProperty("--nav-edge-light-x", "0px");
+    appBottomNav.style.setProperty("--nav-edge-shade-x", "0px");
+    startAppNavFollower();
+    return;
+  }
   appNavCurrentX = x;
   appNavTargetX = appNavCurrentX;
   appNavIndicatorWidth = width;
   appBottomNav.style.setProperty("--nav-indicator-x", `${x}px`);
   appBottomNav.style.setProperty("--nav-indicator-width", `${width}px`);
+  if (animate && mobileNav) {
+    settleAppNavDrag();
+  }
 }
 
 function scheduleFloatingStartUpdate() {

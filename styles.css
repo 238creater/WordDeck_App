@@ -7498,6 +7498,16 @@ body.challenge-active .word-list-search input {
       rgba(247, 251, 255, 0.56);
     -webkit-backdrop-filter: blur(20px) saturate(1.38);
     backdrop-filter: blur(20px) saturate(1.38);
+    transition:
+      opacity 180ms cubic-bezier(0.2, 0.82, 0.25, 1),
+      transform 220ms cubic-bezier(0.18, 0.9, 0.22, 1),
+      filter 180ms ease;
+  }
+
+  .app-bottom-nav.is-scroll-hidden:not(.is-dragging) {
+    opacity: 0.46;
+    filter: saturate(0.92);
+    transform: translate(-50%, 58%);
   }
 
   .app-nav-indicator,
