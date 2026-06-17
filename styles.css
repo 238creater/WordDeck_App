@@ -7489,29 +7489,15 @@ body.challenge-active .word-list-search input {
 
   .app-bottom-nav {
     gap: 0;
-    width: calc(100% - 28px);
-    padding: 7px;
-    border-color: rgba(255, 255, 255, 0.64);
+    width: calc(100% - 24px);
+    padding: 8px;
+    border-color: rgba(150, 175, 198, 0.5);
     border-radius: 999px;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.48)),
-      rgba(255, 255, 255, 0.48);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -1px 0 rgba(50, 60, 74, 0.04),
-      0 10px 24px rgba(52, 62, 78, 0.12);
-    -webkit-backdrop-filter: blur(24px) saturate(1.42);
-    backdrop-filter: blur(24px) saturate(1.42);
-    transition:
-      opacity 180ms cubic-bezier(0.2, 0.82, 0.25, 1),
-      transform 220ms cubic-bezier(0.18, 0.9, 0.22, 1),
-      filter 180ms ease;
-  }
-
-  .app-bottom-nav.is-scroll-hidden:not(.is-dragging) {
-    opacity: 0.46;
-    filter: saturate(0.92);
-    transform: translate(-50%, 58%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(232, 242, 251, 0.5)),
+      rgba(247, 251, 255, 0.56);
+    -webkit-backdrop-filter: blur(20px) saturate(1.38);
+    backdrop-filter: blur(20px) saturate(1.38);
   }
 
   .app-nav-indicator,
@@ -7521,18 +7507,16 @@ body.challenge-active .word-list-search input {
   }
 
   .app-nav-indicator {
-    top: 3px;
-    bottom: 3px;
-    border-color: rgba(255, 255, 255, 0.46);
+    top: 9px;
+    bottom: 9px;
     background:
-      radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.16) 34%, transparent 62%),
-      linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(210, 232, 246, 0.12) 52%, rgba(255, 255, 255, 0.18)),
-      rgba(238, 246, 255, 0.12);
+      radial-gradient(circle at 28% 6%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.1) 30%, transparent 58%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.28), rgba(198, 232, 230, 0.09) 52%, rgba(255, 255, 255, 0.12)),
+      rgba(231, 247, 245, 0.08);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.78),
-      inset 0 -1px 0 rgba(46, 114, 223, 0.035),
-      0 7px 18px rgba(52, 62, 78, 0.14),
-      0 0 0 1px rgba(255, 255, 255, 0.34);
+      inset 0 1px 0 rgba(255, 255, 255, 0.62),
+      inset 0 -1px 0 rgba(46, 114, 223, 0.04),
+      0 7px 18px rgba(46, 114, 223, 0.12);
     transition:
       top 120ms ease-out,
       bottom 120ms ease-out,
@@ -7544,27 +7528,27 @@ body.challenge-active .word-list-search input {
   }
 
   .app-bottom-nav.is-dragging .app-nav-indicator {
-    top: -11px;
-    bottom: -11px;
+    top: -9px;
+    bottom: -9px;
     border-radius: 999px;
     background:
-      linear-gradient(118deg, transparent 0%, rgba(255, 255, 255, 0.18) 16%, transparent 34%),
-      radial-gradient(circle at 28% 0%, rgba(217, 237, 252, 0.18), rgba(217, 237, 252, 0.05) 28%, transparent 58%),
-      radial-gradient(circle at 80% 92%, rgba(63, 118, 190, 0.08), transparent 46%),
-      rgba(245, 251, 255, 0.04);
+      linear-gradient(118deg, transparent 0%, rgba(225, 255, 252, 0.12) 16%, transparent 34%),
+      radial-gradient(circle at 28% 0%, rgba(179, 226, 228, 0.13), rgba(179, 226, 228, 0.035) 28%, transparent 58%),
+      radial-gradient(circle at 80% 92%, rgba(45, 113, 136, 0.07), transparent 46%),
+      rgba(222, 248, 247, 0.012);
     transform:
       translate3d(calc(var(--nav-indicator-x) + var(--nav-liquid-offset)), 0, 0)
       scaleX(calc(var(--nav-stretch) * var(--nav-wobble) * var(--nav-liquid-stretch)))
       scaleY(calc(var(--nav-lift) * var(--nav-edge-lift) * var(--nav-liquid-squash)));
     transform-origin: center;
     will-change: transform;
-    -webkit-backdrop-filter: blur(18px) saturate(1.5) contrast(1.02);
-    backdrop-filter: blur(18px) saturate(1.5) contrast(1.02);
+    -webkit-backdrop-filter: blur(14px) saturate(1.38) contrast(1.02);
+    backdrop-filter: blur(14px) saturate(1.38) contrast(1.02);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.66),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
       inset 0 -1px 0 rgba(46, 114, 223, 0.04),
-      0 14px 26px rgba(52, 62, 78, 0.16),
-      0 0 0 1px rgba(255, 255, 255, 0.38);
+      0 16px 30px rgba(46, 114, 223, 0.16),
+      0 0 14px rgba(92, 165, 255, 0.1);
     transition:
       top 90ms cubic-bezier(0.2, 0.82, 0.25, 1),
       bottom 90ms cubic-bezier(0.2, 0.82, 0.25, 1),
@@ -7590,11 +7574,11 @@ body.challenge-active .word-list-search input {
   }
 
   .app-bottom-nav.is-edge-hit .app-nav-indicator {
-    border-color: rgba(255, 255, 255, 0.58);
+    border-color: rgba(128, 181, 244, 0.58);
     box-shadow:
-      inset var(--nav-edge-light-x) 0 18px rgba(255, 255, 255, 0.4),
-      inset var(--nav-edge-shade-x) 0 14px rgba(52, 62, 78, 0.08),
-      0 12px 24px rgba(52, 62, 78, 0.16);
+      inset var(--nav-edge-light-x) 0 18px rgba(255, 255, 255, 0.34),
+      inset var(--nav-edge-shade-x) 0 16px rgba(46, 114, 223, 0.1),
+      0 16px 32px rgba(46, 114, 223, 0.17);
   }
 
   .app-nav-button {
@@ -7606,8 +7590,8 @@ body.challenge-active .word-list-search input {
     --nav-glass-icon-scale: 1;
     --nav-glass-brightness: 1;
     --nav-glass-saturation: 1;
-    min-height: 52px;
-    padding: 5px 5px 4px;
+    min-height: 56px;
+    padding: 7px 6px 6px;
     border-radius: 999px;
   }
 
