@@ -358,6 +358,7 @@ let appNavLiquidDirection = 1;
 let appNavVisualSpeed = 0;
 let appNavAnimateNextPosition = false;
 let appNavSettleAfterFollow = false;
+let appNavAutoSliding = false;
 let appNavLastScrollY = window.scrollY || 0;
 let appNavScrollFrame = null;
 let appNavScrollRevealTimer = null;
@@ -420,6 +421,7 @@ appBottomNav.addEventListener("click", (event) => {
   }
   const button = event.target.closest("[data-nav-screen]");
   if (!button) return;
+  appNavAnimateNextPosition = true;
   navigateAppSection(button.dataset.navScreen);
 });
 appBottomNav.addEventListener("pointerdown", (event) => {
@@ -821,6 +823,7 @@ function resetAppNavInteraction() {
   appNavDragMoved = false;
   appNavAnimateNextPosition = false;
   appNavSettleAfterFollow = false;
+  appNavAutoSliding = false;
   appNavPointerActive = false;
   appNavTouchFallbackActive = false;
   appNavAtEdge = false;
@@ -897,7 +900,11 @@ function startAppNavFollower() {
       return;
     }
     const distance = appNavTargetX - appNavCurrentX;
-    const followRate = reduceMotion ? 1 : Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.34 : 0.46;
+    const followRate = reduceMotion
+      ? 1
+      : appNavAutoSliding
+        ? Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.16 : 0.24
+        : Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.34 : 0.46;
     const step = distance * followRate;
     appNavCurrentX += step;
     appNavFollowVelocity = appNavFollowVelocity * 0.7 + step * 0.3;
@@ -907,7 +914,7 @@ function startAppNavFollower() {
     }
     const rawSpeed = Math.min(1, Math.abs(appNavFollowVelocity) / 10);
     const visualSpeedTarget = rawSpeed < 0.018 ? 0 : rawSpeed;
-    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * 0.34;
+    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * (appNavAutoSliding ? 0.22 : 0.34);
     if (Math.abs(distance) > 0.8 && Math.abs(step) > 0.22) {
       appNavLiquidDirection = distance < 0 ? -1 : 1;
     }
@@ -916,21 +923,23 @@ function startAppNavFollower() {
     const edgeImpact = appNavEdgePressure;
     const edgeCompression = 1 - appNavEdgePressure * 0.12;
     const lag = appNavTargetX - appNavCurrentX;
+    const extensionLimit = appNavAutoSliding ? 1.28 : 1.02;
+    const extensionPower = appNavAutoSliding ? 1.6 : 1.32;
     const extensionBase = reduceMotion
       ? 0
-      : Math.min(appNavIndicatorWidth * 1.02, Math.abs(lag) * 1.32);
+      : Math.min(appNavIndicatorWidth * extensionLimit, Math.abs(lag) * extensionPower);
     const extension = extensionBase * (1 - edgeImpact * 0.78);
     const baseWidth = appNavIndicatorWidth * (1 - edgeImpact * 0.055);
     const visualWidth = baseWidth + extension;
     const visualX = lag < 0 ? appNavCurrentX - extension : appNavCurrentX;
     appBottomNav.style.setProperty("--nav-indicator-x", `${visualX}px`);
     appBottomNav.style.setProperty("--nav-indicator-width", `${visualWidth}px`);
-    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * 0.045 - edgeImpact * 0.035}`);
-    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * 0.03 + edgeImpact * 0.018}`);
+    appBottomNav.style.setProperty("--nav-liquid-stretch", `${1 + speed * (appNavAutoSliding ? 0.07 : 0.045) - edgeImpact * 0.035}`);
+    appBottomNav.style.setProperty("--nav-liquid-squash", `${edgeCompression - speed * (appNavAutoSliding ? 0.04 : 0.03) + edgeImpact * 0.018}`);
     appBottomNav.style.setProperty("--nav-liquid-direction", `${direction}`);
     appBottomNav.style.setProperty("--nav-liquid-offset", "0px");
-    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(10, extension * 0.12) * (1 - edgeImpact * 0.6)}px`);
-    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(0.1, extension / Math.max(appNavIndicatorWidth, 1) * 0.11) * (1 - edgeImpact * 0.7)}`);
+    appBottomNav.style.setProperty("--nav-liquid-front-shift", `${direction * Math.min(appNavAutoSliding ? 14 : 10, extension * (appNavAutoSliding ? 0.15 : 0.12)) * (1 - edgeImpact * 0.6)}px`);
+    appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(appNavAutoSliding ? 0.14 : 0.1, extension / Math.max(appNavIndicatorWidth, 1) * (appNavAutoSliding ? 0.14 : 0.11)) * (1 - edgeImpact * 0.7)}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(visualX, visualWidth);
     if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
@@ -940,6 +949,7 @@ function startAppNavFollower() {
     appNavFollowFrame = null;
     if (appNavSettleAfterFollow) {
       appNavSettleAfterFollow = false;
+      appNavAutoSliding = false;
       settleAppNavDrag();
     }
   };
@@ -995,6 +1005,7 @@ function beginAppNavDrag(clientX, clientY) {
   appNavEdgePressure = 0;
   appNavVisualSpeed = 0;
   appNavSettleAfterFollow = false;
+  appNavAutoSliding = false;
   appBottomNav.classList.remove("is-scroll-hidden");
   const navRect = appBottomNav.getBoundingClientRect();
   appNavButtonMetrics = [...appBottomNav.querySelectorAll("[data-nav-screen]")].map((button) => {
@@ -1134,6 +1145,7 @@ function settleAppNavDrag() {
     appBottomNav?.style.setProperty("--nav-wobble", "1");
   }, 170);
   window.clearTimeout(appNavSettleTimer);
+  appNavAutoSliding = false;
   appNavSettleTimer = window.setTimeout(() => {
     appBottomNav.classList.remove("is-settling");
     appBottomNav.style.setProperty("--nav-lift", "1");
@@ -1159,6 +1171,7 @@ function positionAppNavIndicator(button, animate = false) {
     appNavVisualSpeed = 0;
     appNavLiquidDirection = x < appNavCurrentX ? -1 : 1;
     appNavSettleAfterFollow = true;
+    appNavAutoSliding = true;
     appBottomNav.classList.remove("is-settling", "is-edge-hit");
     appBottomNav.classList.add("is-dragging");
     appBottomNav.style.setProperty("--nav-lift", "1.02");
