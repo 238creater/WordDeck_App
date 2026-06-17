@@ -903,18 +903,18 @@ function startAppNavFollower() {
     const followRate = reduceMotion
       ? 1
       : appNavAutoSliding
-        ? Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.16 : 0.24
+        ? 0.115
         : Math.abs(distance) > appNavIndicatorWidth * 0.65 ? 0.34 : 0.46;
     const step = distance * followRate;
     appNavCurrentX += step;
-    appNavFollowVelocity = appNavFollowVelocity * 0.7 + step * 0.3;
-    if (Math.abs(distance) < 0.18) {
+    appNavFollowVelocity = appNavFollowVelocity * (appNavAutoSliding ? 0.82 : 0.7) + step * (appNavAutoSliding ? 0.18 : 0.3);
+    if (Math.abs(distance) < (appNavAutoSliding ? 0.08 : 0.18)) {
       appNavCurrentX = appNavTargetX;
-      appNavFollowVelocity *= 0.5;
+      appNavFollowVelocity *= appNavAutoSliding ? 0.35 : 0.5;
     }
     const rawSpeed = Math.min(1, Math.abs(appNavFollowVelocity) / 10);
     const visualSpeedTarget = rawSpeed < 0.018 ? 0 : rawSpeed;
-    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * (appNavAutoSliding ? 0.22 : 0.34);
+    appNavVisualSpeed += (visualSpeedTarget - appNavVisualSpeed) * (appNavAutoSliding ? 0.16 : 0.34);
     if (Math.abs(distance) > 0.8 && Math.abs(step) > 0.22) {
       appNavLiquidDirection = distance < 0 ? -1 : 1;
     }
@@ -942,7 +942,7 @@ function startAppNavFollower() {
     appBottomNav.style.setProperty("--nav-liquid-front-scale", `${1 + Math.min(appNavAutoSliding ? 0.14 : 0.1, extension / Math.max(appNavIndicatorWidth, 1) * (appNavAutoSliding ? 0.14 : 0.11)) * (1 - edgeImpact * 0.7)}`);
     appBottomNav.style.setProperty("--nav-stretch-origin", "center");
     updateAppNavGlassOverlap(visualX, visualWidth);
-    if (Math.abs(appNavTargetX - appNavCurrentX) > 0.18 || Math.abs(appNavFollowVelocity) > 0.08 || appNavVisualSpeed > 0.006) {
+    if (Math.abs(appNavTargetX - appNavCurrentX) > (appNavAutoSliding ? 0.08 : 0.18) || Math.abs(appNavFollowVelocity) > (appNavAutoSliding ? 0.035 : 0.08) || appNavVisualSpeed > 0.006) {
       appNavFollowFrame = requestAnimationFrame(follow);
       return;
     }
